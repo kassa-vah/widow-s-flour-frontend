@@ -30,10 +30,7 @@ export default function Navbar() {
     <>
       <nav ref={navRef} className={`navbar ${scrolled ? "scrolled" : ""}`}>
         {/* Logo */}
-        <a href="#hero" className="navbar__logo">
-          <div className="navbar__logo-icon">🌾</div>
-          Widows Flour
-        </a>
+        <img src="./src/assets/logo.png" alt="Widows Flour" className="navbar__logo" />
 
         {/* Desktop nav */}
         <ul className="navbar__links">

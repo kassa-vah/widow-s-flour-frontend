@@ -31,6 +31,8 @@
     font-weight: 500;
     color: var(--text-dark);
     letter-spacing: -0.01em;
+    height: 130px;
+    width: auto;
   }
   
   .navbar__logo-icon {
