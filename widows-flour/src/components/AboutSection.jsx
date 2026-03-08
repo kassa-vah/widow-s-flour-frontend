@@ -89,8 +89,7 @@ export default function AboutSection() {
   }, []);
 
   return (
-    <section id="about" className="about" ref={sectionRef}>
-      {/* Scoped container — never inherits global .container width bugs */}
+    <section id="about" className="about-section" ref={sectionRef}>
       <div className="about-container">
         <div className="about__inner">
 

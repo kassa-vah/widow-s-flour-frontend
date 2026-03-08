@@ -48,10 +48,11 @@
    }
    
    /* Clip horizontal overflow per-section without breaking sticky */
-   section {
+   /* section {
      width: 100%;
      overflow-x: clip;
-   }
+     position: relative;
+   } */
    
    
    
