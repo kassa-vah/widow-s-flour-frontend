@@ -59,7 +59,7 @@ export default function GetInvolvedSection() {
 
   return (
     <section id="contact" className="get-involved" ref={sectionRef}>
-      <div className="container">
+      <div className="get-involved-container">
         <div className="get-involved__header">
           <span className="tag-pill">Get Involved</span>
           <h2 className="get-involved__headline">

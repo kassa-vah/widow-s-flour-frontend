@@ -6,6 +6,21 @@
     position: relative;
     overflow: hidden;
   }
+  .video-container{
+    width: 100%;
+  max-width: 1320px;
+  padding-left: 48px;
+  padding-right: 48px;
+  box-sizing: border-box;
+
+  }
+  .get-involved-container{
+    width: 100%;
+    max-width: 1320px;
+    padding-left: 48px;
+    padding-right: 48px;
+    box-sizing: border-box;
+  }
   
   /* Subtle halftone dot pattern */
   .video-section::before {

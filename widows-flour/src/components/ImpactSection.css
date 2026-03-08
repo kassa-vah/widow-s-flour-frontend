@@ -1,5 +1,12 @@
 /* ImpactSection.css */
+.impact-container {
+  width: 100%;
+  max-width: 1320px;
+  padding-left: 48px;
+  padding-right: 48px;
+  box-sizing: border-box;
 
+}
 .impact {
     padding: var(--section-pad) 0;
     background: var(--off-white);

@@ -98,7 +98,7 @@ export default function ImpactSection() {
 
   return (
     <section id="impact" className="impact" ref={sectionRef}>
-      <div className="container">
+      <div className="impact-container">
 
         {/* Header */}
         <div className="impact__header" ref={headerRef}>

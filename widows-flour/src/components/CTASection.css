@@ -1,5 +1,12 @@
 /* CTASection.css */
+.cta-container {
+  width: 100%;
+  max-width: 1320px;
+  padding-left: 48px;
+  padding-right: 48px;
+  box-sizing: border-box;
 
+}
 .cta-banner {
     padding: 120px 0;
     background: var(--text-dark);
@@ -119,7 +126,13 @@
     border-top: 1px solid rgba(255,255,255,0.06);
     padding: 64px 0 40px;
   }
-  
+  .footer-container {
+    width: 100%;
+    max-width: 1320px;
+    padding-left: 48px;
+    padding-right: 48px;
+    box-sizing: border-box;
+  }
   .footer__inner {
     display: grid;
     grid-template-columns: 2fr 1fr 1fr 1fr;

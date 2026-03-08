@@ -33,71 +33,54 @@ const IMG = {
 };
 
 export default function AboutSection() {
-  const sectionRef  = useRef(null);
-  const leftRef     = useRef(null);
-  const mainImgRef  = useRef(null);
+  const sectionRef   = useRef(null);
+  const leftRef      = useRef(null);
+  const mainImgRef   = useRef(null);
   const accentImgRef = useRef(null);
-  const badgeRef    = useRef(null);
-  const cardsRef    = useRef([]);
+  const badgeRef     = useRef(null);
+  const cardsRef     = useRef([]);
 
   useEffect(() => {
     const ctx = gsap.context(() => {
-      // Left text slides in from left
+
       gsap.fromTo(leftRef.current,
         { x: -60, opacity: 0 },
-        {
-          x: 0, opacity: 1, duration: 1, ease: "power3.out",
-          scrollTrigger: { trigger: sectionRef.current, start: "top 75%" }
-        }
+        { x: 0, opacity: 1, duration: 1, ease: "power3.out",
+          scrollTrigger: { trigger: sectionRef.current, start: "top 75%" } }
       );
 
-      // Main image — scale up from slightly smaller
       gsap.fromTo(mainImgRef.current,
         { scale: 0.9, opacity: 0 },
-        {
-          scale: 1, opacity: 1, duration: 1.2, ease: "power3.out",
-          scrollTrigger: { trigger: sectionRef.current, start: "top 70%" }
-        }
+        { scale: 1, opacity: 1, duration: 1.2, ease: "power3.out",
+          scrollTrigger: { trigger: sectionRef.current, start: "top 70%" } }
       );
 
-      // Accent image slides up with delay
       gsap.fromTo(accentImgRef.current,
         { y: 60, opacity: 0 },
-        {
-          y: 0, opacity: 1, duration: 1, ease: "power3.out", delay: 0.25,
-          scrollTrigger: { trigger: sectionRef.current, start: "top 70%" }
-        }
+        { y: 0, opacity: 1, duration: 1, ease: "power3.out", delay: 0.25,
+          scrollTrigger: { trigger: sectionRef.current, start: "top 70%" } }
       );
 
-      // Badge pops in
       gsap.fromTo(badgeRef.current,
         { scale: 0.7, opacity: 0, rotate: -6 },
-        {
-          scale: 1, opacity: 1, rotate: 0, duration: 0.7, ease: "back.out(1.6)", delay: 0.5,
-          scrollTrigger: { trigger: sectionRef.current, start: "top 65%" }
-        }
+        { scale: 1, opacity: 1, rotate: 0, duration: 0.7, ease: "back.out(1.6)", delay: 0.5,
+          scrollTrigger: { trigger: sectionRef.current, start: "top 65%" } }
       );
 
-      // Feature cards stagger in
       cardsRef.current.forEach((card, i) => {
+        if (!card) return;
         gsap.fromTo(card,
           { x: -40, opacity: 0 },
-          {
-            x: 0, opacity: 1, duration: 0.7, ease: "power3.out", delay: i * 0.12,
-            scrollTrigger: { trigger: card, start: "top 85%" }
-          }
+          { x: 0, opacity: 1, duration: 0.7, ease: "power3.out", delay: i * 0.12,
+            scrollTrigger: { trigger: card, start: "top 85%" } }
         );
       });
 
-      // Subtle parallax on images
       gsap.to(mainImgRef.current, {
-        y: -50,
-        ease: "none",
+        y: -50, ease: "none",
         scrollTrigger: {
           trigger: sectionRef.current,
-          start: "top bottom",
-          end: "bottom top",
-          scrub: 1,
+          start: "top bottom", end: "bottom top", scrub: 1,
         }
       });
 
@@ -107,10 +90,11 @@ export default function AboutSection() {
 
   return (
     <section id="about" className="about" ref={sectionRef}>
-      <div className="container">
+      {/* Scoped container — never inherits global .container width bugs */}
+      <div className="about-container">
         <div className="about__inner">
 
-          {/* Left */}
+          {/* Left — text */}
           <div className="about__left" ref={leftRef}>
             <span className="tag-pill">About Us</span>
             <h2 className="about__headline">
@@ -151,13 +135,11 @@ export default function AboutSection() {
               <img src={IMG.accent} alt="Community support" />
             </div>
 
-            {/* Yellow glass badge */}
             <div className="about__badge" ref={badgeRef}>
               <span className="about__badge-num">6+</span>
               <span className="about__badge-label">Years of Service</span>
             </div>
 
-            {/* Green pill with avatars */}
             <div className="about__green-pill">
               <div className="about__avatars">
                 <img src={IMG.av1} alt="" />

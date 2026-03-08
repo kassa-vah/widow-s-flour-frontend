@@ -49,7 +49,7 @@ export default function TestimonialsSection() {
 
   return (
     <section className="testimonials" ref={sectionRef}>
-      <div className="container">
+      <div className="testimonials-container">
         <div className="testimonials__header">
           <span className="tag-pill">Voices</span>
           <h2 className="testimonials__headline">

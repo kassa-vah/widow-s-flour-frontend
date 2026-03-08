@@ -48,7 +48,7 @@ export function CTASection() {
         <span>Widows Flour</span>
       </div>
 
-      <div className="container">
+      <div className="cta-container">
         <div className="cta-banner__content" ref={contentRef}>
           <span className="cta-banner__eyebrow">Join the Movement</span>
 
@@ -100,7 +100,7 @@ export function Footer() {
 
   return (
     <footer className="footer">
-      <div className="container">
+      <div className="footer-container">
         <div className="footer__inner">
           {/* Brand */}
           <div className="footer__brand">

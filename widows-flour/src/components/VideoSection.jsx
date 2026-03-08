@@ -72,7 +72,7 @@ export default function VideoSection() {
 
   return (
     <section id="story" className="video-section" ref={sectionRef}>
-      <div className="container">
+      <div className="video-container">
         <div className="video-section__header" ref={headerRef}>
           <span className="video-section__eyebrow">Our Story</span>
           <h2 className="video-section__headline">
