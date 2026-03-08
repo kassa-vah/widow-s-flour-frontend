@@ -75,7 +75,7 @@ export default function CausesSection() {
   }, []);
 
   return (
-    <section id="causes" className="causes" ref={sectionRef}>
+    <section id="causes" className="causes-section" ref={sectionRef}>
       <div className="causes-container">
 
         <div className="causes__header">
