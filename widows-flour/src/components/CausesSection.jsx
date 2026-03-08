@@ -76,7 +76,7 @@ export default function CausesSection() {
 
   return (
     <section id="causes" className="causes" ref={sectionRef}>
-      <div className="container">
+      <div className="causes-container">
 
         <div className="causes__header">
           <div>
