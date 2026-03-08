@@ -8,7 +8,6 @@ export default function Navbar() {
   const [scrolled, setScrolled] = useState(false);
   const [drawerOpen, setDrawerOpen] = useState(false);
 
-  // Entrance animation
   useEffect(() => {
     gsap.fromTo(
       navRef.current,
@@ -17,12 +16,16 @@ export default function Navbar() {
     );
   }, []);
 
-  // Scroll detection
   useEffect(() => {
     const handleScroll = () => setScrolled(window.scrollY > 60);
     window.addEventListener("scroll", handleScroll, { passive: true });
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
+
+  useEffect(() => {
+    document.body.style.overflow = drawerOpen ? "hidden" : "";
+    return () => { document.body.style.overflow = ""; };
+  }, [drawerOpen]);
 
   const links = ["Home", "About", "Causes", "Impact", "Contact"];
 
@@ -32,7 +35,7 @@ export default function Navbar() {
         {/* Logo */}
         <img src="./src/assets/logo.png" alt="Widows Flour" className="navbar__logo" />
 
-        {/* Desktop nav */}
+        {/* Desktop nav — ONE list only */}
         <ul className="navbar__links">
           {links.map((l) => (
             <li key={l}>
@@ -42,19 +45,9 @@ export default function Navbar() {
         </ul>
 
         {/* Desktop CTA */}
-        <ul className="navbar__links">
-        {links.map((l) => (
-            <li key={l}>
-                <a href={`#${l.toLowerCase()}`}>{l}</a>
-            </li>
-         ))}
-        </ul>
-
-{/* Desktop CTA — single <a>, no nesting */}
-<a href="#donate" className="navbar__cta navbar__cta-desktop">
-  Donate Now <span className="navbar__heart">♥</span>
-</a>
-       
+        <a href="#donate" className="navbar__cta navbar__cta-desktop">
+          Donate Now <span className="navbar__heart">♥</span>
+        </a>
 
         {/* Mobile hamburger */}
         <button
@@ -68,8 +61,10 @@ export default function Navbar() {
         </button>
       </nav>
 
-      {/* Mobile drawer */}
-      <div className={`navbar__overlay ${drawerOpen ? "open" : ""}`} onClick={() => setDrawerOpen(false)} />
+      <div
+        className={`navbar__overlay ${drawerOpen ? "open" : ""}`}
+        onClick={() => setDrawerOpen(false)}
+      />
       <div className={`navbar__drawer ${drawerOpen ? "open" : ""}`}>
         {links.map((l) => (
           <a key={l} href={`#${l.toLowerCase()}`} onClick={() => setDrawerOpen(false)}>
