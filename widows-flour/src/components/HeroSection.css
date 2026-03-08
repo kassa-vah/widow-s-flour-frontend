@@ -1,319 +1,322 @@
-/* HeroSection.css */
+/* ================================================================
+   HeroSection.css
+   ================================================================ */
 
-.hero {
-  min-height: 100vh;
-  background: var(--off-white);
+/* Tall wrapper = scroll distance for the sticky animation */
+.hero-wrapper {
+  width: 100%;
+  height: 400vh;
   position: relative;
-  display: flex;
-  flex-direction: column;
-  justify-content: flex-end;
-  padding-bottom: 80px;
-  overflow: hidden;
 }
 
-/* Floating grain texture overlay */
+/* Sticky panel — fills viewport, pinned to top */
+.hero {
+  position: sticky;
+  top: 0;
+  width: 100%;
+  height: 100vh;
+  background: var(--off-white);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  /* overflow:hidden clips pill when it scales beyond viewport edges */
+  overflow: hidden;
+  isolation: isolate;
+}
+
+/* Subtle grain overlay */
 .hero::before {
   content: '';
   position: absolute;
   inset: 0;
-  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.04'/%3E%3C/svg%3E");
-  pointer-events: none;
   z-index: 1;
-  opacity: 0.5;
+  pointer-events: none;
+  opacity: 0.35;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 512 512' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.75' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.05'/%3E%3C/svg%3E");
 }
 
-/* Floating image cluster — like Noura's scattered layout */
-.hero__images {
+/* ── Fullscreen image overlay text ── */
+.hero__overlay {
+  position: absolute;
+  inset: 0;
+  z-index: 100;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  justify-content: flex-end;
+  padding: clamp(40px, 5vw, 80px);
+  background: linear-gradient(
+    to top,
+    rgba(0,0,0,0.82) 0%,
+    rgba(0,0,0,0.35) 45%,
+    transparent 80%
+  );
+  opacity: 0;
+  pointer-events: none;
+}
+
+.hero__overlay-eyebrow {
+  font-family: var(--font-body);
+  font-size: 11px;
+  font-weight: 500;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: rgba(255,255,255,0.6);
+  margin-bottom: 20px;
+}
+
+.hero__overlay-headline {
+  font-family: var(--font-display);
+  font-size: clamp(32px, 5vw, 76px);
+  font-weight: 300;
+  line-height: 1.08;
+  color: #fff;
+  letter-spacing: -0.02em;
+  margin-bottom: 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+.hero__overlay-headline em {
+  font-style: italic;
+  color: var(--green-mid);
+}
+
+.hero__overlay-sub {
+  font-family: var(--font-body);
+  font-size: clamp(14px, 1.4vw, 17px);
+  color: rgba(255,255,255,0.65);
+  max-width: 440px;
+  line-height: 1.65;
+}
+
+.hs-reveal { display: block; will-change: transform, opacity; }
+
+/* ── Floating image cards ── */
+.hero__cards {
   position: absolute;
   inset: 0;
   z-index: 2;
   pointer-events: none;
 }
 
-.hero__img-card {
+.hero__card {
   position: absolute;
   border-radius: var(--radius-md);
   overflow: hidden;
-  box-shadow: 0 16px 60px rgba(0,0,0,0.12);
-  will-change: transform;
+  box-shadow: 0 12px 44px rgba(0,0,0,0.12);
+  will-change: transform, opacity;
 }
+.hero__card img { width: 100%; height: 100%; object-fit: cover; }
 
-.hero__img-card img {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-}
+/* Positions — spread around the headline */
+.hero__card--1 { width: 180px; height: 235px; top: 8%;  left: 4%; }
+.hero__card--2 { width: 148px; height: 188px; top: 7%;  right: 10%; }
+.hero__card--3 { width: 162px; height: 215px; top: 42%; left: 1%; }
+.hero__card--4 { width: 154px; height: 196px; top: 35%; right: 4%; }
+.hero__card--5 { width: 132px; height: 168px; top: 66%; left: 15%; }
+.hero__card--6 { width: 138px; height: 174px; top: 60%; right: 15%; }
 
-/* Card positions inspired by the Noura scattered layout */
-.hero__img-card--1 {
-  width: 200px; height: 260px;
-  top: 12%;  left: 6%;
-}
-.hero__img-card--2 {
-  width: 160px; height: 200px;
-  top: 8%;  right: 14%;
-}
-.hero__img-card--3 {
-  width: 180px; height: 240px;
-  top: 38%; left: 2%;
-}
-.hero__img-card--4 {
-  width: 170px; height: 210px;
-  top: 30%; right: 6%;
-}
-.hero__img-card--5 {
-  width: 145px; height: 185px;
-  top: 62%; left: 18%;
-}
-.hero__img-card--6 {
-  width: 150px; height: 190px;
-  top: 55%; right: 18%;
-}
-
-/* Yellow glass badge on one card */
-.hero__img-card--1::after {
+.hero__card--1::after {
   content: 'Hope';
-  position: absolute;
-  bottom: 12px; left: 12px;
+  position: absolute; bottom: 10px; left: 10px;
   background: var(--yellow-warm);
-  backdrop-filter: blur(10px);
-  color: #7a6000;
-  font-family: var(--font-body);
-  font-size: 11px;
-  font-weight: 500;
-  letter-spacing: 0.06em;
-  text-transform: uppercase;
-  padding: 5px 12px;
-  border-radius: var(--radius-pill);
-  border: 1px solid rgba(255,215,60,0.35);
+  backdrop-filter: blur(8px);
+  color: #7a5f00;
+  font-family: var(--font-body); font-size: 10px; font-weight: 500;
+  letter-spacing: 0.08em; text-transform: uppercase;
+  padding: 4px 10px; border-radius: var(--radius-pill);
 }
 
-/* Hero central text block */
+/* ── Main content ── */
 .hero__content {
   position: relative;
-  z-index: 3;
+  z-index: 10;
   text-align: center;
-  padding: 0 20px;
+  width: 100%;
+  padding: 0 24px 160px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
 }
 
 .hero__eyebrow {
   font-family: var(--font-body);
-  font-size: 12px;
-  font-weight: 500;
-  letter-spacing: 0.14em;
-  text-transform: uppercase;
+  font-size: 11px; font-weight: 500;
+  letter-spacing: 0.16em; text-transform: uppercase;
   color: var(--green-deep);
   margin-bottom: 24px;
-  display: inline-block;
+  will-change: opacity;
 }
 
+/* ── Headline ── */
 .hero__headline {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0px;
+}
+
+/* All headline lines share base font styles */
+.hero__line {
   font-family: var(--font-display);
-  font-size: clamp(52px, 8vw, 120px);
+  font-size: clamp(40px, 7.5vw, 110px);
   font-weight: 300;
-  line-height: 1.0;
+  line-height: 1.05;
   color: var(--text-dark);
   letter-spacing: -0.03em;
-  margin-bottom: 0;
+  white-space: nowrap;
+  margin: 0;
+  will-change: transform, opacity;
 }
 
-.hero__headline em {
+.hero__line--bottom em {
   font-style: italic;
   color: var(--green-deep);
 }
 
-/* Animated image pill that sits inside the headline (Noura-style) */
-.hero__inline-pill {
+/* Middle row: "every [pill] with" inline */
+.hero__line--middle {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  font-size: clamp(32px, 6vw, 86px);
+}
+
+/* The word spans in the middle row */
+.hero__word {
+  display: inline-block;
+  font-family: var(--font-display);
+  font-weight: 300;
+  letter-spacing: -0.03em;
+  will-change: transform, opacity;
+}
+
+/* ── THE PILL ──────────────────────────────────────────────────────
+   Stays in normal flow.
+   JS applies transform: translate + scale to grow it to fullscreen.
+   .hero { overflow:hidden } clips it at viewport edges while growing.
+   transform-origin: center center is set so it grows outward equally.
+   ─────────────────────────────────────────────────────────────── */
+.hero__pill {
+  position: relative;
   display: inline-flex;
   align-items: center;
-  width: clamp(100px, 14vw, 220px);
-  height: clamp(52px, 7vw, 96px);
-  border-radius: var(--radius-pill);
+  justify-content: center;
+  /* Natural size — proportional to the surrounding text */
+  width: clamp(88px, 11.5vw, 195px);
+  height: clamp(44px, 5.5vw, 80px);
+  border-radius: 999px;
   overflow: hidden;
-  vertical-align: middle;
-  margin: 0 12px;
-  position: relative;
-  top: -4px;
-  box-shadow: 0 8px 32px rgba(0,0,0,0.18);
+  flex-shrink: 0;
+  box-shadow: 0 6px 28px rgba(0,0,0,0.22);
+  transform-origin: center center;
+  will-change: transform, border-radius;
+  /* z-index below overlay but above other content */
+  z-index: 50;
 }
-
-.hero__inline-pill img {
-  width: 100%;
-  height: 100%;
+.hero__pill img {
+  position: absolute;
+  inset: 0; width: 100%; height: 100%;
   object-fit: cover;
-  transition: transform 0.6s var(--ease-smooth);
 }
-
-.hero__headline:hover .hero__inline-pill img {
-  transform: scale(1.08);
-}
-
-/* Inline text overlay on the pill */
 .hero__pill-label {
-  position: absolute;
-  inset: 0;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  background: rgba(0,0,0,0.28);
-  color: var(--white);
+  position: absolute; inset: 0; z-index: 1;
+  display: flex; align-items: center; justify-content: center;
+  background: rgba(0,0,0,0.3);
+  color: #fff;
   font-family: var(--font-body);
-  font-size: clamp(10px, 1.2vw, 15px);
-  font-weight: 500;
-  letter-spacing: 0.02em;
-  text-align: center;
-  padding: 0 12px;
-  backdrop-filter: blur(2px);
+  font-size: clamp(9px, 1vw, 12px);
+  font-weight: 500; letter-spacing: 0.04em;
+  backdrop-filter: blur(3px);
+  will-change: opacity;
+  transition: none;
 }
 
+/* ── Sub copy & CTA ── */
 .hero__sub {
-  margin-top: 32px;
-  font-family: var(--font-body);
-  font-size: 16px;
-  color: var(--text-light);
-  max-width: 420px;
-  margin-left: auto;
-  margin-right: auto;
-  line-height: 1.65;
+  margin-top: 24px;
+  font-family: var(--font-body); font-size: 16px;
+  color: var(--text-light); max-width: 400px; line-height: 1.65;
+  will-change: opacity;
 }
-
 .hero__actions {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 16px;
-  margin-top: 40px;
-  flex-wrap: wrap;
+  display: flex; align-items: center; justify-content: center;
+  gap: 12px; margin-top: 28px; flex-wrap: wrap;
+  will-change: opacity;
 }
 
-/* Primary button */
-.btn-primary {
-  display: inline-flex;
-  align-items: center;
-  gap: 10px;
-  background: var(--text-dark);
-  color: var(--white);
-  font-family: var(--font-body);
-  font-size: 14px;
-  font-weight: 500;
-  padding: 14px 32px;
-  border-radius: var(--radius-pill);
-  border: none;
-  cursor: none;
-  transition: background 0.25s, transform 0.2s var(--ease-out), box-shadow 0.25s;
-  letter-spacing: 0.01em;
-}
-
-.btn-primary:hover {
-  background: var(--green-deep);
-  transform: translateY(-2px);
-  box-shadow: 0 10px 40px rgba(90, 158, 58, 0.3);
-}
-
-/* Ghost button */
-.btn-ghost {
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
-  background: transparent;
-  color: var(--text-mid);
-  font-family: var(--font-body);
-  font-size: 14px;
-  font-weight: 400;
-  padding: 14px 24px;
-  border-radius: var(--radius-pill);
-  border: 1px solid rgba(0,0,0,0.12);
-  cursor: none;
-  transition: border-color 0.2s, color 0.2s, transform 0.2s;
-}
-
-.btn-ghost:hover {
-  border-color: var(--green-deep);
-  color: var(--green-deep);
-  transform: translateY(-2px);
-}
-
-/* Scroll hint */
-.hero__scroll-hint {
+/* ── Stats bar ── */
+.hero__stats {
   position: absolute;
-  bottom: 32px;
-  left: 50%;
-  transform: translateX(-50%);
-  z-index: 3;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 8px;
-  font-family: var(--font-body);
-  font-size: 10px;
-  letter-spacing: 0.14em;
-  text-transform: uppercase;
-  color: var(--text-light);
-}
-
-.hero__scroll-line {
-  width: 1px;
-  height: 48px;
-  background: linear-gradient(to bottom, var(--green-deep), transparent);
-  animation: scrollPulse 2s ease-in-out infinite;
-}
-
-@keyframes scrollPulse {
-  0%, 100% { opacity: 0.4; transform: scaleY(1); }
-  50% { opacity: 1; transform: scaleY(0.6); }
-}
-
-/* Stats bar under hero */
-.hero__stats-bar {
-  position: relative;
-  z-index: 3;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 0;
-  margin-top: 64px;
+  bottom: 0; left: 0; right: 0;
+  z-index: 10;
+  display: flex; align-items: stretch; justify-content: center;
   border-top: 1px solid rgba(0,0,0,0.07);
-  padding-top: 40px;
+  background: var(--off-white);
+  will-change: opacity;
 }
-
 .hero__stat {
-  flex: 1;
-  text-align: center;
-  padding: 0 24px;
+  flex: 1; text-align: center;
+  padding: 20px 16px;
   border-right: 1px solid rgba(0,0,0,0.07);
 }
 .hero__stat:last-child { border-right: none; }
-
 .hero__stat-num {
   font-family: var(--font-display);
-  font-size: clamp(28px, 4vw, 48px);
-  font-weight: 300;
-  color: var(--text-dark);
-  display: block;
-  line-height: 1;
-  letter-spacing: -0.02em;
+  font-size: clamp(20px, 2.8vw, 40px);
+  font-weight: 300; color: var(--text-dark);
+  display: block; line-height: 1; letter-spacing: -0.02em;
 }
-
 .hero__stat-label {
   font-family: var(--font-body);
-  font-size: 12px;
-  font-weight: 400;
-  color: var(--text-light);
-  display: block;
-  margin-top: 6px;
-  letter-spacing: 0.02em;
+  font-size: 11px; color: var(--text-light);
+  display: block; margin-top: 4px;
 }
 
+/* ── Scroll cue ── */
+.hero__scroll-cue {
+  position: absolute; bottom: 82px; left: 50%;
+  transform: translateX(-50%);
+  z-index: 10;
+  display: flex; flex-direction: column; align-items: center; gap: 6px;
+  font-family: var(--font-body); font-size: 9px;
+  letter-spacing: 0.14em; text-transform: uppercase;
+  color: var(--text-light); pointer-events: none;
+}
+.hero__scroll-line {
+  width: 1px; height: 32px;
+  background: linear-gradient(to bottom, var(--green-deep), transparent);
+  animation: heroScroll 2s ease-in-out infinite;
+}
+@keyframes heroScroll {
+  0%,100% { opacity: 0.35; transform: scaleY(1); }
+  50%      { opacity: 1;    transform: scaleY(0.55); }
+}
+
+/* ── Responsive ── */
+@media (max-width: 1024px) {
+  .hero-wrapper { height: 360vh; }
+  .hero__card--3, .hero__card--4 { display: none; }
+  .hero__overlay { padding: 48px; }
+}
 @media (max-width: 768px) {
-  .hero__img-card--3,
-  .hero__img-card--4,
-  .hero__img-card--5,
-  .hero__img-card--6 {
-    display: none;
+  .hero-wrapper { height: 320vh; }
+  .hero__card--3,.hero__card--4,.hero__card--5,.hero__card--6 { display: none; }
+  .hero__card--1 { width: 100px; height: 132px; top: 10%; left: 3%; }
+  .hero__card--2 { width: 92px;  height: 118px; top: 10%; right: 3%; }
+  .hero__line--middle { gap: 8px; }
+  .hero__stats { flex-wrap: wrap; }
+  .hero__stat {
+    width: 50%; flex: none;
+    border-right: none; border-bottom: 1px solid rgba(0,0,0,0.07);
   }
-  .hero__img-card--1 { width: 120px; height: 155px; left: 4%; top: 15%; }
-  .hero__img-card--2 { width: 110px; height: 140px; right: 4%; top: 15%; }
-  .hero__stats-bar { flex-direction: column; gap: 24px; }
-  .hero__stat { border-right: none; border-bottom: 1px solid rgba(0,0,0,0.07); padding-bottom: 24px; width: 100%; }
-  .hero__stat:last-child { border-bottom: none; }
+  .hero__stat:nth-child(odd) { border-right: 1px solid rgba(0,0,0,0.07); }
+  .hero__stat:nth-last-child(-n+2) { border-bottom: none; }
+  .hero__overlay { padding: 32px 24px; }
+}
+@media (max-width: 480px) {
+  .hero-wrapper { height: 280vh; }
+  .hero__content { padding-bottom: 180px; }
 }

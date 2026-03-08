@@ -1,0 +1,176 @@
+/* IntroSection.css */
+
+.intro-wrapper {
+    width: 100%;
+    height: 100vh;
+    position: relative;
+    z-index: 1;
+  }
+  
+  .intro {
+    position: sticky;
+    top: 0;
+    width: 100%;
+    height: 100vh;
+    background: var(--off-white);
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: flex-start;
+    overflow: hidden;
+  }
+  
+  .intro__grain {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    z-index: 0;
+    opacity: 0.4;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.05'/%3E%3C/svg%3E");
+  }
+  
+  .intro__curtain {
+    position: absolute;
+    bottom: 0; left: 0; right: 0;
+    height: 100%;
+    background: var(--off-white);
+    transform-origin: bottom center;
+    transform: scaleY(0);
+    z-index: 4;
+    pointer-events: none;
+  }
+  
+  /* Use container class for consistent padding */
+  .intro__content {
+    position: relative;
+    z-index: 2;
+    width: 100%;
+    padding-left: 80px;
+    padding-right: 80px;
+  }
+  
+  .intro__tag {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    font-family: var(--font-body);
+    font-size: 11px;
+    font-weight: 500;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--text-light);
+    margin-bottom: 48px;
+  }
+  
+  .intro__tag-dot {
+    width: 6px; height: 6px;
+    border-radius: 50%;
+    background: var(--green-deep);
+    animation: introPulse 2.5s ease-in-out infinite;
+  }
+  
+  @keyframes introPulse {
+    0%,100% { opacity: 1; transform: scale(1); }
+    50%      { opacity: 0.4; transform: scale(0.7); }
+  }
+  
+  .intro__headline {
+    display: flex;
+    flex-direction: column;
+    margin-bottom: 40px;
+  }
+  
+  .intro__line {
+    display: block;
+    font-family: var(--font-display);
+    font-size: clamp(52px, 9.5vw, 140px);
+    font-weight: 300;
+    color: var(--text-dark);
+    letter-spacing: -0.03em;
+    line-height: 1.0;
+  }
+  
+  .intro__line--italic {
+    font-style: italic;
+    color: var(--green-deep);
+  }
+  
+  .intro__sub {
+    font-family: var(--font-body);
+    font-size: 16px;
+    color: var(--text-light);
+    max-width: 420px;
+    line-height: 1.7;
+  }
+  
+  .intro__bottom {
+    position: absolute;
+    bottom: 40px;
+    left: 80px;
+    right: 80px;
+    z-index: 2;
+    display: flex;
+    align-items: flex-end;
+    justify-content: space-between;
+  }
+  
+  .intro__scroll-cue {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 10px;
+  }
+  
+  .intro__scroll-line {
+    width: 1px; height: 52px;
+    background: linear-gradient(to bottom, var(--green-deep), transparent);
+    animation: introScroll 2s ease-in-out infinite;
+  }
+  
+  @keyframes introScroll {
+    0%,100% { opacity: 0.35; transform: scaleY(1); }
+    50%      { opacity: 1; transform: scaleY(0.6); }
+  }
+  
+  .intro__scroll-cue span {
+    font-family: var(--font-body);
+    font-size: 10px;
+    font-weight: 500;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--text-light);
+  }
+  
+  .intro__year {
+    font-family: var(--font-body);
+    font-size: 11px;
+    color: var(--text-light);
+    letter-spacing: 0.08em;
+  }
+  
+  /* Ghost number decoration */
+  .intro::after {
+    content: '01';
+    position: absolute;
+    bottom: -10px; right: 60px;
+    font-family: var(--font-display);
+    font-size: clamp(140px, 20vw, 300px);
+    font-weight: 300;
+    color: rgba(0,0,0,0.03);
+    line-height: 1;
+    pointer-events: none;
+    z-index: 1;
+    user-select: none;
+  }
+  
+  @media (max-width: 900px) {
+    .intro__content { padding-left: 40px; padding-right: 40px; }
+    .intro__bottom  { left: 40px; right: 40px; }
+  }
+  
+  @media (max-width: 600px) {
+    .intro-wrapper  { height: 200vh; }
+    .intro__content { padding-left: 24px; padding-right: 24px; }
+    .intro__bottom  { left: 24px; right: 24px; }
+    .intro__line    { font-size: clamp(40px, 12vw, 76px); }
+  }
