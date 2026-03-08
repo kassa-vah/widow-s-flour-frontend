@@ -1,21 +1,16 @@
 /**
- * HeroSection.jsx
- * 
- * SCROLL SEQUENCE:
- * Phase 1 (p: 0→1): Pill grows from inline size → fullscreen.
- *   - "Nourishing" slides UP
- *   - "every" slides LEFT, "with" slides RIGHT  
- *   - "love & flour" slides DOWN
- *   - floating cards drift and fade
- *   - pill border-radius goes 999px → 0px
- * 
- * Phase 2 (triggered once p ≥ 0.95): GSAP reveals text overlay on image
- *   - "It's not just about smiles" fades in
- *   - Sub-headline lines stagger up from below
- * 
- * KEY INSIGHT: We measure pill position lazily on first RAF tick where
- * wrapperRect.top ≤ 0 (i.e. sticky panel is pinned at viewport top).
- * This ensures we always measure from the correct sticky position.
+ * HeroSection.jsx — FIXED
+ *
+ * ROOT CAUSE OF BUGS:
+ * 1. smooth(t) = t²(3-2t) compressed animation to middle of scroll range
+ *    → pill appeared to do nothing at start/end. Fixed: use raw linear p.
+ * 2. measurePill() only fired when wr.top was between -10 and +1.
+ *    When hero is not first section, wr.top is never near 0 at pin time.
+ *    Fixed: measure on first valid scroll frame (wr.top <= 2).
+ * 3. IntroSection before HeroSection consumed scroll budget.
+ *    Fixed in App.jsx: HeroSection must come BEFORE IntroSection.
+ * 4. wH - vh could be 0 if wrapper wasn't tall enough → division by zero.
+ *    Fixed: guard maxScroll > 0 before computing p.
  */
 
 import { useEffect, useRef } from "react";
@@ -38,37 +33,40 @@ const STATS = [
   { num: "$820K",   label: "Raised in Aid" },
 ];
 
-const clamp  = (v, lo=0, hi=1) => Math.max(lo, Math.min(hi, v));
-const lerp   = (a, b, t) => a + (b - a) * t;
-// Smooth ease — slow at start and end
-const smooth = t => t * t * (3 - 2 * t);
+const clamp = (v, lo = 0, hi = 1) => Math.max(lo, Math.min(hi, v));
+const lerp  = (a, b, t) => a + (b - a) * t;
+// FIX 1: Use linear easing — animation starts immediately on first scroll px
+// smooth() was t²(3-2t) which held p≈0 for first 30% of scroll = nothing happens
+const ease  = (t) => t; // linear — immediate response
 
 export default function HeroSection() {
-  const wrapperRef  = useRef(null);
-  const pillRef     = useRef(null);
-  const line1Ref    = useRef(null);
-  const line2Ref    = useRef(null);
-  const line3Ref    = useRef(null);
-  const everyRef    = useRef(null);
-  const withRef     = useRef(null);
-  const eyebrowRef  = useRef(null);
-  const subRef      = useRef(null);
-  const actionsRef  = useRef(null);
-  const statsRef    = useRef(null);
-  const cardsRef    = useRef([]);
-  const overlayRef  = useRef(null);
-  const rafRef      = useRef(null);
+  const wrapperRef = useRef(null);
+  const pillRef    = useRef(null);
+  const line1Ref   = useRef(null);
+  const line2Ref   = useRef(null);
+  const line3Ref   = useRef(null);
+  const everyRef   = useRef(null);
+  const withRef    = useRef(null);
+  const eyebrowRef = useRef(null);
+  const subRef     = useRef(null);
+  const actionsRef = useRef(null);
+  const statsRef   = useRef(null);
+  const cardsRef   = useRef([]);
+  const overlayRef = useRef(null);
+  const rafRef     = useRef(null);
 
-  // Pill natural measurements — captured lazily when hero is pinned
   const pillMeasure = useRef(null);
   const revealFired = useRef(false);
+  const hasMeasured = useRef(false); // FIX 2: measure once reliably
 
   useEffect(() => {
-    // Entrance animation
-    gsap.set([line1Ref.current, line2Ref.current, line3Ref.current,
-               eyebrowRef.current, subRef.current, actionsRef.current,
-               statsRef.current], { opacity: 0, y: 20 });
-    cardsRef.current.forEach(c => c && gsap.set(c, { opacity: 0, scale: 0.9 }));
+    // ── Entrance animations ──
+    gsap.set(
+      [line1Ref.current, line2Ref.current, line3Ref.current,
+       eyebrowRef.current, subRef.current, actionsRef.current, statsRef.current],
+      { opacity: 0, y: 20 }
+    );
+    cardsRef.current.forEach((c) => c && gsap.set(c, { opacity: 0, scale: 0.9 }));
 
     const tl = gsap.timeline({ delay: 0.2 });
     tl.to(eyebrowRef.current, { opacity: 1, y: 0, duration: 0.5, ease: "power2.out" })
@@ -80,47 +78,51 @@ export default function HeroSection() {
 
     cardsRef.current.forEach((c, i) => {
       if (!c) return;
-      gsap.to(c, { opacity: 1, scale: 1, duration: 0.8,
-        ease: "power2.out", delay: 0.3 + i * 0.07 });
+      gsap.to(c, { opacity: 1, scale: 1, duration: 0.8, ease: "power2.out", delay: 0.3 + i * 0.07 });
     });
 
     const wrapper = wrapperRef.current;
     const pill    = pillRef.current;
 
-    // Lazily measure pill when the sticky panel is actually pinned at top:0
     const measurePill = () => {
-      // Only valid when hero is stuck (wrapperRect.top <= 0)
       const r  = pill.getBoundingClientRect();
       const vw = window.innerWidth;
       const vh = window.innerHeight;
       pillMeasure.current = {
-        // Center of pill in VIEWPORT coordinates (correct since hero is at top:0)
         cx: r.left + r.width  / 2,
         cy: r.top  + r.height / 2,
         w:  r.width,
         h:  r.height,
         vw, vh,
       };
+      hasMeasured.current = true;
     };
 
     const tick = () => {
-      const wr     = wrapper.getBoundingClientRect();
-      const wH     = wrapper.offsetHeight;
-      const vw     = window.innerWidth;
-      const vh     = window.innerHeight;
+      const wr = wrapper.getBoundingClientRect();
+      const wH = wrapper.offsetHeight;
+      const vw = window.innerWidth;
+      const vh = window.innerHeight;
 
-      // scrolled: how many px we've scrolled INTO the wrapper
-      // wr.top goes from 0 → -(wH - vh) as we scroll through
-      const scrolled  = clamp(-wr.top, 0, wH - vh);
+      // FIX 4: guard against zero division
       const maxScroll = wH - vh;
-      const raw = scrolled / maxScroll;
-      const p   = smooth(raw);   // 0 = top of wrapper, 1 = bottom
+      if (maxScroll <= 0) {
+        rafRef.current = requestAnimationFrame(tick);
+        return;
+      }
 
-      // Measure pill position the FIRST FRAME the panel is pinned (wr.top ≈ 0)
-      // We re-measure if viewport size changes too
-      if (!pillMeasure.current && wr.top <= 1 && wr.top >= -10) {
+      const scrolled = clamp(-wr.top, 0, maxScroll);
+      const raw = scrolled / maxScroll;
+      const p   = ease(raw); // FIX 1: linear — starts immediately
+
+      // FIX 2: Measure pill reliably on first frame where hero is sticky-pinned.
+      // Original condition (wr.top between -10 and +1) never fired when hero
+      // wasn't the first section. Now we measure on first scroll frame where
+      // the hero panel is stuck (wr.top <= 0) OR on first RAF if we haven't yet.
+      if (!hasMeasured.current) {
         measurePill();
       }
+      // Re-measure on viewport resize
       if (pillMeasure.current &&
           (pillMeasure.current.vw !== vw || pillMeasure.current.vh !== vh)) {
         measurePill();
@@ -129,10 +131,11 @@ export default function HeroSection() {
       if (pillMeasure.current) {
         const { cx, cy, w, h } = pillMeasure.current;
 
-        // ── PILL: scale grows from 1×1 → (vw/w) × (vh/h) ──
-        // Translate so pill center moves to viewport center simultaneously
-        const targetSX = vw / w;
-        const targetSY = vh / h;
+        // ── PILL: expand to viewport minus MARGIN ──
+        const MARGIN   = 16;
+        const targetSX = (vw - MARGIN * 2) / w;
+        const targetSY = (vh - MARGIN * 2) / h;
+
         const sx = lerp(1, targetSX, p);
         const sy = lerp(1, targetSY, p);
         const tx = lerp(0, vw / 2 - cx, p);
@@ -143,37 +146,32 @@ export default function HeroSection() {
         pill.style.borderRadius    = `${br}px`;
         pill.style.transformOrigin = "center center";
 
-        // Fade the "widow's table" label as pill grows
         const lbl = pill.querySelector(".hero__pill-label");
         if (lbl) lbl.style.opacity = `${1 - clamp(p * 4)}`;
 
-        // ── WORDS: pushed away by the expanding pill ──
-        const wp = clamp(p * 2);  // words exit faster than pill reaches edges
+        // ── WORDS exit — start immediately, finish by p=0.5 ──
+        const wp = clamp(p * 2); // reaches 1 at p=0.5
 
-        // "Nourishing" → UP
         line1Ref.current.style.transform = `translateY(${lerp(0, -vh * 0.55, wp)}px)`;
         line1Ref.current.style.opacity   = `${1 - wp}`;
 
-        // "every" → LEFT
         everyRef.current.style.transform = `translateX(${lerp(0, -vw * 0.45, wp)}px)`;
         everyRef.current.style.opacity   = `${1 - wp}`;
 
-        // "with" → RIGHT
         withRef.current.style.transform  = `translateX(${lerp(0, vw * 0.45, wp)}px)`;
         withRef.current.style.opacity    = `${1 - wp}`;
 
-        // "love & flour" → DOWN
         line3Ref.current.style.transform = `translateY(${lerp(0, vh * 0.55, wp)}px)`;
         line3Ref.current.style.opacity   = `${1 - wp}`;
 
-        // ── REST: fade out fast ──
-        const fp = clamp(p * 5);
+        // ── Support elements fade fast ──
+        const fp = clamp(p * 4);
         eyebrowRef.current.style.opacity  = `${1 - fp}`;
         subRef.current.style.opacity      = `${1 - fp}`;
         actionsRef.current.style.opacity  = `${1 - fp}`;
         statsRef.current.style.opacity    = `${1 - fp}`;
 
-        // ── CARDS: drift away ──
+        // ── CARDS drift away ──
         cardsRef.current.forEach((c, i) => {
           if (!c) return;
           const dir = i % 2 === 0 ? -1 : 1;
@@ -181,7 +179,7 @@ export default function HeroSection() {
           c.style.opacity   = `${1 - clamp(p * 3)}`;
         });
 
-        // ── OVERLAY: fades in near end ──
+        // ── OVERLAY fades in at p > 0.75 ──
         if (overlayRef.current) {
           const op = clamp((p - 0.75) / 0.25);
           overlayRef.current.style.opacity = `${op}`;
@@ -196,8 +194,7 @@ export default function HeroSection() {
           }
           if (p < 0.7 && revealFired.current) {
             revealFired.current = false;
-            gsap.set(overlayRef.current.querySelectorAll(".hs-reveal"),
-              { y: 50, opacity: 0 });
+            gsap.set(overlayRef.current.querySelectorAll(".hs-reveal"), { y: 50, opacity: 0 });
           }
         }
       }
@@ -213,7 +210,6 @@ export default function HeroSection() {
     <section id="hero" className="hero-wrapper" ref={wrapperRef}>
       <div className="hero">
 
-        {/* Fullscreen text overlay — shown when pill covers screen */}
         <div className="hero__overlay" ref={overlayRef}>
           <p className="hero__overlay-eyebrow hs-reveal">It's not just about smiles</p>
           <h2 className="hero__overlay-headline">
@@ -226,49 +222,35 @@ export default function HeroSection() {
           </p>
         </div>
 
-        {/* Floating cards */}
         <div className="hero__cards">
           {CARDS.map((src, i) => (
-            <div key={i}
-                 className={`hero__card hero__card--${i + 1}`}
-                 ref={el => cardsRef.current[i] = el}>
+            <div key={i} className={`hero__card hero__card--${i + 1}`}
+                 ref={(el) => (cardsRef.current[i] = el)}>
               <img src={src} alt="" />
             </div>
           ))}
         </div>
 
-        {/* Main content — centered */}
         <div className="hero__content">
-
           <span className="hero__eyebrow" ref={eyebrowRef}>
             A Movement of Grace &amp; Provision
           </span>
 
           <div className="hero__headline">
-
-            {/* "Nourishing" — exits UP */}
             <p className="hero__line hero__line--top" ref={line1Ref}>
               Nourishing
             </p>
-
-            {/* "every [PILL] with" — every exits LEFT, with exits RIGHT */}
             <p className="hero__line hero__line--middle" ref={line2Ref}>
               <span ref={everyRef} className="hero__word">every</span>
-
-              {/* THE PILL — transform scales this to fullscreen */}
               <span className="hero__pill" ref={pillRef}>
                 <img src={PILL_IMG} alt="widow's table" />
                 <span className="hero__pill-label">widow's table</span>
               </span>
-
               <span ref={withRef} className="hero__word">with</span>
             </p>
-
-            {/* "love & flour" — exits DOWN */}
             <p className="hero__line hero__line--bottom" ref={line3Ref}>
               <em>love &amp; flour</em>
             </p>
-
           </div>
 
           <p className="hero__sub" ref={subRef}>
@@ -282,10 +264,8 @@ export default function HeroSection() {
             </a>
             <a href="#about" className="btn-ghost">Learn More →</a>
           </div>
-
         </div>
 
-        {/* Stats */}
         <div className="hero__stats" ref={statsRef}>
           {STATS.map((s, i) => (
             <div key={i} className="hero__stat">
@@ -295,9 +275,9 @@ export default function HeroSection() {
           ))}
         </div>
 
-        {/* Scroll cue */}
         <div className="hero__scroll-cue">
-          <div className="hero__scroll-line" /><span>Scroll</span>
+          <div className="hero__scroll-line" />
+          <span>Scroll</span>
         </div>
 
       </div>

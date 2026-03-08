@@ -2,15 +2,18 @@ import { useEffect, useRef } from "react";
 import gsap from "gsap";
 import "./styles/globals.css";
 
-import Navbar             from "./components/Navbar";
-import IntroSection       from "./components/IntroSection";
-import HeroSection        from "./components/HeroSection";
-import MarqueeSection     from "./components/MarqueeSection";
-import AboutSection       from "./components/AboutSection";
-import ImpactSection      from "./components/ImpactSection";
-import CausesSection      from "./components/CausesSection";
-import VideoSection       from "./components/VideoSection";
-import GetInvolvedSection from "./components/GetInvolvedSection";
+// FIX 3: HeroSection MUST come before IntroSection.
+// IntroSection is height:250vh sticky — if it renders first it eats all
+// the scroll budget before HeroSection ever pins, so pill never triggers.
+import Navbar              from "./components/Navbar";
+import HeroSection         from "./components/HeroSection";   // ← FIRST
+import IntroSection        from "./components/IntroSection";  // ← SECOND
+import MarqueeSection      from "./components/MarqueeSection";
+import AboutSection        from "./components/AboutSection";
+import ImpactSection       from "./components/ImpactSection";
+import CausesSection       from "./components/CausesSection";
+import VideoSection        from "./components/VideoSection";
+import GetInvolvedSection  from "./components/GetInvolvedSection";
 import TestimonialsSection from "./components/TestimonialsSection";
 import { CTASection, Footer } from "./components/CTASection";
 
@@ -42,8 +45,8 @@ export default function App() {
     rafId = requestAnimationFrame(raf);
 
     const onEnter = () => gsap.to([cursor, follower], { scale: 1.8, duration: 0.2 });
-    const onLeave = () => gsap.to([cursor, follower], { scale: 1, duration: 0.2 });
-    document.querySelectorAll("a, button").forEach(el => {
+    const onLeave = () => gsap.to([cursor, follower], { scale: 1,   duration: 0.2 });
+    document.querySelectorAll("a, button").forEach((el) => {
       el.addEventListener("mouseenter", onEnter);
       el.addEventListener("mouseleave", onLeave);
     });
@@ -59,10 +62,9 @@ export default function App() {
       <div className="cursor"          ref={cursorRef} />
       <div className="cursor-follower" ref={followerRef} />
       <Navbar />
-      {/* IMPORTANT: main must have NO overflow:hidden/clip — kills sticky */}
-      <main>
-        <IntroSection />
+      <main className="app-main">
         <HeroSection />
+        <IntroSection />
         <MarqueeSection />
         <AboutSection />
         <ImpactSection />
