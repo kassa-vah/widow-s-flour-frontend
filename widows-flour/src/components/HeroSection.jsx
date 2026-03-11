@@ -241,10 +241,10 @@ export default function HeroSection() {
               Nourishing
             </p>
             <p className="hero__line hero__line--middle" ref={line2Ref}>
-              <span ref={everyRef} className="hero__word">every</span>
+              <span ref={everyRef} className="hero__word">Tables</span>
               <span className="hero__pill" ref={pillRef}>
                 <img src={PILL_IMG} alt="widow's table" />
-                <span className="hero__pill-label">widow's table</span>
+                
               </span>
               <span ref={withRef} className="hero__word">with</span>
             </p>
