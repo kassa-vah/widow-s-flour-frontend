@@ -1,7 +1,5 @@
 /* ============================================
    ABOUT SECTION
-   Fixed: container properly centred (no right-shift)
-   box-sizing + min-width: 0 on grid children
    ============================================ */
 
    .about-section {
@@ -75,11 +73,11 @@
   
   .about__feature-card {
     display: flex;
-    align-items: flex-start;
+    align-items: center;         /* vertically centre icon with first line */
     gap: 18px;
     background: var(--green-pale, #eaf3df);
     border-radius: 14px;
-    padding: 22px 24px;
+    padding: 20px 24px;
     transition: transform 0.25s ease, box-shadow 0.25s ease;
     will-change: transform, opacity;
   }
@@ -89,8 +87,8 @@
     box-shadow: 0 8px 32px rgba(90, 158, 58, 0.1);
   }
   
+  /* ── Icon box ── */
   .about__feature-icon {
-    font-size: 24px;
     flex-shrink: 0;
     width: 46px;
     height: 46px;
@@ -99,6 +97,22 @@
     justify-content: center;
     background: var(--white, #ffffff);
     border-radius: 10px;
+  
+    /* Icon inherits the green so strokes feel on-brand */
+    color: var(--green-deep, #5a9e3a);
+  }
+  
+  /* Ensure the SVG never overflows the white box */
+  .about__feature-icon svg {
+    display: block;
+    width: 28px;
+    height: 28px;
+    flex-shrink: 0;
+  }
+  
+  /* ── Text block ── */
+  .about__feature-text {
+    min-width: 0; /* prevents text from pushing card wider */
   }
   
   .about__feature-text h4 {
@@ -106,7 +120,7 @@
     font-size: 17px;
     font-weight: 500;
     color: var(--text-dark, #1a1a1a);
-    margin-bottom: 4px;
+    margin: 0 0 4px;
     letter-spacing: -0.01em;
   }
   
@@ -116,6 +130,7 @@
     font-weight: 300;
     line-height: 1.6;
     color: var(--text-mid, #4a4a4a);
+    margin: 0;
   }
   
   /* ============================================
@@ -269,6 +284,17 @@
     .about__badge { bottom: 48px; width: 44%; padding: 16px 18px; }
     .about__badge-num { font-size: 36px; }
     .about__body { max-width: 100%; }
+  
+    /* Slightly smaller icon box on mobile */
+    .about__feature-icon {
+      width: 40px;
+      height: 40px;
+      border-radius: 8px;
+    }
+    .about__feature-icon svg {
+      width: 24px;
+      height: 24px;
+    }
   }
   
   /* ============================================
@@ -286,6 +312,8 @@
     .about__badge-num { font-size: 30px; }
     .about__green-pill { left: 44%; padding: 8px 14px 8px 8px; }
     .about__avatars img { width: 24px; height: 24px; }
+  
+    .about__feature-card { gap: 14px; padding: 16px 18px; }
   }
   
   /* ============================================

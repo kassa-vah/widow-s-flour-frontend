@@ -10,6 +10,9 @@ const IMG = {
   volunteers: "https://images.unsplash.com/photo-1593113598332-cd288d649433?w=800&q=80",
 };
 
+import handsImg from "../assets/hands1.jpeg";
+
+/* ─── Stats data ──────────────────────────────────────────────── */
 const stats = [
   {
     variant: "dark",
@@ -17,10 +20,7 @@ const stats = [
     label: "Meals Distributed",
     desc: "Hot meals and flour parcels delivered across all regions.",
   },
-  {
-    variant: "image",
-    span2: false,
-  },
+  { variant: "image" },
   {
     variant: "green",
     number: "120+",
@@ -37,7 +37,7 @@ const stats = [
     variant: "white",
     number: "$820K",
     label: "Total Aid Raised",
-    desc: "Funds mobilized through donations and partnerships.",
+    desc: "Funds mobilized through donations, grants, and generous partnerships.",
     span2: true,
   },
 ];
@@ -117,21 +117,27 @@ export default function ImpactSection() {
         {/* Grid */}
         <div className="impact__grid">
 
-          {/* Dark — meals */}
+          {/* Dark — meals + hands-heart illustration */}
           <div
             className="impact__card impact__card--dark"
             ref={(el) => (cardsRef.current[0] = el)}
           >
+            {/* Watermark illustration — place your hands.png in src/assets/ */}
+            <img
+              src={handsImg}
+              alt=""
+              className="impact__hands-heart"
+              aria-hidden="true"
+            />
+
             <div className="impact__dot" />
-            <span
-              className="impact__number"
-              data-count="10000"
-              data-suffix="+"
-            >
+            <span className="impact__number" data-count="10000" data-suffix="+">
               10,000+
             </span>
             <span className="impact__card-label">Meals Distributed</span>
-            <span className="impact__card-desc">Hot meals and flour parcels delivered across all regions.</span>
+            <span className="impact__card-desc">
+              Hot meals and flour parcels delivered across all regions.
+            </span>
           </div>
 
           {/* Image */}
@@ -148,15 +154,13 @@ export default function ImpactSection() {
             ref={(el) => (cardsRef.current[2] = el)}
           >
             <div className="impact__dot" />
-            <span
-              className="impact__number"
-              data-count="120"
-              data-suffix="+"
-            >
+            <span className="impact__number" data-count="120" data-suffix="+">
               120+
             </span>
             <span className="impact__card-label">Volunteers Engaged</span>
-            <span className="impact__card-desc">Dedicated individuals giving their time and energy.</span>
+            <span className="impact__card-desc">
+              Dedicated individuals giving their time and energy.
+            </span>
           </div>
 
           {/* Yellow — communities */}
@@ -165,14 +169,11 @@ export default function ImpactSection() {
             ref={(el) => (cardsRef.current[3] = el)}
           >
             <div className="impact__dot" />
-            <span
-              className="impact__number"
-              data-count="38"
-            >
-              38
-            </span>
+            <span className="impact__number" data-count="38">38</span>
             <span className="impact__card-label">Communities Reached</span>
-            <span className="impact__card-desc">From rural outposts to urban centers — no widow left behind.</span>
+            <span className="impact__card-desc">
+              From rural outposts to urban centers — no widow left behind.
+            </span>
           </div>
 
           {/* White span2 — total aid */}
@@ -181,16 +182,13 @@ export default function ImpactSection() {
             ref={(el) => (cardsRef.current[4] = el)}
           >
             <div className="impact__dot" />
-            <span
-              className="impact__number"
-              data-count="820"
-              data-prefix="$"
-              data-suffix="K"
-            >
+            <span className="impact__number" data-count="820" data-prefix="$" data-suffix="K">
               $820K
             </span>
             <span className="impact__card-label">Total Aid Raised</span>
-            <span className="impact__card-desc">Funds mobilized through donations, grants, and generous partnerships.</span>
+            <span className="impact__card-desc">
+              Funds mobilized through donations, grants, and generous partnerships.
+            </span>
           </div>
 
         </div>
