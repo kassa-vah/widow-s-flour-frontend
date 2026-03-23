@@ -132,7 +132,7 @@ export default function ImpactSection() {
             />
 
             <div className="impact__dot" />
-            <span className="impact__number" data-count="10000" data-suffix="+">
+            <span className="impact__number" data-count="500" data-suffix="+">
               500+
             </span>
             <span className="impact__card-label">Meals Distributed</span>
@@ -183,7 +183,7 @@ export default function ImpactSection() {
             ref={(el) => (cardsRef.current[4] = el)}
           >
             <div className="impact__dot" />
-            <span className="impact__number" data-count="820" data-prefix="$" data-suffix="K">
+            <span className="impact__number" data-count="820" data-prefix="KSH" data-suffix="K">
               KSH 820K
             </span>
             <span className="impact__card-label">Total Aid Raised</span>
