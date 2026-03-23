@@ -1,23 +1,30 @@
-
-
 import { useEffect, useRef } from "react";
 import gsap from "gsap";
 import "./HeroSection.css";
 
-const PILL_IMG = "./src/assets/smilingchildren1.jpg";
+// ── Image imports (Vite-compatible ES module imports) ──────────
+import imgPill     from "../assets/smilingchildren1.jpg";
+import imgElderly1 from "../assets/elderly1.jpg";
+import imgElderly2 from "../assets/elderly2.jpg";
+import imgElderly3 from "../assets/elderly3.jpg";
+import imgElderly4 from "../assets/elderly4.jpg";
+import imgElderly5 from "../assets/elderly5.jpg";
+import imgChild1   from "../assets/smilingchild1.jpg";
+
+const PILL_IMG = imgPill;
 const CARDS = [
-  "./src/assets/elderly1.jpg",
-  "./src/assets/elderly2.jpg",
-  "./src/assets/elderly3.jpg",
-  "./src/assets/elderly4.jpg",
-  "./src/assets/elderly5.jpg",
-  "./src/assets/smilingchild1.jpg",
+  imgElderly1,
+  imgElderly2,
+  imgElderly3,
+  imgElderly4,
+  imgElderly5,
+  imgChild1,
 ];
 const STATS = [
-  { num: "100+",  label: "Widows Supported" },
-  { num: "500+", label: "Meals Distributed" },
-  { num: "38",      label: "Communities Reached" },
-  { num: "KSH 820K",   label: "Raised in Aid" },
+  { num: "100+",     label: "Widows Supported" },
+  { num: "500+",     label: "Meals Distributed" },
+  { num: "38",       label: "Communities Reached" },
+  { num: "KSH 820K", label: "Raised in Aid" },
 ];
 
 const clamp = (v, lo = 0, hi = 1) => Math.max(lo, Math.min(hi, v));
@@ -42,7 +49,7 @@ export default function HeroSection() {
 
   const pillMeasure = useRef(null);
   const revealFired = useRef(false);
-  const hasMeasured = useRef(false); 
+  const hasMeasured = useRef(false);
 
   useEffect(() => {
     // ── Entrance animations ──
@@ -89,7 +96,6 @@ export default function HeroSection() {
       const vw = window.innerWidth;
       const vh = window.innerHeight;
 
-      // FIX 4: guard against zero division
       const maxScroll = wH - vh;
       if (maxScroll <= 0) {
         rafRef.current = requestAnimationFrame(tick);
@@ -98,12 +104,11 @@ export default function HeroSection() {
 
       const scrolled = clamp(-wr.top, 0, maxScroll);
       const raw = scrolled / maxScroll;
-      const p   = ease(raw); // FIX 1: linear — starts immediately
+      const p   = ease(raw);
 
       if (!hasMeasured.current) {
         measurePill();
       }
-      // Re-measure on viewport resize
       if (pillMeasure.current &&
           (pillMeasure.current.vw !== vw || pillMeasure.current.vh !== vh)) {
         measurePill();
@@ -131,7 +136,7 @@ export default function HeroSection() {
         if (lbl) lbl.style.opacity = `${1 - clamp(p * 4)}`;
 
         // ── WORDS exit — start immediately, finish by p=0.5 ──
-        const wp = clamp(p * 2); // reaches 1 at p=0.5
+        const wp = clamp(p * 2);
 
         line1Ref.current.style.transform = `translateY(${lerp(0, -vh * 0.55, wp)}px)`;
         line1Ref.current.style.opacity   = `${1 - wp}`;
@@ -225,7 +230,6 @@ export default function HeroSection() {
               <span ref={everyRef} className="hero__word">Tables</span>
               <span className="hero__pill" ref={pillRef}>
                 <img src={PILL_IMG} alt="widow's table" />
-                
               </span>
               <span ref={withRef} className="hero__word">with</span>
             </p>

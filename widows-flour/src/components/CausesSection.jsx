@@ -4,6 +4,11 @@ import { gsap } from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 import "./CausesSection.css";
 
+// ── Image imports (Vite-compatible ES module imports) ──────────
+import imgFlour  from "../assets/flour1.jpg";
+import imgSchool from "../assets/school.jpg";
+import imgSkills from "../assets/skills.jpg";
+
 gsap.registerPlugin(ScrollTrigger);
 
 const causes = [
@@ -14,7 +19,7 @@ const causes = [
     goal: "KSH 60,000",
     raised: 72,
     cta: "Give a Meal",
-    img: "./src/assets/flour1.jpg",
+    img: imgFlour,
   },
   {
     category: "Education",
@@ -23,7 +28,7 @@ const causes = [
     goal: "KSH 183,000",
     raised: 54,
     cta: "Build Schools",
-    img: "./src/assets/school.jpg",
+    img: imgSchool,
   },
   {
     category: "Livelihood",
@@ -32,7 +37,7 @@ const causes = [
     goal: "KSH 45,000",
     raised: 38,
     cta: "Empower Now",
-    img: "./src/assets/skills.jpg",
+    img: imgSkills,
   },
 ];
 

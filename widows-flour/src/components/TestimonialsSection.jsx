@@ -4,6 +4,11 @@ import { gsap } from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 import "./TestimonialsSection.css";
 
+// ── Image imports (Vite-compatible ES module imports) ──────────
+import imgElderly1 from "../assets/smilingelderly1.jpg";
+import imgElderly2 from "../assets/smilingelderly2.jpg";
+import imgElderly3 from "../assets/elderly1.jpg";
+
 gsap.registerPlugin(ScrollTrigger);
 
 const testimonials = [
@@ -11,19 +16,19 @@ const testimonials = [
     quote: "The mentorship that helped me stay focused on my goals. Widows Flour gave me more than flour — they gave me hope and a future.",
     name: "Mercy Adhiambo",
     role: "Program Beneficiary",
-    img: "./src/assets/smilingelderly1.jpg",
+    img: imgElderly1,
   },
   {
     quote: "Success stories and genuine gratitude make donors feel valued. Knowing my contributions are truly helping families motivates me to continue giving.",
     name: "Robert Ouko",
     role: "Monthly Donor",
-    img: "./src/assets/smilingelderly2.jpg",
+    img: imgElderly2,
   },
   {
     quote: "Our team feels guided, motivated, and inspired to give their best. It's rewarding to see how collective efforts bring hope to so many families.",
     name: "Advose Atieno",
     role: "Volunteer Coordinator",
-    img: "./src/assets/elderly1.jpg",
+    img: imgElderly3,
   },
 ];
 

@@ -4,13 +4,15 @@ import { gsap } from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 import "./ImpactSection.css";
 
+// ── Image imports (Vite-compatible ES module imports) ──────────
+import handsImg      from "../assets/hands1.jpeg";
+import imgVolunteers from "../assets/offloading.jpg";
+
 gsap.registerPlugin(ScrollTrigger);
 
 const IMG = {
-  volunteers: "./src/assets/offloading.jpg",
+  volunteers: imgVolunteers,
 };
-
-import handsImg from "../assets/hands1.jpeg";
 
 /* ─── Stats data ──────────────────────────────────────────────── */
 const stats = [
@@ -122,7 +124,6 @@ export default function ImpactSection() {
             className="impact__card impact__card--dark"
             ref={(el) => (cardsRef.current[0] = el)}
           >
-            {/* Watermark illustration — place your hands.png in src/assets/ */}
             <img
               src={handsImg}
               alt=""

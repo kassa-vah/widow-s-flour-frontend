@@ -4,6 +4,13 @@ import { gsap } from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 import "./AboutSection.css";
 
+// ── Image imports (Vite-compatible ES module imports) ──────────
+import imgMain   from "../assets/smilingchildren1.jpg";
+import imgAccent from "../assets/smilingelderly1.jpg";
+import imgAv1    from "../assets/smilingelderly2.jpg";
+import imgAv2    from "../assets/smilingchild1.jpg";
+import imgAv3    from "../assets/elderly1.jpg";
+
 gsap.registerPlugin(ScrollTrigger);
 
 /* ─── Custom SVG Icons (outline only) ──────────────────────── */
@@ -99,13 +106,13 @@ const features = [
   },
 ];
 
-
+/* ─── Image map (now uses imported references) ──────────────── */
 const IMG = {
-  main:   "./src/assets/smilingchildren1.jpg",
-  accent: "./src/assets/smilingelderly1",
-  av1:    "./src/assets/smilingelderly2.jpg",
-  av2:    "./src/assets/smilingchild1.jpg",
-  av3:    "./src/assets/elderly1.jpg",
+  main:   imgMain,
+  accent: imgAccent,
+  av1:    imgAv1,
+  av2:    imgAv2,
+  av3:    imgAv3,
 };
 
 export default function AboutSection() {

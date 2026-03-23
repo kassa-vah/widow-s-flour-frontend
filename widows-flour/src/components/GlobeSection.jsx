@@ -1,7 +1,10 @@
 import { useEffect, useRef } from 'react';
 import './GlobeSection.css';
 
-export default function GlobeSection({ videoSrc = './src/assets/globe.mp4' }) {
+// ── Video import (Vite-compatible ES module import) ────────────
+import globeVideo from "../assets/globe.mp4";
+
+export default function GlobeSection({ videoSrc = globeVideo }) {
   const sectionRef  = useRef(null);
   const videoRef    = useRef(null);
   const eyebrowRef  = useRef(null);

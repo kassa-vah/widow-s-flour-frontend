@@ -4,13 +4,15 @@ import { gsap } from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 import "./CTASection.css";
 
+// ── Image imports (Vite-compatible ES module imports) ──────────
+import imgElderly1 from "../assets/smilingelderly1.jpg";
+import imgChild1   from "../assets/smilingchild1.jpg";
+import imgElderly2 from "../assets/smilingelderly2.jpg";
+import imgLogo     from "../assets/logo.png";
+
 gsap.registerPlugin(ScrollTrigger);
 
-const AVATARS = [
-  "./src/assets/smilingelderly1.jpg",
-  "./src/assets/smilingchild1.jpg",
-  "./src/assets/smilingelderly2.jpg",
-];
+const AVATARS = [imgElderly1, imgChild1, imgElderly2];
 
 export function CTASection() {
   const sectionRef = useRef(null);
@@ -105,11 +107,11 @@ export function Footer() {
           {/* Brand */}
           <div className="footer__brand">
             <div className="footer__logo">
-              <img src="./src/assets/logo.png" alt="Widows Flour" className="footer__logo-img" />
-             </div>
-            
+              <img src={imgLogo} alt="Widows Flour" className="footer__logo-img" />
+            </div>
+
             <p>
-            <strong className="hs-reveal">Widows Flour</strong><br />
+              <strong className="hs-reveal">Widows Flour</strong><br />
               A movement of grace, provision, and community — nourishing widows
               and their families one sack of flour at a time.
             </p>

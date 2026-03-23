@@ -3,6 +3,9 @@ import { useEffect, useRef, useState } from "react";
 import { gsap } from "gsap";
 import "./Navbar.css";
 
+// ── Image import (Vite-compatible ES module import) ────────────
+import imgLogo from "../assets/logo.png";
+
 export default function Navbar() {
   const navRef = useRef(null);
   const [scrolled, setScrolled] = useState(false);
@@ -33,9 +36,9 @@ export default function Navbar() {
     <>
       <nav ref={navRef} className={`navbar ${scrolled ? "scrolled" : ""}`}>
         {/* Logo */}
-        <img src="./src/assets/logo.png" alt="Widows Flour" className="navbar__logo" />
+        <img src={imgLogo} alt="Widows Flour" className="navbar__logo" />
 
-        {/* Desktop nav — ONE list only */}
+        {/* Desktop nav */}
         <ul className="navbar__links">
           {links.map((l) => (
             <li key={l}>

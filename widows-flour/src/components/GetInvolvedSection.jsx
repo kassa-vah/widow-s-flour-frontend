@@ -4,6 +4,11 @@ import { gsap } from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 import "./VideoSection.css"; // shares CSS file
 
+// ── Image imports (Vite-compatible ES module imports) ──────────
+import imgVolunteer from "../assets/volunteer1.jpg";
+import imgDonate    from "../assets/donate.jpg";
+import imgCommunity from "../assets/community.jpg";
+
 gsap.registerPlugin(ScrollTrigger);
 
 const cards = [
@@ -13,7 +18,7 @@ const cards = [
     desc: "Make a difference by giving your time and skills to widows in need. Join distribution drives, mentorship programs, and cooking events.",
     cta: "Be a Volunteer",
     tags: ["Food Drives", "Mentorship"],
-    img: "./src/assets/volunteer1.jpg",
+    img: imgVolunteer,
   },
   {
     category: "Give",
@@ -21,7 +26,7 @@ const cards = [
     desc: "A financial gift — no matter the size — provides flour, food, and dignity to a widow's home. 100% goes to the cause.",
     cta: "Donate Today",
     tags: ["Transparent", "Verified"],
-    img: "./src/assets/donate.jpg",
+    img: imgDonate,
     highlight: true,
   },
   {
@@ -30,7 +35,7 @@ const cards = [
     desc: "Become part of a movement of grace. Connect with like-minded people building stronger families and hope-filled futures.",
     cta: "Get Started",
     tags: ["Stand United", "Kindness First", "Give Back"],
-    img: "./src/assets/community.jpg",
+    img: imgCommunity,
   },
 ];
 
