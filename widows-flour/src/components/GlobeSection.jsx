@@ -1,120 +1,234 @@
-import { useEffect, useRef } from 'react';
-import './GlobeSection.css';
+// AboutSection.jsx
+import { useEffect, useRef } from "react";
+import { gsap } from "gsap";
+import { ScrollTrigger } from "gsap/ScrollTrigger";
+import "./AboutSection.css";
 
-// ── Video import (Vite-compatible ES module import) ────────────
-import globeVideo from "../assets/globe.mp4";
+gsap.registerPlugin(ScrollTrigger);
 
-export default function GlobeSection({ videoSrc = globeVideo }) {
-  const sectionRef  = useRef(null);
-  const videoRef    = useRef(null);
-  const eyebrowRef  = useRef(null);
-  const headlineRef = useRef(null);
-  const sublineRef  = useRef(null);
-  const ctaRef      = useRef(null);
+/* ─── Custom SVG Icons (outline only) ──────────────────────── */
 
-  /* ── Slow-mo loop ── */
+const STROKE = "currentColor";
+const SW = { strokeWidth: "1.8" };
+const SW2 = { strokeWidth: "2" };
+
+const IconFlour = () => (
+  <svg viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg" width="52" height="52"
+       stroke={STROKE} strokeLinecap="round" strokeLinejoin="round">
+    <g opacity="0.5" strokeWidth="1.5">
+      <line x1="32" y1="8"  x2="32" y2="4"  />
+      <line x1="32" y1="52" x2="32" y2="56" />
+      <line x1="10" y1="30" x2="6"  y2="30" />
+      <line x1="54" y1="30" x2="58" y2="30" />
+      <line x1="16" y1="16" x2="13" y2="13" strokeWidth="1.2"/>
+      <line x1="48" y1="44" x2="51" y2="47" strokeWidth="1.2"/>
+      <line x1="48" y1="16" x2="51" y2="13" strokeWidth="1.2"/>
+      <line x1="16" y1="44" x2="13" y2="47" strokeWidth="1.2"/>
+    </g>
+    <path d="M27 47 Q24 37 26 27 Q23 18 27 10" {...SW} fill="none"/>
+    <ellipse cx="23.5" cy="41" rx="3.5" ry="5.5" fill="none" {...SW} transform="rotate(-18 23.5 41)"/>
+    <ellipse cx="26"   cy="32" rx="3.5" ry="5.5" fill="none" {...SW} transform="rotate(15 26 32)"/>
+    <ellipse cx="23"   cy="23" rx="3"   ry="5"   fill="none" {...SW} transform="rotate(-20 23 23)"/>
+    <ellipse cx="27"   cy="15" rx="2.8" ry="4.5" fill="none" {...SW} transform="rotate(12 27 15)"/>
+    <path d="M37 47 Q40 37 38 27 Q41 18 37 10" {...SW} fill="none"/>
+    <ellipse cx="40.5" cy="41" rx="3.5" ry="5.5" fill="none" {...SW} transform="rotate(18 40.5 41)"/>
+    <ellipse cx="38"   cy="32" rx="3.5" ry="5.5" fill="none" {...SW} transform="rotate(-15 38 32)"/>
+    <ellipse cx="41"   cy="23" rx="3"   ry="5"   fill="none" {...SW} transform="rotate(20 41 23)"/>
+    <ellipse cx="37"   cy="15" rx="2.8" ry="4.5" fill="none" {...SW} transform="rotate(-12 37 15)"/>
+    <path d="M10 52 Q9 46 13 42 Q19 38 25 41 L29 44 Q31 46 34 44 L38 41 Q44 38 51 42 Q55 46 54 52 Q44 60 32 58 Q20 60 10 52Z"
+          fill="none" {...SW2}/>
+    <path d="M16 42 Q15 38 18 36" strokeWidth="1.2" fill="none" opacity="0.55"/>
+    <path d="M23 40 Q22 36 25 34" strokeWidth="1.2" fill="none" opacity="0.55"/>
+    <path d="M48 42 Q49 38 46 36" strokeWidth="1.2" fill="none" opacity="0.55"/>
+    <path d="M41 40 Q42 36 39 34" strokeWidth="1.2" fill="none" opacity="0.55"/>
+  </svg>
+);
+
+const IconFinancial = () => (
+  <svg viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg" width="52" height="52"
+       stroke={STROKE} strokeLinecap="round" strokeLinejoin="round">
+    <rect x="8"  y="42" width="10" height="14" rx="2.5" strokeWidth="1.6"/>
+    <rect x="21" y="32" width="10" height="24" rx="2.5" strokeWidth="1.6"/>
+    <rect x="34" y="20" width="10" height="36" rx="2.5" strokeWidth="1.6"/>
+    <rect x="47" y="28" width="10" height="28" rx="2.5" strokeWidth="1.6"/>
+    <line x1="4" y1="56" x2="60" y2="56" strokeWidth="1.4" opacity="0.4"/>
+    <line x1="39" y1="18" x2="39" y2="6"  strokeWidth="2"/>
+    <path d="M33 12 L39 6 L45 12" fill="none" strokeWidth="2"/>
+    <circle cx="8"  cy="22" r="8"  strokeWidth="1.5"/>
+    <text x="8" y="26" textAnchor="middle" fontSize="9" fontWeight="500"
+          fill="currentColor" stroke="none" fontFamily="sans-serif">$</text>
+    <circle cx="56" cy="14" r="6.5" strokeWidth="1.5"/>
+    <text x="56" y="18" textAnchor="middle" fontSize="8" fontWeight="500"
+          fill="currentColor" stroke="none" fontFamily="sans-serif">$</text>
+  </svg>
+);
+
+const IconCommunity = () => (
+  <svg viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg" width="52" height="52"
+       stroke={STROKE} strokeLinecap="round" strokeLinejoin="round">
+    <circle cx="16" cy="22" r="8"  strokeWidth="1.6"/>
+    <path d="M2 54 Q4 36 16 34 Q28 36 30 54" strokeWidth="1.6" fill="none"/>
+    <circle cx="48" cy="22" r="8"  strokeWidth="1.6"/>
+    <path d="M34 54 Q36 36 48 34 Q60 36 62 54" strokeWidth="1.6" fill="none"/>
+    <circle cx="32" cy="18" r="11" strokeWidth="2"/>
+    <path d="M18 56 Q20 30 32 28 Q44 30 46 56" strokeWidth="2" fill="none"/>
+    <path d="M32 10 Q29 6 25 8 Q21 12 25 17 L32 24 L39 17 Q43 12 39 8 Q35 6 32 10Z"
+          strokeWidth="1.6" fill="none"/>
+    <path d="M22 34 Q18 28 24 22" strokeWidth="1.2" strokeDasharray="2 3" fill="none" opacity="0.6"/>
+    <path d="M42 34 Q46 28 40 22" strokeWidth="1.2" strokeDasharray="2 3" fill="none" opacity="0.6"/>
+  </svg>
+);
+
+/* ─── Feature data ───────────────────────────── */
+
+const features = [
+  {
+    icon: <IconFlour />,
+    title: "Flour & Food Provision",
+    desc: "Monthly flour baskets and staple food parcels delivered to widows across communities.",
+  },
+  {
+    icon: <IconFinancial />,
+    title: "Financial Contributions",
+    desc: "Organizations and individuals partnering to fund ongoing relief programs.",
+  },
+  {
+    icon: <IconCommunity />,
+    title: "Community & Mentorship",
+    desc: "Circles of care connecting widows with mentors, counselors, and each other.",
+  },
+];
+
+/* ─── Local image paths — replace filenames with your actual files ── */
+const IMG = {
+  main:   "./src/assets/about-main.jpg",
+  accent: "./src/assets/about-accent.jpg",
+  av1:    "./src/assets/avatar-1.jpg",
+  av2:    "./src/assets/avatar-2.jpg",
+  av3:    "./src/assets/avatar-3.jpg",
+};
+
+export default function AboutSection() {
+  const sectionRef   = useRef(null);
+  const leftRef      = useRef(null);
+  const mainImgRef   = useRef(null);
+  const accentImgRef = useRef(null);
+  const badgeRef     = useRef(null);
+  const cardsRef     = useRef([]);
+
   useEffect(() => {
-    const v = videoRef.current;
-    if (!v) return;
-    v.playbackRate = 0.45;
-    const onEnd = () => { v.currentTime = 0; v.play(); };
-    v.addEventListener('ended', onEnd);
-    v.play().catch(() => {});
-    return () => v.removeEventListener('ended', onEnd);
-  }, []);
+    const ctx = gsap.context(() => {
 
-  /* ── GSAP ScrollTrigger ── */
-  useEffect(() => {
-    let ctx;
-    (async () => {
-      const gsap = (await import('gsap')).default;
-      const { ScrollTrigger } = await import('gsap/ScrollTrigger');
-      gsap.registerPlugin(ScrollTrigger);
+      gsap.fromTo(leftRef.current,
+        { x: -60, opacity: 0 },
+        { x: 0, opacity: 1, duration: 1, ease: "power3.out",
+          scrollTrigger: { trigger: sectionRef.current, start: "top 75%" } }
+      );
 
-      ctx = gsap.context(() => {
-        const ease = 'power3.out';
-        const st = (trigger, start = 'top 85%') => ({
-          trigger, start, toggleActions: 'play none none reverse',
-        });
+      gsap.fromTo(mainImgRef.current,
+        { scale: 0.9, opacity: 0 },
+        { scale: 1, opacity: 1, duration: 1.2, ease: "power3.out",
+          scrollTrigger: { trigger: sectionRef.current, start: "top 70%" } }
+      );
 
-        /* Eyebrow */
-        gsap.fromTo(eyebrowRef.current,
-          { opacity: 0, y: 24, filter: 'blur(6px)' },
-          { opacity: 1, y: 0, filter: 'blur(0px)', duration: 0.9, ease,
-            scrollTrigger: st(eyebrowRef.current) });
+      gsap.fromTo(accentImgRef.current,
+        { y: 60, opacity: 0 },
+        { y: 0, opacity: 1, duration: 1, ease: "power3.out", delay: 0.25,
+          scrollTrigger: { trigger: sectionRef.current, start: "top 70%" } }
+      );
 
-        /* Headline words */
-        const words = headlineRef.current?.querySelectorAll('.word');
-        if (words?.length) {
-          gsap.fromTo(words,
-            { opacity: 0, y: 44, rotateX: -20 },
-            { opacity: 1, y: 0, rotateX: 0, duration: 0.85, ease, stagger: 0.07,
-              scrollTrigger: st(headlineRef.current) });
+      gsap.fromTo(badgeRef.current,
+        { scale: 0.7, opacity: 0, rotate: -6 },
+        { scale: 1, opacity: 1, rotate: 0, duration: 0.7, ease: "back.out(1.6)", delay: 0.5,
+          scrollTrigger: { trigger: sectionRef.current, start: "top 65%" } }
+      );
+
+      cardsRef.current.forEach((card, i) => {
+        if (!card) return;
+        gsap.fromTo(card,
+          { x: -40, opacity: 0 },
+          { x: 0, opacity: 1, duration: 0.7, ease: "power3.out", delay: i * 0.12,
+            scrollTrigger: { trigger: card, start: "top 85%" } }
+        );
+      });
+
+      gsap.to(mainImgRef.current, {
+        y: -50, ease: "none",
+        scrollTrigger: {
+          trigger: sectionRef.current,
+          start: "top bottom", end: "bottom top", scrub: 1,
         }
+      });
 
-        /* Subline */
-        gsap.fromTo(sublineRef.current,
-          { opacity: 0, y: 24 },
-          { opacity: 1, y: 0, duration: 0.9, delay: 0.2, ease,
-            scrollTrigger: st(sublineRef.current) });
-
-        /* CTA */
-        gsap.fromTo(ctaRef.current,
-          { opacity: 0, scale: 0.88 },
-          { opacity: 1, scale: 1, duration: 0.7, delay: 0.1, ease: 'back.out(1.5)',
-            scrollTrigger: st(ctaRef.current, 'top 90%') });
-
-      }, sectionRef);
-    })();
-    return () => ctx?.revert();
+    }, sectionRef);
+    return () => ctx.revert();
   }, []);
-
-  const splitWords = (text) =>
-    text.split(' ').map((w, i) => (
-      <span className="word" key={i}>{w}</span>
-    ));
 
   return (
-    <section className="globe-section" ref={sectionRef}>
+    <section id="about" className="about-section" ref={sectionRef}>
+      <div className="about-container">
+        <div className="about__inner">
 
-      {/* Globe video — natural size, centred, not cover */}
-      <div className="globe-video-wrap">
-        <video
-          ref={videoRef}
-          className="globe-video"
-          src={videoSrc}
-          muted
-          playsInline
-          loop
-          preload="auto"
-        />
+          {/* Left — text */}
+          <div className="about__left" ref={leftRef}>
+            <span className="tag-pill">About Us</span>
+            <h2 className="about__headline">
+              Who We Are &amp;<br />What Drives Us
+            </h2>
+            <p className="about__body">
+              Widows Flour was born from a simple conviction — that no widow should
+              face an empty table alone. We mobilize communities, donors, and
+              volunteers to deliver flour, food, and fellowship to women who've lost
+              their provider. Every sack of flour is a message: you are seen,
+              you are loved, you are not forgotten.
+            </p>
+
+            <div className="about__features">
+              {features.map((f, i) => (
+                <div
+                  key={i}
+                  className="about__feature-card"
+                  ref={(el) => (cardsRef.current[i] = el)}
+                >
+                  <div className="about__feature-icon">
+                    {f.icon}
+                  </div>
+                  <div className="about__feature-text">
+                    <h4>{f.title}</h4>
+                    <p>{f.desc}</p>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {/* Right — image stack */}
+          <div className="about__right">
+            <div className="about__img-main" ref={mainImgRef}>
+              <img src={IMG.main} alt="Widows flour community" />
+            </div>
+
+            <div className="about__img-accent" ref={accentImgRef}>
+              <img src={IMG.accent} alt="Community support" />
+            </div>
+
+            <div className="about__badge" ref={badgeRef}>
+              <span className="about__badge-num">6+</span>
+              <span className="about__badge-label">Years of Service</span>
+            </div>
+
+            <div className="about__green-pill">
+              <div className="about__avatars">
+                <img src={IMG.av1} alt="" />
+                <img src={IMG.av2} alt="" />
+                <img src={IMG.av3} alt="" />
+              </div>
+              <span>120+ Active Volunteers</span>
+            </div>
+          </div>
+
+        </div>
       </div>
-
-      {/* Text — absolutely centred over the globe */}
-      <div className="globe-overlay-content">
-        <span className="tag-pill globe-eyebrow" ref={eyebrowRef}>
-          Global impact
-        </span>
-
-        <h2 className="globe-headline" ref={headlineRef}>
-          {splitWords('Every heartbeat, somewhere on this planet, your gift arrives.')}
-        </h2>
-
-        <p className="globe-subline" ref={sublineRef}>
-          Hunger doesn't pause for weekends. Neither do we.
-          When you give, the ripple travels further than you'll ever see —
-          and further than we can fully measure.
-        </p>
-
-        <a href="#donate" className="btn-primary globe-cta" ref={ctaRef}>
-          Keep the ripple going
-          <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
-            <path d="M3 8h10M9 4l4 4-4 4" stroke="currentColor"
-              strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round"/>
-          </svg>
-        </a>
-      </div>
-
     </section>
   );
 }

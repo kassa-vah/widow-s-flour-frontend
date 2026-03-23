@@ -37,7 +37,7 @@ const stats = [
   },
   {
     variant: "white",
-    number: "$820K",
+    number: "KSH820K",
     label: "Total Aid Raised",
     desc: "Funds mobilized through donations, grants, and generous partnerships.",
     span2: true,

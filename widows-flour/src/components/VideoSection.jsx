@@ -14,10 +14,54 @@ export default function VideoSection() {
   const headerRef  = useRef(null);
   const bodyRef    = useRef(null);
 
+  /* ── Bulletproof mobile autoplay ── */
+  useEffect(() => {
+    const v = videoRef.current;
+    if (!v) return;
+
+    // Set imperatively — iOS Safari requires both JSX attrs AND JS props
+    v.muted        = true;
+    v.loop         = true;
+    v.playsInline  = true;
+
+    const tryPlay = () => {
+      const p = v.play();
+      if (p !== undefined) {
+        p.catch(() => {
+          // Blocked — retry on first user touch/click
+          const resume = () => {
+            v.play().catch(() => {});
+            document.removeEventListener('touchstart', resume);
+            document.removeEventListener('click',      resume);
+          };
+          document.addEventListener('touchstart', resume, { once: true });
+          document.addEventListener('click',      resume, { once: true });
+        });
+      }
+    };
+
+    if (v.readyState >= 2) {
+      tryPlay();
+    } else {
+      v.addEventListener('canplay', tryPlay, { once: true });
+    }
+
+    // Resume after app/tab switch
+    const onVisible = () => {
+      if (!document.hidden) v.play().catch(() => {});
+    };
+    document.addEventListener('visibilitychange', onVisible);
+
+    return () => {
+      v.removeEventListener('canplay', tryPlay);
+      document.removeEventListener('visibilitychange', onVisible);
+    };
+  }, []);
+
+  /* ── GSAP ScrollTrigger ── */
   useEffect(() => {
     const ctx = gsap.context(() => {
 
-      // Headline + eyebrow stagger in
       gsap.fromTo(
         headerRef.current.children,
         { y: 50, opacity: 0 },
@@ -27,7 +71,6 @@ export default function VideoSection() {
         }
       );
 
-      // Body copy, stats, CTA stagger in slightly after
       gsap.fromTo(
         bodyRef.current.children,
         { y: 36, opacity: 0 },
@@ -38,7 +81,6 @@ export default function VideoSection() {
         }
       );
 
-      // Slow parallax zoom on the background video
       gsap.to(videoRef.current, {
         scale: 1.08,
         ease: "none",
@@ -67,15 +109,16 @@ export default function VideoSection() {
           muted
           loop
           playsInline
+          preload="auto"
+          disablePictureInPicture
+          disableRemotePlayback
         />
-        {/* Dark grey overlay for readability */}
         <div className="video-section__overlay" />
       </div>
 
       {/* ── Foreground content ── */}
       <div className="video-container">
 
-        {/* Eyebrow + Headline */}
         <div className="video-section__header" ref={headerRef}>
           <span className="video-section__eyebrow">Our Story</span>
           <h2 className="video-section__headline">
@@ -83,7 +126,6 @@ export default function VideoSection() {
           </h2>
         </div>
 
-        {/* Body content */}
         <div className="video-section__body" ref={bodyRef}>
 
           <p className="video-section__sub">
@@ -93,7 +135,6 @@ export default function VideoSection() {
             <em>you are seen, you are loved, you are not forgotten.</em>
           </p>
 
-          {/* Inline stats strip */}
           <div className="video-section__stats">
             <div className="video-section__stat">
               <span className="video-section__stat-num">500+</span>
@@ -116,7 +157,6 @@ export default function VideoSection() {
             </div>
           </div>
 
-          {/* CTA row */}
           <div className="video-section__cta-row">
             <a href="#donate" className="video-section__btn video-section__btn--primary">
               Donate Now
