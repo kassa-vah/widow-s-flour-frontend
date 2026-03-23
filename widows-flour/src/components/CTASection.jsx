@@ -7,9 +7,9 @@ import "./CTASection.css";
 gsap.registerPlugin(ScrollTrigger);
 
 const AVATARS = [
-  "https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=100&q=80",
-  "https://images.unsplash.com/photo-1531123897727-8f129e1688ce?w=100&q=80",
-  "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=100&q=80",
+  "./src/assets/smilingelderly1.jpg",
+  "./src/assets/smilingchild1.jpg",
+  "./src/assets/smilingelderly2.jpg",
 ];
 
 export function CTASection() {
@@ -105,9 +105,11 @@ export function Footer() {
           {/* Brand */}
           <div className="footer__brand">
             <div className="footer__logo">
-              <span>🌾</span> Widows Flour
-            </div>
+              <img src="./src/assets/logo.png" alt="Widows Flour" className="footer__logo-img" />
+             </div>
+            
             <p>
+            <strong className="hs-reveal">Widows Flour</strong><br />
               A movement of grace, provision, and community — nourishing widows
               and their families one sack of flour at a time.
             </p>

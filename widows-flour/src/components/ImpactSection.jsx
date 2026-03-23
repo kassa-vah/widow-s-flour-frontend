@@ -7,7 +7,7 @@ import "./ImpactSection.css";
 gsap.registerPlugin(ScrollTrigger);
 
 const IMG = {
-  volunteers: "https://images.unsplash.com/photo-1593113598332-cd288d649433?w=800&q=80",
+  volunteers: "./src/assets/offloading.jpg",
 };
 
 import handsImg from "../assets/hands1.jpeg";
@@ -132,7 +132,7 @@ export default function ImpactSection() {
 
             <div className="impact__dot" />
             <span className="impact__number" data-count="10000" data-suffix="+">
-              10,000+
+              500+
             </span>
             <span className="impact__card-label">Meals Distributed</span>
             <span className="impact__card-desc">
@@ -155,7 +155,7 @@ export default function ImpactSection() {
           >
             <div className="impact__dot" />
             <span className="impact__number" data-count="120" data-suffix="+">
-              120+
+              60+
             </span>
             <span className="impact__card-label">Volunteers Engaged</span>
             <span className="impact__card-desc">
@@ -183,7 +183,7 @@ export default function ImpactSection() {
           >
             <div className="impact__dot" />
             <span className="impact__number" data-count="820" data-prefix="$" data-suffix="K">
-              $820K
+              KSH 820K
             </span>
             <span className="impact__card-label">Total Aid Raised</span>
             <span className="impact__card-desc">

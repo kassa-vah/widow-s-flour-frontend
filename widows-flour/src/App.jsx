@@ -16,6 +16,7 @@ import VideoSection        from "./components/VideoSection";
 import GetInvolvedSection  from "./components/GetInvolvedSection";
 import TestimonialsSection from "./components/TestimonialsSection";
 import { CTASection, Footer } from "./components/CTASection";
+import GlobeSection from "./components/GlobeSection";
 
 export default function App() {
   const cursorRef   = useRef(null);
@@ -67,6 +68,7 @@ export default function App() {
         <IntroSection />
         <MarqueeSection />
         <AboutSection />
+        <GlobeSection />
         <ImpactSection />
         <CausesSection />
         <VideoSection />

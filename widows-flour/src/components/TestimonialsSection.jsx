@@ -9,21 +9,21 @@ gsap.registerPlugin(ScrollTrigger);
 const testimonials = [
   {
     quote: "The mentorship that helped me stay focused on my goals. Widows Flour gave me more than flour — they gave me hope and a future.",
-    name: "Grace Wanjiku",
+    name: "Mercy Adhiambo",
     role: "Program Beneficiary",
-    img: "https://images.unsplash.com/photo-1531123897727-8f129e1688ce?w=200&q=80",
+    img: "./src/assets/smilingelderly1.jpg",
   },
   {
     quote: "Success stories and genuine gratitude make donors feel valued. Knowing my contributions are truly helping families motivates me to continue giving.",
-    name: "Robert Chen",
+    name: "Robert Ouko",
     role: "Monthly Donor",
-    img: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=200&q=80",
+    img: "./src/assets/smilingelderly2.jpg",
   },
   {
     quote: "Our team feels guided, motivated, and inspired to give their best. It's rewarding to see how collective efforts bring hope to so many families.",
-    name: "Sarah Kimani",
+    name: "Advose Atieno",
     role: "Volunteer Coordinator",
-    img: "https://images.unsplash.com/photo-1508214751196-bcfd4ca60f91?w=200&q=80",
+    img: "./src/assets/elderly1.jpg",
   },
 ];
 

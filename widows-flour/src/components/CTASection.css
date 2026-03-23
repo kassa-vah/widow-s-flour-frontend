@@ -1,12 +1,4 @@
-/* ============================================
-   CTA BANNER + FOOTER
-   Dark bg, all content centred, ghost bg text,
-   inline avatars in headline, pill buttons
-   ============================================ */
 
-/* ============================================
-   CTA BANNER
-   ============================================ */
    .cta-banner {
     position: relative;
     padding: var(--section-pad, 120px) 0;
@@ -27,7 +19,7 @@
     z-index: 2;
   }
   
-  /* ── Ghost background text ── */
+  
   .cta-banner__bg-text {
     position: absolute;
     inset: 0;
@@ -188,15 +180,27 @@
     gap: 16px;
   }
   
-  .footer__logo {
-    font-family: var(--font-display);
-    font-size: 22px;
-    font-weight: 400;
-    color: var(--white, #ffffff);
-    letter-spacing: -0.01em;
-    display: flex;
-    align-items: center;
-    gap: 8px;
+  .footer__logo-img {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    object-fit: cover;
+    flex-shrink: 0;
+    color: white;
+  }
+  
+  @media (max-width: 768px) {
+    .footer__logo-img {
+      width: 34px;
+      height: 34px;
+    }
+  }
+  
+  @media (max-width: 480px) {
+    .footer__logo-img {
+      width: 30px;
+      height: 30px;
+    }
   }
   
   .footer__brand p {

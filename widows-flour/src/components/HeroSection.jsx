@@ -1,42 +1,27 @@
-/**
- * HeroSection.jsx — FIXED
- *
- * ROOT CAUSE OF BUGS:
- * 1. smooth(t) = t²(3-2t) compressed animation to middle of scroll range
- *    → pill appeared to do nothing at start/end. Fixed: use raw linear p.
- * 2. measurePill() only fired when wr.top was between -10 and +1.
- *    When hero is not first section, wr.top is never near 0 at pin time.
- *    Fixed: measure on first valid scroll frame (wr.top <= 2).
- * 3. IntroSection before HeroSection consumed scroll budget.
- *    Fixed in App.jsx: HeroSection must come BEFORE IntroSection.
- * 4. wH - vh could be 0 if wrapper wasn't tall enough → division by zero.
- *    Fixed: guard maxScroll > 0 before computing p.
- */
+
 
 import { useEffect, useRef } from "react";
 import gsap from "gsap";
 import "./HeroSection.css";
 
-const PILL_IMG = "https://images.unsplash.com/photo-1488521787991-ed7bbaae773c?w=1400&q=90";
+const PILL_IMG = "./src/assets/smilingchildren1.jpg";
 const CARDS = [
-  "https://images.unsplash.com/photo-1607746882042-944635dfe10e?w=400&q=80",
-  "https://images.unsplash.com/photo-1531123897727-8f129e1688ce?w=400&q=80",
-  "https://images.unsplash.com/photo-1508214751196-bcfd4ca60f91?w=400&q=80",
-  "https://images.unsplash.com/photo-1516733968668-dbdce39c4651?w=400&q=80",
-  "https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=400&q=80",
-  "https://images.unsplash.com/photo-1504439468489-c8920d796a29?w=400&q=80",
+  "./src/assets/elderly1.jpg",
+  "./src/assets/elderly2.jpg",
+  "./src/assets/elderly3.jpg",
+  "./src/assets/elderly4.jpg",
+  "./src/assets/elderly5.jpg",
+  "./src/assets/smilingchild1.jpg",
 ];
 const STATS = [
-  { num: "4,200+",  label: "Widows Supported" },
-  { num: "12,000+", label: "Meals Distributed" },
+  { num: "100+",  label: "Widows Supported" },
+  { num: "500+", label: "Meals Distributed" },
   { num: "38",      label: "Communities Reached" },
-  { num: "$820K",   label: "Raised in Aid" },
+  { num: "KSH 820K",   label: "Raised in Aid" },
 ];
 
 const clamp = (v, lo = 0, hi = 1) => Math.max(lo, Math.min(hi, v));
 const lerp  = (a, b, t) => a + (b - a) * t;
-// FIX 1: Use linear easing — animation starts immediately on first scroll px
-// smooth() was t²(3-2t) which held p≈0 for first 30% of scroll = nothing happens
 const ease  = (t) => t; // linear — immediate response
 
 export default function HeroSection() {
@@ -57,7 +42,7 @@ export default function HeroSection() {
 
   const pillMeasure = useRef(null);
   const revealFired = useRef(false);
-  const hasMeasured = useRef(false); // FIX 2: measure once reliably
+  const hasMeasured = useRef(false); 
 
   useEffect(() => {
     // ── Entrance animations ──
@@ -115,10 +100,6 @@ export default function HeroSection() {
       const raw = scrolled / maxScroll;
       const p   = ease(raw); // FIX 1: linear — starts immediately
 
-      // FIX 2: Measure pill reliably on first frame where hero is sticky-pinned.
-      // Original condition (wr.top between -10 and +1) never fired when hero
-      // wasn't the first section. Now we measure on first scroll frame where
-      // the hero panel is stuck (wr.top <= 0) OR on first RAF if we haven't yet.
       if (!hasMeasured.current) {
         measurePill();
       }
@@ -215,7 +196,7 @@ export default function HeroSection() {
           <h2 className="hero__overlay-headline">
             <span className="hs-reveal">Behind every smile</span>
             <span className="hs-reveal">is a mother who <em>fought</em></span>
-            <span className="hs-reveal">to put bread on the table.</span>
+            <span className="hs-reveal">to provide  for their families.</span>
           </h2>
           <p className="hero__overlay-sub hs-reveal">
             Widows Flour exists because flour is love made tangible.
@@ -255,7 +236,7 @@ export default function HeroSection() {
 
           <p className="hero__sub" ref={subRef}>
             We believe every widow deserves dignity, warmth, and provision.
-            Join us as we fill homes with bread, hope, and community.
+            Join us as we fill homes with meals, Hope, and Love.
           </p>
 
           <div className="hero__actions" ref={actionsRef}>

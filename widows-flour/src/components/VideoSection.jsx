@@ -6,11 +6,7 @@ import "./VideoSection.css";
 
 gsap.registerPlugin(ScrollTrigger);
 
-// ─── Replace with your actual video file ───────────────────────
-// Drop your video in src/assets/ and update the path below.
-// Recommended: .mp4 (h.264) for widest browser support.
 import bgVideo from "../assets/story-bg.mp4";
-// ────────────────────────────────────────────────────────────────
 
 export default function VideoSection() {
   const sectionRef = useRef(null);
@@ -100,7 +96,7 @@ export default function VideoSection() {
           {/* Inline stats strip */}
           <div className="video-section__stats">
             <div className="video-section__stat">
-              <span className="video-section__stat-num">10,000+</span>
+              <span className="video-section__stat-num">500+</span>
               <span className="video-section__stat-label">Meals Delivered</span>
             </div>
             <div className="video-section__stat-divider" />
@@ -110,12 +106,12 @@ export default function VideoSection() {
             </div>
             <div className="video-section__stat-divider" />
             <div className="video-section__stat">
-              <span className="video-section__stat-num">120+</span>
+              <span className="video-section__stat-num">60+</span>
               <span className="video-section__stat-label">Active Volunteers</span>
             </div>
             <div className="video-section__stat-divider" />
             <div className="video-section__stat">
-              <span className="video-section__stat-num">$820K</span>
+              <span className="video-section__stat-num">KSH 820K</span>
               <span className="video-section__stat-label">Total Aid Raised</span>
             </div>
           </div>

@@ -1,0 +1,173 @@
+/* ═══════════════════════════════════════════════════
+   GlobeSection.css
+   Inherits all CSS custom properties from global.css
+   ═══════════════════════════════════════════════════ */
+
+/* ── Section shell ── */
+.globe-section {
+    position: relative;
+    width: 100%;
+    min-height: 100vh;
+    background: #000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+  }
+  
+  /* ── Video wrapper — centred, natural size ── */
+  .globe-video-wrap {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 0;
+    pointer-events: none;
+  }
+  
+  
+  .globe-video {
+    width: auto;
+    height: auto;
+    max-width: 100%;
+    max-height: 100vh;
+    display: block;
+  }
+  
+  /* ── Text — absolutely centred on top of the globe ── */
+  .globe-overlay-content {
+    position: relative;
+    z-index: 2;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    gap: 32px;
+    max-width: 760px;
+    padding: 0 48px;
+    box-sizing: border-box;
+  }
+  
+  /* Eyebrow pill */
+  .globe-eyebrow {
+    background: rgba(255, 255, 255, 0.07);
+    border-color: rgba(212, 232, 194, 0.35);
+    color: var(--green-light);
+  }
+  .globe-eyebrow::before {
+    background: var(--green-light);
+  }
+  
+  /* Headline */
+  .globe-headline {
+    font-family: var(--font-display);
+    font-weight: 300;
+    font-size: clamp(3rem, 6.5vw, 5.8rem);
+    line-height: 1.06;
+    letter-spacing: -0.025em;
+    color: #f4f0e8;
+    perspective: 800px;
+    text-shadow: 0 2px 40px rgba(0, 0, 0, 0.8);
+  }
+  
+  .globe-headline .word {
+    display: inline-block;
+    margin-right: 0.25em;
+    will-change: transform, opacity;
+  }
+  
+  /* Subline */
+  .globe-subline {
+    font-family: var(--font-body);
+    font-size: clamp(1.05rem, 1.8vw, 1.3rem);
+    font-weight: 300;
+    line-height: 1.75;
+    color: rgba(244, 240, 232, 0.72);
+    max-width: 520px;
+    text-shadow: 0 1px 16px rgba(0, 0, 0, 0.7);
+  }
+  
+  /* CTA */
+  .globe-cta {
+    background: var(--green-deep);
+    color: #fff;
+    margin-top: 4px;
+  }
+  .globe-cta:hover {
+    background: var(--green-mid);
+    box-shadow: 0 12px 48px rgba(90, 158, 58, 0.45);
+  }
+  
+  /* ═══════════════════════════════════════════════════
+     RESPONSIVE
+     ═══════════════════════════════════════════════════ */
+  
+  @media (max-width: 1280px) {
+    .globe-overlay-content {
+      max-width: 680px;
+      gap: 28px;
+    }
+  }
+  
+  @media (max-width: 1024px) {
+    .globe-headline {
+      font-size: clamp(2.6rem, 6vw, 4.8rem);
+    }
+    .globe-overlay-content {
+      max-width: 580px;
+      padding: 0 36px;
+    }
+  }
+  
+  @media (max-width: 768px) {
+    .globe-section {
+      min-height: 90vh;
+    }
+    .globe-headline {
+      font-size: clamp(2.2rem, 8vw, 3.6rem);
+      letter-spacing: -0.018em;
+    }
+    .globe-subline {
+      font-size: clamp(0.98rem, 2.2vw, 1.15rem);
+    }
+    .globe-overlay-content {
+      max-width: 480px;
+      padding: 0 28px;
+      gap: 22px;
+    }
+    /* On smaller screens the natural video may be too tall,
+       so allow it to shrink with the viewport */
+    .globe-video {
+      max-height: 90vh;
+    }
+  }
+  
+  @media (max-width: 480px) {
+    .globe-section {
+      min-height: 80vh;
+    }
+    .globe-headline {
+      font-size: clamp(2rem, 9vw, 3rem);
+    }
+    .globe-subline {
+      font-size: 0.97rem;
+    }
+    .globe-overlay-content {
+      padding: 0 20px;
+      gap: 18px;
+    }
+    .globe-cta {
+      width: 100%;
+      justify-content: center;
+    }
+    .globe-video {
+      max-height: 80vh;
+    }
+  }
+  
+  @media (prefers-reduced-motion: reduce) {
+    .globe-video {
+      transform: none !important;
+    }
+  }
