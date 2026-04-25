@@ -1,0 +1,334 @@
+/* AdminDashboard.css */
+
+/* ── Shell ── */
+.dash {
+  display: grid;
+  grid-template-columns: 260px 1fr;
+  grid-template-rows: 100vh;
+  background: var(--off-white);
+  font-family: var(--font-body);
+  overflow: hidden;
+}
+
+/* ── Sidebar ── */
+.dash__sidebar {
+  background: var(--text-dark);
+  display: flex;
+  flex-direction: column;
+  padding: 0;
+  overflow-y: auto;
+  overflow-x: hidden;
+  position: relative;
+  z-index: 10;
+}
+
+.dash__sidebar-bg {
+  position: absolute;
+  inset: 0;
+  background:
+    radial-gradient(ellipse 60% 40% at 20% 10%, rgba(90,158,58,0.22) 0%, transparent 70%),
+    radial-gradient(ellipse 50% 50% at 80% 90%, rgba(168,208,128,0.1) 0%, transparent 65%);
+  pointer-events: none;
+}
+
+.dash__sidebar-logo {
+  position: relative;
+  padding: 32px 28px 28px;
+  border-bottom: 1px solid rgba(255,255,255,0.06);
+}
+
+.dash__sidebar-logo img {
+  height: 36px;
+  width: auto;
+  filter: brightness(0) invert(1);
+}
+
+.dash__sidebar-logo span {
+  display: block;
+  font-size: 11px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: rgba(255,255,255,0.35);
+  margin-top: 6px;
+}
+
+.dash__nav {
+  position: relative;
+  flex: 1;
+  padding: 20px 0;
+}
+
+.dash__nav-section {
+  padding: 0 16px;
+  margin-bottom: 4px;
+}
+
+.dash__nav-label {
+  font-size: 10px;
+  font-weight: 500;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: rgba(255,255,255,0.25);
+  padding: 12px 12px 6px;
+}
+
+.dash__nav-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+  padding: 11px 12px;
+  border-radius: var(--radius-sm);
+  background: none;
+  border: none;
+  color: rgba(255,255,255,0.55);
+  font-family: var(--font-body);
+  font-size: 13.5px;
+  font-weight: 400;
+  cursor: pointer;
+  text-align: left;
+  transition: background 0.18s, color 0.18s;
+}
+
+.dash__nav-item:hover {
+  background: rgba(255,255,255,0.06);
+  color: rgba(255,255,255,0.9);
+}
+
+.dash__nav-item.active {
+  background: rgba(90,158,58,0.18);
+  color: var(--green-mid);
+}
+
+.dash__nav-item.active .dash__nav-icon {
+  color: var(--green-mid);
+}
+
+.dash__nav-icon {
+  font-size: 16px;
+  width: 20px;
+  text-align: center;
+  flex-shrink: 0;
+}
+
+/* Sidebar footer — user info + logout */
+.dash__sidebar-footer {
+  position: relative;
+  padding: 20px 16px;
+  border-top: 1px solid rgba(255,255,255,0.06);
+}
+
+.dash__user {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 12px;
+}
+
+.dash__avatar {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background: rgba(90,158,58,0.25);
+  border: 1px solid rgba(90,158,58,0.4);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 14px;
+  color: var(--green-mid);
+  font-weight: 600;
+  flex-shrink: 0;
+}
+
+.dash__user-info {
+  min-width: 0;
+}
+
+.dash__user-name {
+  font-size: 13px;
+  color: rgba(255,255,255,0.85);
+  font-weight: 500;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.dash__user-role {
+  font-size: 11px;
+  color: var(--green-mid);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+
+.dash__logout {
+  width: 100%;
+  padding: 10px;
+  background: rgba(255,255,255,0.04);
+  border: 1px solid rgba(255,255,255,0.08);
+  border-radius: var(--radius-sm);
+  color: rgba(255,255,255,0.45);
+  font-family: var(--font-body);
+  font-size: 12px;
+  cursor: pointer;
+  transition: background 0.18s, color 0.18s, border-color 0.18s;
+  letter-spacing: 0.04em;
+}
+
+.dash__logout:hover {
+  background: rgba(220,53,69,0.12);
+  border-color: rgba(220,53,69,0.3);
+  color: #ff7675;
+}
+
+/* ── Main area ── */
+.dash__main {
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+/* Top bar */
+.dash__topbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 20px 40px;
+  background: var(--white);
+  border-bottom: 1px solid rgba(0,0,0,0.06);
+  flex-shrink: 0;
+}
+
+.dash__topbar-title {
+  font-family: var(--font-display);
+  font-size: 1.6rem;
+  font-weight: 400;
+  color: var(--text-dark);
+}
+
+.dash__topbar-meta {
+  font-size: 12px;
+  color: var(--text-light);
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.dash__topbar-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  background: var(--green-pale);
+  color: var(--green-deep);
+  border: 1px solid var(--green-muted);
+  padding: 4px 10px;
+  border-radius: var(--radius-pill);
+  font-size: 11px;
+  font-weight: 500;
+  letter-spacing: 0.04em;
+}
+
+/* Content scroll area */
+.dash__content {
+  flex: 1;
+  overflow-y: auto;
+  padding: 36px 40px;
+}
+
+/* Mobile hamburger overlay */
+.dash__mobile-header {
+  display: none;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16px 20px;
+  background: var(--text-dark);
+  position: sticky;
+  top: 0;
+  z-index: 200;
+}
+
+.dash__mobile-logo {
+  height: 30px;
+  filter: brightness(0) invert(1);
+}
+
+.dash__hamburger {
+  background: none;
+  border: none;
+  cursor: pointer;
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  padding: 4px;
+}
+
+.dash__hamburger span {
+  display: block;
+  width: 22px;
+  height: 2px;
+  background: rgba(255,255,255,0.8);
+  transition: transform 0.25s, opacity 0.25s;
+  transform-origin: center;
+}
+
+.dash__overlay {
+  display: none;
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.5);
+  z-index: 90;
+}
+
+.dash__overlay.open { display: block; }
+
+/* ── Responsive ── */
+@media (max-width: 1024px) {
+  .dash {
+    grid-template-columns: 220px 1fr;
+  }
+  .dash__topbar, .dash__content { padding-left: 28px; padding-right: 28px; }
+}
+
+@media (max-width: 768px) {
+  .dash {
+    display: block;
+    overflow: auto;
+    height: auto;
+  }
+
+  .dash__mobile-header { display: flex; }
+
+  .dash__sidebar {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 260px;
+    height: 100%;
+    transform: translateX(-100%);
+    transition: transform 0.3s var(--ease-out);
+    z-index: 100;
+  }
+
+  .dash__sidebar.open {
+    transform: translateX(0);
+  }
+
+  .dash__main {
+    padding-top: 0;
+  }
+
+  .dash__topbar {
+    padding: 16px 20px;
+  }
+
+  .dash__topbar-title { font-size: 1.3rem; }
+  .dash__topbar-meta { display: none; }
+
+  .dash__content {
+    padding: 20px;
+    overflow-y: visible;
+  }
+}
+
+@media (max-width: 480px) {
+  .dash__content { padding: 16px; }
+}

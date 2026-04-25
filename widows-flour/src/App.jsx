@@ -1,13 +1,12 @@
-import { useEffect, useRef } from "react";
+import { useState, useEffect, useRef } from "react";
+import { Routes, Route, Navigate, useNavigate } from "react-router-dom";
 import gsap from "gsap";
+import { Toaster } from "react-hot-toast";
 import "./styles/globals.css";
 
-// FIX 3: HeroSection MUST come before IntroSection.
-// IntroSection is height:250vh sticky — if it renders first it eats all
-// the scroll budget before HeroSection ever pins, so pill never triggers.
 import Navbar              from "./components/Navbar";
-import HeroSection         from "./components/HeroSection";   // ← FIRST
-import IntroSection        from "./components/IntroSection";  // ← SECOND
+import HeroSection         from "./components/HeroSection";
+import IntroSection        from "./components/IntroSection";
 import MarqueeSection      from "./components/MarqueeSection";
 import AboutSection        from "./components/AboutSection";
 import ImpactSection       from "./components/ImpactSection";
@@ -16,12 +15,55 @@ import VideoSection        from "./components/VideoSection";
 import GetInvolvedSection  from "./components/GetInvolvedSection";
 import TestimonialsSection from "./components/TestimonialsSection";
 import { CTASection, Footer } from "./components/CTASection";
-import GlobeSection from "./components/GlobeSection";
+import GlobeSection        from "./components/GlobeSection";
+
+import AuthPage       from "./components/Auth/AuthPage";
+import AdminDashboard from "./components/AdminDashboard/AdminDashboard";
+
+// ── Read localStorage synchronously so initial state is correct ──
+function getStoredSession() {
+  try {
+    const token = localStorage.getItem("fb_token");
+    const admin = localStorage.getItem("admin");
+    if (token && admin) return { token, admin: JSON.parse(admin) };
+  } catch { /* corrupt */ }
+  return { token: null, admin: null };
+}
+
+function PrivateRoute({ admin, token, children }) {
+  if (!admin || !token) return <Navigate to="/login" replace />;
+  return children;
+}
+
+function PublicOnlyRoute({ admin, token, children }) {
+  if (admin && token) return <Navigate to="/admin-dashboard" replace />;
+  return children;
+}
 
 export default function App() {
   const cursorRef   = useRef(null);
   const followerRef = useRef(null);
+  const navigate    = useNavigate();
 
+  // ── Initialize state synchronously from localStorage ──
+  const [session, setSession] = useState(getStoredSession);
+  const { admin, token } = session;
+
+  const handleLogin = (adminData, fbToken) => {
+    localStorage.setItem("fb_token", fbToken);
+    localStorage.setItem("admin", JSON.stringify(adminData));
+    setSession({ admin: adminData, token: fbToken });
+    navigate("/admin-dashboard", { replace: true });
+  };
+
+  const handleLogout = () => {
+    localStorage.removeItem("fb_token");
+    localStorage.removeItem("admin");
+    setSession({ admin: null, token: null });
+    navigate("/", { replace: true });
+  };
+
+  // Custom cursor
   useEffect(() => {
     const cursor   = cursorRef.current;
     const follower = followerRef.current;
@@ -60,23 +102,59 @@ export default function App() {
 
   return (
     <>
-      <div className="cursor"          ref={cursorRef} />
-      <div className="cursor-follower" ref={followerRef} />
-      <Navbar />
-      <main className="app-main">
-        <HeroSection />
-        <IntroSection />
-        <MarqueeSection />
-        <AboutSection />
-        <GlobeSection />
-        <ImpactSection />
-        <CausesSection />
-        <VideoSection />
-        <GetInvolvedSection />
-        <TestimonialsSection />
-        <CTASection />
-      </main>
-      <Footer />
+      <Toaster position="top-right" />
+      <Routes>
+
+        {/* ── Public site ── */}
+        <Route
+          path="/"
+          element={
+            <>
+              <div className="cursor"          ref={cursorRef} />
+              <div className="cursor-follower" ref={followerRef} />
+              <Navbar onAdminClick={() => navigate("/login")} />
+              <main className="app-main">
+                <HeroSection />
+                <IntroSection />
+                <MarqueeSection />
+                <AboutSection />
+                <GlobeSection />
+                <ImpactSection />
+                <CausesSection />
+                <VideoSection />
+                <GetInvolvedSection />
+                <TestimonialsSection />
+                <CTASection />
+              </main>
+              <Footer />
+            </>
+          }
+        />
+
+        {/* ── Login ── */}
+        <Route
+          path="/login"
+          element={
+            <PublicOnlyRoute admin={admin} token={token}>
+              <AuthPage onLogin={handleLogin} onBack={() => navigate("/")} />
+            </PublicOnlyRoute>
+          }
+        />
+
+        {/* ── Admin dashboard ── */}
+        <Route
+          path="/admin-dashboard"
+          element={
+            <PrivateRoute admin={admin} token={token}>
+              <AdminDashboard admin={admin} token={token} onLogout={handleLogout} />
+            </PrivateRoute>
+          }
+        />
+
+        {/* ── Catch-all ── */}
+        <Route path="*" element={<Navigate to="/" replace />} />
+
+      </Routes>
     </>
   );
 }

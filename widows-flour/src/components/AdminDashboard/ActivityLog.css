@@ -1,0 +1,23 @@
+/* ActivityLog.css */
+
+.log__time {
+  font-size: 12px;
+  color: var(--text-light);
+  white-space: nowrap;
+  font-variant-numeric: tabular-nums;
+}
+
+.log__entity {
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--text-mid);
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.log__entity-id {
+  font-family: monospace;
+  font-size: 11px;
+  color: var(--text-light);
+}

@@ -140,7 +140,7 @@
   padding-left: 8px;
 }
 
-/* Overlay */
+
 .navbar__overlay {
   position: fixed;
   inset: 0;
@@ -154,6 +154,41 @@
 .navbar__overlay.open {
   opacity: 1;
   pointer-events: all;
+}
+
+.navbar__cta-group {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+
+.navbar__cta-login {
+   display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  background: var(--text-dark);
+  color: var(--white) !important;
+  font-family: var(--font-body);
+  font-size: 14px;
+  font-weight: 500;
+  padding: 10px 22px;
+  border-radius: var(--radius-pill);
+  text-decoration: none;
+  flex-shrink: 0;
+  transition: background 0.25s, transform 0.2s;
+}
+.navbar__cta-login:hover {
+background: var(--green-deep);
+  transform: translateY(-1px);
+}
+
+
+.navbar__auth-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 9999;
+  overflow-y: auto;
 }
 
 /* ── Responsive ── */

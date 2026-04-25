@@ -2,14 +2,15 @@
 import { useEffect, useRef, useState } from "react";
 import { gsap } from "gsap";
 import "./Navbar.css";
+import AuthPage from "./Auth/AuthPage"; // ← adjust path if needed
 
-// ── Image import (Vite-compatible ES module import) ────────────
 import imgLogo from "../assets/logo.png";
 
 export default function Navbar() {
   const navRef = useRef(null);
   const [scrolled, setScrolled] = useState(false);
   const [drawerOpen, setDrawerOpen] = useState(false);
+  const [showAuth, setShowAuth] = useState(false); // ← new
 
   useEffect(() => {
     gsap.fromTo(
@@ -26,11 +27,14 @@ export default function Navbar() {
   }, []);
 
   useEffect(() => {
-    document.body.style.overflow = drawerOpen ? "hidden" : "";
+    document.body.style.overflow = drawerOpen || showAuth ? "hidden" : "";
     return () => { document.body.style.overflow = ""; };
-  }, [drawerOpen]);
+  }, [drawerOpen, showAuth]);
 
   const links = ["Home", "About", "Causes", "Impact", "Contact"];
+
+  const openAuth  = () => { setDrawerOpen(false); setShowAuth(true); };
+  const closeAuth = () => setShowAuth(false);
 
   return (
     <>
@@ -47,10 +51,18 @@ export default function Navbar() {
           ))}
         </ul>
 
-        {/* Desktop CTA */}
-        <a href="#donate" className="navbar__cta navbar__cta-desktop">
-          Donate Now <span className="navbar__heart">♥</span>
-        </a>
+        {/* Desktop CTAs */}
+        <div className="navbar__cta-group">
+          <button
+            className="navbar__cta navbar__cta-login navbar__cta-desktop"
+            onClick={openAuth}
+          >
+            Login
+          </button>
+          <a href="#donate" className="navbar__cta navbar__cta-desktop">
+            Donate Now <span className="navbar__heart">♥</span>
+          </a>
+        </div>
 
         {/* Mobile hamburger */}
         <button
@@ -64,6 +76,7 @@ export default function Navbar() {
         </button>
       </nav>
 
+      {/* Mobile drawer */}
       <div
         className={`navbar__overlay ${drawerOpen ? "open" : ""}`}
         onClick={() => setDrawerOpen(false)}
@@ -74,10 +87,30 @@ export default function Navbar() {
             {l}
           </a>
         ))}
+        <button
+          onClick={openAuth}
+          style={{ background: "none", border: "none", textAlign: "left",
+                   font: "inherit", cursor: "pointer", color: "inherit" }}
+        >
+          Login
+        </button>
         <a href="#donate" onClick={() => setDrawerOpen(false)} style={{ color: "var(--green-deep)" }}>
           Donate Now ♥
         </a>
       </div>
+
+      {/* Auth modal overlay */}
+      {showAuth && (
+        <div className="navbar__auth-overlay">
+          <AuthPage
+            onLogin={(adminData, token) => {
+              console.log("Logged in:", adminData);
+              closeAuth();
+            }}
+            onBack={closeAuth}
+          />
+        </div>
+      )}
     </>
   );
 }

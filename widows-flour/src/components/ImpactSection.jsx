@@ -14,7 +14,7 @@ const IMG = {
   volunteers: imgVolunteers,
 };
 
-/* ─── Stats data ──────────────────────────────────────────────── */
+
 const stats = [
   {
     variant: "dark",
