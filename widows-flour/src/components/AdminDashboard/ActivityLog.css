@@ -21,3 +21,426 @@
   font-size: 11px;
   color: var(--text-light);
 }
+/* ActivityLog.css — editorial analytics aesthetic */
+
+/* ── Root ─────────────────────────────────────────────────────────────────── */
+.al__root {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+}
+
+/* ── Tab bar ──────────────────────────────────────────────────────────────── */
+.al__tabs {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 0 0 18px 0;
+  border-bottom: 2px solid #f1f5f9;
+  margin-bottom: 20px;
+}
+
+.al__tab {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  padding: 8px 18px;
+  border: 1.5px solid transparent;
+  border-radius: 8px;
+  background: transparent;
+  font-size: 13.5px;
+  font-weight: 500;
+  color: #6b7280;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+
+.al__tab:hover {
+  background: #f8fafc;
+  color: #374151;
+}
+
+.al__tab--active {
+  background: #f0fdf4;
+  color: #15803d;
+  border-color: #bbf7d0;
+}
+
+.al__tab-count {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 20px;
+  height: 20px;
+  padding: 0 5px;
+  border-radius: 99px;
+  background: #15803d;
+  color: #fff;
+  font-size: 10px;
+  font-weight: 700;
+}
+
+.al__tab-spacer { flex: 1; }
+
+.al__refresh-btn {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 7px 14px;
+  border: 1.5px solid #e5e7eb;
+  border-radius: 8px;
+  background: #fff;
+  font-size: 13px;
+  color: #374151;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+.al__refresh-btn:hover {
+  background: #f8fafc;
+  border-color: #d1d5db;
+}
+
+/* ── Loading / empty states ──────────────────────────────────────────────── */
+.al__data-loading {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  padding: 60px 20px;
+  color: #9ca3af;
+  font-size: 14px;
+}
+
+.al__spin {
+  animation: spin 0.9s linear infinite;
+}
+
+@keyframes spin {
+  from { transform: rotate(0deg); }
+  to   { transform: rotate(360deg); }
+}
+
+.al__empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  padding: 60px 20px;
+  color: #9ca3af;
+  font-size: 14px;
+}
+.al__empty i { font-size: 32px; }
+
+/* ── Analytics ───────────────────────────────────────────────────────────── */
+.al__analytics {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+/* Stat cards */
+.al__stats-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+  gap: 14px;
+}
+
+.al__stat-card {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  background: #fff;
+  border: 1.5px solid #f1f5f9;
+  border-radius: 12px;
+  padding: 16px 18px;
+  box-shadow: 0 1px 4px rgba(0,0,0,0.04);
+  animation: slideUp 0.35s ease both;
+  transition: box-shadow 0.15s, transform 0.15s;
+}
+.al__stat-card:hover {
+  box-shadow: 0 4px 16px rgba(0,0,0,0.08);
+  transform: translateY(-2px);
+}
+
+@keyframes slideUp {
+  from { opacity: 0; transform: translateY(14px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+.al__stat-icon {
+  width: 42px;
+  height: 42px;
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 18px;
+  flex-shrink: 0;
+}
+
+.al__stat-body {
+  min-width: 0;
+  flex: 1;
+}
+
+.al__stat-value {
+  font-size: 20px;
+  font-weight: 700;
+  color: #111827;
+  line-height: 1.2;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.al__stat-label {
+  font-size: 11.5px;
+  color: #6b7280;
+  margin-top: 2px;
+  font-weight: 500;
+}
+
+.al__stat-sub {
+  font-size: 10.5px;
+  color: #9ca3af;
+  margin-top: 2px;
+}
+
+/* Charts */
+.al__charts-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+}
+
+.al__chart-card {
+  background: #fff;
+  border: 1.5px solid #f1f5f9;
+  border-radius: 12px;
+  padding: 18px 20px 12px;
+  box-shadow: 0 1px 4px rgba(0,0,0,0.04);
+}
+
+.al__chart-card--wide {
+  grid-column: span 1; /* overridden per row if needed */
+}
+
+.al__charts-row:first-of-type .al__chart-card--wide {
+  grid-column: span 1;
+}
+
+/* Make first row: wide area + small donut */
+.al__charts-row:nth-of-type(1) {
+  grid-template-columns: 2fr 1fr;
+}
+
+/* Second row: equal split */
+.al__charts-row:nth-of-type(2) {
+  grid-template-columns: 1fr 2fr;
+}
+
+.al__chart-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 12px;
+}
+
+.al__chart-title {
+  font-size: 13px;
+  font-weight: 600;
+  color: #374151;
+  display: flex;
+  align-items: center;
+  gap: 7px;
+}
+.al__chart-title i { color: #9ca3af; }
+
+.al__chart-empty {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 200px;
+  color: #9ca3af;
+  font-size: 13px;
+}
+
+/* Recharts custom tooltip */
+.al__tooltip {
+  background: #1e293b;
+  border-radius: 8px;
+  padding: 10px 14px;
+  box-shadow: 0 4px 16px rgba(0,0,0,0.2);
+  font-size: 12px;
+  min-width: 140px;
+}
+
+.al__tooltip-label {
+  color: #94a3b8;
+  font-weight: 600;
+  margin-bottom: 6px;
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.al__tooltip-row {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  color: #e2e8f0;
+  margin-top: 3px;
+}
+
+.al__tooltip-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+/* ── Activity Feed ───────────────────────────────────────────────────────── */
+.al__feed {
+  display: flex;
+  flex-direction: column;
+}
+
+.al__feed-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+  position: relative;
+  padding-left: 28px;
+}
+
+/* Vertical timeline line */
+.al__feed-list::before {
+  content: "";
+  position: absolute;
+  left: 7px;
+  top: 14px;
+  bottom: 14px;
+  width: 2px;
+  background: linear-gradient(to bottom, #e5e7eb 0%, #e5e7eb 100%);
+  border-radius: 1px;
+}
+
+.al__feed-row {
+  display: flex;
+  gap: 14px;
+  position: relative;
+  padding: 14px 0 14px 0;
+  border-bottom: 1px solid #f8fafc;
+  animation: feedIn 0.25s ease both;
+}
+
+.al__feed-row:last-child {
+  border-bottom: none;
+}
+
+@keyframes feedIn {
+  from { opacity: 0; transform: translateX(-6px); }
+  to   { opacity: 1; transform: translateX(0); }
+}
+
+.al__feed-dot {
+  position: absolute;
+  left: -24px;
+  top: 20px;
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  border: 2px solid #fff;
+  box-shadow: 0 0 0 1px rgba(0,0,0,0.08);
+  flex-shrink: 0;
+  z-index: 1;
+}
+
+.al__feed-content {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
+.al__feed-top {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.al__feed-time {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 11.5px;
+  color: #9ca3af;
+  margin-left: auto;
+}
+
+.al__feed-desc {
+  font-size: 13px;
+  color: #374151;
+  line-height: 1.5;
+  padding: 6px 10px;
+  background: #f8fafc;
+  border-radius: 6px;
+  border-left: 3px solid #e5e7eb;
+}
+
+.al__feed-footer {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 11px;
+  color: #9ca3af;
+  font-family: monospace;
+}
+
+/* Badge */
+.al__badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 3px 10px;
+  border-radius: 99px;
+  font-size: 11.5px;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+/* Entity chip */
+.al__entity-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 2px 9px;
+  border-radius: 6px;
+  background: #f3f4f6;
+  color: #4b5563;
+  font-size: 11.5px;
+  border: 1px solid #e5e7eb;
+}
+.al__entity-chip i  { opacity: 0.5; font-size: 10px; }
+.al__entity-chip strong { color: #111827; margin-left: 2px; }
+
+/* ── Responsive ──────────────────────────────────────────────────────────── */
+@media (max-width: 900px) {
+  .al__charts-row,
+  .al__charts-row:nth-of-type(1),
+  .al__charts-row:nth-of-type(2) {
+    grid-template-columns: 1fr;
+  }
+  .al__stats-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 540px) {
+  .al__stats-grid {
+    grid-template-columns: 1fr 1fr;
+  }
+  .al__stat-value { font-size: 16px; }
+}

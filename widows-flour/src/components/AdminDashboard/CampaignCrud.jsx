@@ -1,8 +1,10 @@
 // src/components/AdminDashboard/CampaignCrud.jsx
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 import "./Crud.css";
 
-const API = import.meta.env.VITE_API_URL ?? "";
+const API      = import.meta.env.VITE_API_URL ?? "http://127.0.0.1:5000";
+const BASE     = `${API}/campaigns`;
+const BEN_BASE = `${API}/beneficiaries`;
 const PER_PAGE = 10;
 
 const EMPTY_FORM = {
@@ -25,6 +27,139 @@ function fmtCurrency(n) {
   return n != null ? `KES ${Number(n).toLocaleString()}` : "—";
 }
 
+// ── Beneficiary Picker ────────────────────────────────────────────────────────
+function BeneficiaryPicker({ beneficiaries, value, onChange, loading }) {
+  const [open, setOpen]     = useState(false);
+  const [search, setSearch] = useState("");
+  const containerRef        = useRef(null);
+  const searchRef           = useRef(null);
+
+  const selected = beneficiaries.find(b => String(b.id) === String(value));
+
+  const filtered = beneficiaries.filter(b =>
+    b.name.toLowerCase().includes(search.toLowerCase()) ||
+    (b.location || "").toLowerCase().includes(search.toLowerCase())
+  );
+
+  useEffect(() => {
+    if (!open) return;
+    const handler = (e) => {
+      if (containerRef.current && !containerRef.current.contains(e.target)) {
+        setOpen(false);
+        setSearch("");
+      }
+    };
+    document.addEventListener("mousedown", handler);
+    return () => document.removeEventListener("mousedown", handler);
+  }, [open]);
+
+  useEffect(() => {
+    if (open && searchRef.current) {
+      setTimeout(() => searchRef.current?.focus(), 50);
+    }
+  }, [open]);
+
+  const handleSelect = (b) => {
+    onChange(String(b.id));
+    setOpen(false);
+    setSearch("");
+  };
+
+  const handleClear = (e) => {
+    e.stopPropagation();
+    onChange("");
+  };
+
+  return (
+    <div className="ben-picker" ref={containerRef}>
+      <button
+        type="button"
+        className={`ben-picker__trigger ${open ? "ben-picker__trigger--open" : ""} ${selected ? "ben-picker__trigger--selected" : ""}`}
+        onClick={() => setOpen(o => !o)}
+      >
+        <i className="bi bi-person-heart ben-picker__trigger-icon" />
+        <span className="ben-picker__trigger-label">
+          {loading
+            ? "Loading beneficiaries…"
+            : selected
+              ? selected.name
+              : "Select a beneficiary…"}
+        </span>
+        <div className="ben-picker__trigger-right">
+          {selected && (
+            <span className="ben-picker__clear" onClick={handleClear} title="Clear selection">
+              <i className="bi bi-x" />
+            </span>
+          )}
+          <i className={`bi bi-chevron-${open ? "up" : "down"} ben-picker__chevron`} />
+        </div>
+      </button>
+
+      {open && (
+        <div className="ben-picker__popover">
+          <div className="ben-picker__search-wrap">
+            <i className="bi bi-search ben-picker__search-icon" />
+            <input
+              ref={searchRef}
+              className="ben-picker__search"
+              placeholder="Search by name or location…"
+              value={search}
+              onChange={e => setSearch(e.target.value)}
+            />
+            {search && (
+              <button type="button" className="ben-picker__search-clear" onClick={() => setSearch("")}>
+                <i className="bi bi-x" />
+              </button>
+            )}
+          </div>
+
+          <div className="ben-picker__list">
+            {loading ? (
+              <div className="ben-picker__empty"><i className="bi bi-arrow-repeat" /> Loading…</div>
+            ) : filtered.length === 0 ? (
+              <div className="ben-picker__empty">
+                <i className="bi bi-person-x" />
+                <span>{search ? `No results for "${search}"` : "No beneficiaries available."}</span>
+              </div>
+            ) : (
+              filtered.map(b => (
+                <button
+                  key={b.id}
+                  type="button"
+                  className={`ben-picker__item ${String(b.id) === String(value) ? "ben-picker__item--active" : ""}`}
+                  onClick={() => handleSelect(b)}
+                >
+                  <div className="ben-picker__item-avatar">
+                    {b.profile_image
+                      ? <img src={b.profile_image} alt={b.name} />
+                      : <i className="bi bi-person-fill" />}
+                  </div>
+                  <div className="ben-picker__item-info">
+                    <span className="ben-picker__item-name">{b.name}</span>
+                    {b.location && (
+                      <span className="ben-picker__item-meta">
+                        <i className="bi bi-geo-alt" /> {b.location}
+                      </span>
+                    )}
+                  </div>
+                  {String(b.id) === String(value) && (
+                    <i className="bi bi-check-lg ben-picker__item-check" />
+                  )}
+                </button>
+              ))
+            )}
+          </div>
+
+          <div className="ben-picker__footer">
+            {filtered.length} of {beneficiaries.length} beneficiaries
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
+// ── Main Component ────────────────────────────────────────────────────────────
 export default function CampaignCrud({ token }) {
   const [rows, setRows]                   = useState([]);
   const [total, setTotal]                 = useState(0);
@@ -32,6 +167,7 @@ export default function CampaignCrud({ token }) {
   const [filter, setFilter]               = useState("");
   const [loading, setLoading]             = useState(false);
   const [beneficiaries, setBeneficiaries] = useState([]);
+  const [benLoading, setBenLoading]       = useState(false);
 
   const [modal, setModal]       = useState(null);
   const [selected, setSelected] = useState(null);
@@ -39,24 +175,31 @@ export default function CampaignCrud({ token }) {
   const [saving, setSaving]     = useState(false);
   const [modalErr, setModalErr] = useState("");
 
-  const headers = { Authorization: `Bearer ${token}`, "Content-Type": "application/json" };
+  const headers = useCallback(
+    () => ({ Authorization: `Bearer ${token}`, "Content-Type": "application/json" }),
+    [token]
+  );
 
+  // Load beneficiaries
   useEffect(() => {
-    fetch(`${API}/beneficiaries?per_page=100`, { headers })
+    setBenLoading(true);
+    fetch(`${BEN_BASE}?per_page=200`, { headers: headers() })
       .then(r => r.json())
       .then(d => setBeneficiaries(d.data?.items ?? d.data ?? []))
-      .catch(() => {});
+      .catch(() => {})
+      .finally(() => setBenLoading(false));
   }, [token]);
 
+  // GET /campaigns
   const load = useCallback(async () => {
     setLoading(true);
     const params = new URLSearchParams({ page, per_page: PER_PAGE });
     if (filter) params.set("status", filter);
     try {
-      const res  = await fetch(`${API}/campaigns?${params}`, { headers });
+      const res  = await fetch(`${BASE}?${params}`, { headers: headers() });
       const data = await res.json();
       setRows(data.data?.items ?? data.data ?? []);
-      setTotal(data.data?.total ?? (data.data?.length ?? 0));
+      setTotal(data.data?.total ?? data.pagination?.total ?? (data.data?.length ?? 0));
     } catch { setRows([]); }
     setLoading(false);
   }, [page, filter, token]);
@@ -64,39 +207,87 @@ export default function CampaignCrud({ token }) {
   useEffect(() => { load(); }, [load]);
 
   const openCreate = () => { setForm(EMPTY_FORM); setModalErr(""); setModal("create"); };
-  const openEdit   = (r) => {
+
+  // ── FIX: Explicitly map every field from the row, including status ──────────
+  const openEdit = (r) => {
     setSelected(r);
     setForm({
-      title: r.title, description: r.description ?? "", goal_amount: r.goal_amount,
-      beneficiary_id: r.beneficiary_id, status: r.status,
-      start_date: r.start_date ? r.start_date.slice(0, 10) : "",
-      end_date:   r.end_date   ? r.end_date.slice(0, 10)   : "",
+      title:          r.title          ?? "",
+      description:    r.description    ?? "",
+      goal_amount:    r.goal_amount    ?? "",
+      // FIX: beneficiary_id may be nested under r.beneficiary.id — handle both
+      beneficiary_id: String(r.beneficiary_id ?? r.beneficiary?.id ?? ""),
+      // FIX: explicitly cast status — never fall back silently to "draft"
+      status:         r.status         ?? "draft",
+      start_date:     r.start_date     ? r.start_date.slice(0, 10) : "",
+      end_date:       r.end_date       ? r.end_date.slice(0, 10)   : "",
     });
-    setModalErr(""); setModal("edit");
+    setModalErr("");
+    setModal("edit");
   };
+
   const openDelete = (r) => { setSelected(r); setModal("delete"); };
   const closeModal = ()  => { setModal(null); setSelected(null); };
 
   const handleSave = async () => {
+    if (!form.title.trim())       { setModalErr("Title is required.");       return; }
+    if (!form.goal_amount)        { setModalErr("Goal amount is required."); return; }
+    if (!form.beneficiary_id)     { setModalErr("Beneficiary is required."); return; }
+
     setSaving(true); setModalErr("");
-    const body = { ...form, goal_amount: parseFloat(form.goal_amount), beneficiary_id: parseInt(form.beneficiary_id) };
+
+    const body = {
+      title:          form.title.trim(),
+      description:    form.description.trim() || null,
+      goal_amount:    parseFloat(form.goal_amount),
+      beneficiary_id: parseInt(form.beneficiary_id, 10),
+      // FIX: explicitly include status — never omit it
+      status:         form.status,
+      start_date:     form.start_date || null,
+      end_date:       form.end_date   || null,
+    };
+
+    // Debug log — remove after confirming fix
+    console.log("[CampaignCrud] Saving body:", JSON.stringify(body));
+
     try {
-      const url    = modal === "edit" ? `${API}/campaigns/${selected.id}` : `${API}/campaigns`;
+      const url    = modal === "edit" ? `${BASE}/${selected.id}` : BASE;
       const method = modal === "edit" ? "PUT" : "POST";
-      const res    = await fetch(url, { method, headers, body: JSON.stringify(body) });
-      const data   = await res.json();
-      if (!res.ok) { setModalErr(data.error || "Save failed."); setSaving(false); return; }
-      closeModal(); load();
-    } catch { setModalErr("Network error."); }
+
+      const res  = await fetch(url, { method, headers: headers(), body: JSON.stringify(body) });
+      const data = await res.json();
+
+      // Debug log — remove after confirming fix
+      console.log("[CampaignCrud] Response:", res.status, JSON.stringify(data));
+
+      if (!res.ok) {
+        setModalErr(data.error || data.message || "Save failed.");
+        setSaving(false);
+        return;
+      }
+
+      closeModal();
+      load();
+    } catch (err) {
+      console.error("[CampaignCrud] Network error:", err);
+      setModalErr("Network error. Please try again.");
+    }
+
     setSaving(false);
   };
 
   const handleDelete = async () => {
     setSaving(true);
     try {
-      await fetch(`${API}/campaigns/${selected.id}`, { method: "DELETE", headers });
-      closeModal(); load();
-    } catch {}
+      const res = await fetch(`${BASE}/${selected.id}`, { method: "DELETE", headers: headers() });
+      if (res.ok) { closeModal(); load(); }
+      else {
+        const data = await res.json();
+        console.error("[CampaignCrud] Delete failed:", data);
+      }
+    } catch (err) {
+      console.error("[CampaignCrud] Delete network error:", err);
+    }
     setSaving(false);
   };
 
@@ -106,7 +297,11 @@ export default function CampaignCrud({ token }) {
     <div>
       <div className="crud__toolbar">
         <div className="crud__toolbar-left">
-          <select className="crud__filter" value={filter} onChange={(e) => { setFilter(e.target.value); setPage(1); }}>
+          <select
+            className="crud__filter"
+            value={filter}
+            onChange={(e) => { setFilter(e.target.value); setPage(1); }}
+          >
             <option value="">All statuses</option>
             <option value="draft">Draft</option>
             <option value="active">Active</option>
@@ -121,9 +316,7 @@ export default function CampaignCrud({ token }) {
 
       <div className="crud__card">
         {loading ? (
-          <div className="crud__loading">
-            <i className="bi bi-arrow-repeat" /> Loading…
-          </div>
+          <div className="crud__loading"><i className="bi bi-arrow-repeat" /> Loading…</div>
         ) : rows.length === 0 ? (
           <div className="crud__empty">
             <i className="bi bi-megaphone crud__empty-icon" />
@@ -134,13 +327,8 @@ export default function CampaignCrud({ token }) {
             <table className="crud__table">
               <thead>
                 <tr>
-                  <th>Title</th>
-                  <th>Goal</th>
-                  <th>Raised</th>
-                  <th>Progress</th>
-                  <th>Status</th>
-                  <th>End Date</th>
-                  <th>Actions</th>
+                  <th>Title</th><th>Goal</th><th>Raised</th>
+                  <th>Progress</th><th>Status</th><th>End Date</th><th>Actions</th>
                 </tr>
               </thead>
               <tbody>
@@ -164,12 +352,8 @@ export default function CampaignCrud({ token }) {
                     </td>
                     <td>
                       <div className="crud__actions">
-                        <button className="crud__btn-edit"   onClick={() => openEdit(r)}>
-                          <i className="bi bi-pencil" /> Edit
-                        </button>
-                        <button className="crud__btn-delete" onClick={() => openDelete(r)}>
-                          <i className="bi bi-trash" /> Delete
-                        </button>
+                        <button className="crud__btn-edit"   onClick={() => openEdit(r)}><i className="bi bi-pencil" /> Edit</button>
+                        <button className="crud__btn-delete" onClick={() => openDelete(r)}><i className="bi bi-trash" /> Delete</button>
                       </div>
                     </td>
                   </tr>
@@ -178,21 +362,19 @@ export default function CampaignCrud({ token }) {
             </table>
           </div>
         )}
+
         {totalPages > 1 && (
           <div className="crud__pagination">
             <span>Page {page} of {totalPages} ({total} total)</span>
             <div className="crud__pagination-btns">
-              <button onClick={() => setPage(p => p - 1)} disabled={page === 1}>
-                <i className="bi bi-chevron-left" /> Prev
-              </button>
-              <button onClick={() => setPage(p => p + 1)} disabled={page >= totalPages}>
-                Next <i className="bi bi-chevron-right" />
-              </button>
+              <button onClick={() => setPage(p => p - 1)} disabled={page === 1}><i className="bi bi-chevron-left" /> Prev</button>
+              <button onClick={() => setPage(p => p + 1)} disabled={page >= totalPages}>Next <i className="bi bi-chevron-right" /></button>
             </div>
           </div>
         )}
       </div>
 
+      {/* ── Create / Edit modal ── */}
       {(modal === "create" || modal === "edit") && (
         <div className="crud__modal-backdrop" onClick={closeModal}>
           <div className="crud__modal" onClick={(e) => e.stopPropagation()}>
@@ -201,28 +383,49 @@ export default function CampaignCrud({ token }) {
                 <i className={`bi ${modal === "edit" ? "bi-pencil-square" : "bi-megaphone"}`} />
                 {" "}{modal === "edit" ? "Edit Campaign" : "New Campaign"}
               </h2>
-              <button className="crud__modal-close" onClick={closeModal}>
-                <i className="bi bi-x-lg" />
-              </button>
+              <button className="crud__modal-close" onClick={closeModal}><i className="bi bi-x-lg" /></button>
             </div>
             <div className="crud__modal-body">
               {modalErr && <div className="crud__modal-error">{modalErr}</div>}
+
               <div className="crud__field">
                 <label>Title *</label>
-                <input value={form.title} onChange={(e) => setForm({ ...form, title: e.target.value })} placeholder="Campaign title" />
+                <input
+                  value={form.title}
+                  onChange={(e) => setForm({ ...form, title: e.target.value })}
+                  placeholder="Campaign title"
+                />
               </div>
+
               <div className="crud__field">
                 <label>Description</label>
-                <textarea value={form.description} onChange={(e) => setForm({ ...form, description: e.target.value })} placeholder="What is this campaign for?" />
+                <textarea
+                  value={form.description}
+                  onChange={(e) => setForm({ ...form, description: e.target.value })}
+                  placeholder="What is this campaign for?"
+                />
               </div>
+
               <div className="crud__fields-row">
                 <div className="crud__field">
                   <label>Goal Amount (KES) *</label>
-                  <input type="number" value={form.goal_amount} onChange={(e) => setForm({ ...form, goal_amount: e.target.value })} placeholder="50000" />
+                  <input
+                    type="number"
+                    value={form.goal_amount}
+                    onChange={(e) => setForm({ ...form, goal_amount: e.target.value })}
+                    placeholder="50000"
+                  />
                 </div>
                 <div className="crud__field">
                   <label>Status</label>
-                  <select value={form.status} onChange={(e) => setForm({ ...form, status: e.target.value })}>
+                  {/* FIX: confirm value is bound and onChange fires correctly */}
+                  <select
+                    value={form.status}
+                    onChange={(e) => {
+                      console.log("[CampaignCrud] Status changed to:", e.target.value);
+                      setForm({ ...form, status: e.target.value });
+                    }}
+                  >
                     <option value="draft">Draft</option>
                     <option value="active">Active</option>
                     <option value="paused">Paused</option>
@@ -230,23 +433,33 @@ export default function CampaignCrud({ token }) {
                   </select>
                 </div>
               </div>
+
               <div className="crud__field">
                 <label>Beneficiary *</label>
-                <select value={form.beneficiary_id} onChange={(e) => setForm({ ...form, beneficiary_id: e.target.value })}>
-                  <option value="">Select beneficiary…</option>
-                  {beneficiaries.map(b => (
-                    <option key={b.id} value={b.id}>{b.name}</option>
-                  ))}
-                </select>
+                <BeneficiaryPicker
+                  beneficiaries={beneficiaries}
+                  value={form.beneficiary_id}
+                  onChange={(id) => setForm({ ...form, beneficiary_id: id })}
+                  loading={benLoading}
+                />
               </div>
+
               <div className="crud__fields-row">
                 <div className="crud__field">
                   <label>Start Date</label>
-                  <input type="date" value={form.start_date} onChange={(e) => setForm({ ...form, start_date: e.target.value })} />
+                  <input
+                    type="date"
+                    value={form.start_date}
+                    onChange={(e) => setForm({ ...form, start_date: e.target.value })}
+                  />
                 </div>
                 <div className="crud__field">
                   <label>End Date</label>
-                  <input type="date" value={form.end_date} onChange={(e) => setForm({ ...form, end_date: e.target.value })} />
+                  <input
+                    type="date"
+                    value={form.end_date}
+                    onChange={(e) => setForm({ ...form, end_date: e.target.value })}
+                  />
                 </div>
               </div>
             </div>
@@ -261,16 +474,13 @@ export default function CampaignCrud({ token }) {
         </div>
       )}
 
+      {/* ── Delete modal ── */}
       {modal === "delete" && (
         <div className="crud__modal-backdrop" onClick={closeModal}>
           <div className="crud__modal" style={{ maxWidth: 420 }} onClick={(e) => e.stopPropagation()}>
             <div className="crud__modal-header">
-              <h2 className="crud__modal-title">
-                <i className="bi bi-trash" /> Delete Campaign
-              </h2>
-              <button className="crud__modal-close" onClick={closeModal}>
-                <i className="bi bi-x-lg" />
-              </button>
+              <h2 className="crud__modal-title"><i className="bi bi-trash" /> Delete Campaign</h2>
+              <button className="crud__modal-close" onClick={closeModal}><i className="bi bi-x-lg" /></button>
             </div>
             <div className="crud__modal-body">
               <div className="crud__delete-confirm">

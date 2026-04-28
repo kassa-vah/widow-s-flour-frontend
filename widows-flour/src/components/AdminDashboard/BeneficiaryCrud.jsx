@@ -2,7 +2,8 @@
 import { useState, useEffect, useCallback } from "react";
 import "./Crud.css";
 
-const API = import.meta.env.VITE_API_URL ?? "";
+const API      = import.meta.env.VITE_API_URL ?? "http://127.0.0.1:5000";
+const BASE     = `${API}/beneficiaries`;
 const PER_PAGE = 10;
 
 const EMPTY_FORM = { name: "", age: "", location: "", story: "", profile_image: "", status: "pending" };
@@ -34,16 +35,17 @@ export default function BeneficiaryCrud({ token }) {
 
   const headers = { Authorization: `Bearer ${token}`, "Content-Type": "application/json" };
 
+  // GET /beneficiaries?page=&per_page=&search=&status=
   const load = useCallback(async () => {
     setLoading(true);
     const params = new URLSearchParams({ page, per_page: PER_PAGE });
     if (search) params.set("search", search);
     if (filter) params.set("status", filter);
     try {
-      const res  = await fetch(`${API}/beneficiaries?${params}`, { headers });
+      const res  = await fetch(`${BASE}?${params}`, { headers });
       const data = await res.json();
       setRows(data.data?.items ?? data.data ?? []);
-      setTotal(data.data?.total ?? (data.data?.length ?? 0));
+      setTotal(data.data?.total ?? data.pagination?.total ?? (data.data?.length ?? 0));
     } catch { setRows([]); }
     setLoading(false);
   }, [page, search, filter, token]);
@@ -53,17 +55,28 @@ export default function BeneficiaryCrud({ token }) {
   const openCreate = () => { setForm(EMPTY_FORM); setModalErr(""); setModal("create"); };
   const openEdit   = (r) => {
     setSelected(r);
-    setForm({ name: r.name, age: r.age ?? "", location: r.location ?? "", story: r.story ?? "", profile_image: r.profile_image ?? "", status: r.status });
+    setForm({
+      name:          r.name,
+      age:           r.age ?? "",
+      location:      r.location ?? "",
+      story:         r.story ?? "",
+      profile_image: r.profile_image ?? "",
+      status:        r.status,
+    });
     setModalErr(""); setModal("edit");
   };
   const openDelete = (r) => { setSelected(r); setModal("delete"); };
   const closeModal = ()  => { setModal(null); setSelected(null); };
 
+  // POST /beneficiaries/add-beneficiary  |  PUT /beneficiaries/<id>
   const handleSave = async () => {
+    if (!form.name.trim()) { setModalErr("Name is required."); return; }
     setSaving(true); setModalErr("");
     const body = { ...form, age: form.age ? parseInt(form.age) : null };
     try {
-      const url    = modal === "edit" ? `${API}/beneficiaries/${selected.id}` : `${API}/beneficiaries`;
+      const url    = modal === "edit"
+        ? `${BASE}/${selected.id}`
+        : `${BASE}/add-beneficiary`;
       const method = modal === "edit" ? "PUT" : "POST";
       const res    = await fetch(url, { method, headers, body: JSON.stringify(body) });
       const data   = await res.json();
@@ -73,11 +86,12 @@ export default function BeneficiaryCrud({ token }) {
     setSaving(false);
   };
 
+  // DELETE /beneficiaries/<id>
   const handleDelete = async () => {
     setSaving(true);
     try {
-      await fetch(`${API}/beneficiaries/${selected.id}`, { method: "DELETE", headers });
-      closeModal(); load();
+      const res = await fetch(`${BASE}/${selected.id}`, { method: "DELETE", headers });
+      if (res.ok) { closeModal(); load(); }
     } catch {}
     setSaving(false);
   };
@@ -180,6 +194,7 @@ export default function BeneficiaryCrud({ token }) {
         )}
       </div>
 
+      {/* ── Create / Edit modal ── */}
       {(modal === "create" || modal === "edit") && (
         <div className="crud__modal-backdrop" onClick={closeModal}>
           <div className="crud__modal" onClick={(e) => e.stopPropagation()}>
@@ -197,24 +212,45 @@ export default function BeneficiaryCrud({ token }) {
               <div className="crud__fields-row">
                 <div className="crud__field">
                   <label>Name *</label>
-                  <input value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} placeholder="Full name" />
+                  <input
+                    value={form.name}
+                    onChange={(e) => setForm({ ...form, name: e.target.value })}
+                    placeholder="Full name"
+                  />
                 </div>
                 <div className="crud__field">
                   <label>Age</label>
-                  <input type="number" value={form.age} onChange={(e) => setForm({ ...form, age: e.target.value })} placeholder="Age" />
+                  <input
+                    type="number"
+                    value={form.age}
+                    onChange={(e) => setForm({ ...form, age: e.target.value })}
+                    placeholder="Age"
+                  />
                 </div>
               </div>
               <div className="crud__field">
                 <label>Location</label>
-                <input value={form.location} onChange={(e) => setForm({ ...form, location: e.target.value })} placeholder="Town, County" />
+                <input
+                  value={form.location}
+                  onChange={(e) => setForm({ ...form, location: e.target.value })}
+                  placeholder="Town, County"
+                />
               </div>
               <div className="crud__field">
                 <label>Story</label>
-                <textarea value={form.story} onChange={(e) => setForm({ ...form, story: e.target.value })} placeholder="Brief background…" />
+                <textarea
+                  value={form.story}
+                  onChange={(e) => setForm({ ...form, story: e.target.value })}
+                  placeholder="Brief background…"
+                />
               </div>
               <div className="crud__field">
                 <label>Profile Image URL</label>
-                <input value={form.profile_image} onChange={(e) => setForm({ ...form, profile_image: e.target.value })} placeholder="https://…" />
+                <input
+                  value={form.profile_image}
+                  onChange={(e) => setForm({ ...form, profile_image: e.target.value })}
+                  placeholder="https://…"
+                />
               </div>
               <div className="crud__field">
                 <label>Status</label>
@@ -236,6 +272,7 @@ export default function BeneficiaryCrud({ token }) {
         </div>
       )}
 
+      {/* ── Delete modal ── */}
       {modal === "delete" && (
         <div className="crud__modal-backdrop" onClick={closeModal}>
           <div className="crud__modal" style={{ maxWidth: 420 }} onClick={(e) => e.stopPropagation()}>
