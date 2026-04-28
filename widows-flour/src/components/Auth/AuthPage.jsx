@@ -1,5 +1,6 @@
 // src/components/Auth/AuthPage.jsx
 import { useState } from "react";
+import { useNavigate, useLocation } from "react-router-dom";
 import toast from "react-hot-toast";
 import "./Auth.css";
 import imgLogo from "../../assets/logo.png";
@@ -8,11 +9,24 @@ import { getAuth, signInWithEmailAndPassword } from "firebase/auth";
 const API = import.meta.env.VITE_API_URL ?? "http://127.0.0.1:5000";
 
 export default function AuthPage({ onLogin, onBack }) {
-  const [mode, setMode]         = useState("login");
+  const navigate  = useNavigate();
+  const location  = useLocation();
+
+  // Derive mode from the URL: /register → "register", anything else → "login"
+  const initialMode = location.pathname === "/register" ? "register" : "login";
+  const [mode, setMode]         = useState(initialMode);
   const [loading, setLoading]   = useState(false);
   const [name, setName]         = useState("");
   const [email, setEmail]       = useState("");
   const [password, setPassword] = useState("");
+
+  // Switch mode AND update the URL at the same time
+  const switchTo = (nextMode) => {
+    setName("");
+    setPassword("");
+    setMode(nextMode);
+    navigate(nextMode === "register" ? "/register" : "/login", { replace: true });
+  };
 
   // ── Register ──────────────────────────────────────────────
   const handleRegister = async (e) => {
@@ -34,9 +48,8 @@ export default function AuthPage({ onLogin, onBack }) {
         return;
       }
       toast.success("Account created! You can now sign in.", { id: toastId });
-      setMode("login");
-      setName("");
-      setPassword("");
+      switchTo("login");
+      setEmail("");
     } catch {
       toast.error("Network error. Please try again.", { id: toastId });
     } finally {
@@ -74,19 +87,20 @@ export default function AuthPage({ onLogin, onBack }) {
 
       toast.success(`Welcome back, ${data.data?.name ?? "Admin"}!`, { id: toastId });
 
-      // ← App.handleLogin handles localStorage + navigate, don't duplicate here
+      // App.handleLogin sets localStorage + session state, then pendingNav
+      // fires navigate("/admin-dashboard") after state commits
       onLogin(data.data, fbToken);
 
     } catch (err) {
       const code = err?.code ?? "";
       const msg =
-        code === "auth/user-not-found"     ||
-        code === "auth/wrong-password"     ||
-        code === "auth/invalid-credential"  ? "Incorrect email or password."
-        : code === "auth/too-many-requests" ? "Too many attempts. Try again later."
-        : code === "auth/invalid-email"     ? "Please enter a valid email address."
+        code === "auth/user-not-found"          ||
+        code === "auth/wrong-password"          ||
+        code === "auth/invalid-credential"       ? "Incorrect email or password."
+        : code === "auth/too-many-requests"      ? "Too many attempts. Try again later."
+        : code === "auth/invalid-email"          ? "Please enter a valid email address."
         : code === "auth/network-request-failed" ||
-          err.message === "Failed to fetch"  ? "Cannot reach the server. Please try again."
+          err.message === "Failed to fetch"      ? "Cannot reach the server. Please try again."
         : "Login failed. Please check your credentials.";
       toast.error(msg, { id: toastId });
     } finally {
@@ -96,149 +110,169 @@ export default function AuthPage({ onLogin, onBack }) {
 
   return (
     <div className="auth-page">
-      {/* ── Left decorative panel ── */}
-      <div className="auth-panel">
-        <div className="auth-panel__bg" />
-        <div className="auth-panel__grain" />
-        <div className="auth-panel__shape auth-panel__shape--1" />
-        <div className="auth-panel__shape auth-panel__shape--2" />
-        <div className="auth-panel__shape auth-panel__shape--3" />
 
-        <img src={imgLogo} alt="Widows Flour" className="auth-panel__logo" />
+      {/* ── Full-screen animated dual wave SVG ── */}
+      <svg
+        className="auth-wave-bg"
+        viewBox="0 0 1400 1100"
+        preserveAspectRatio="xMidYMid slice"
+        xmlns="http://www.w3.org/2000/svg"
+        aria-hidden="true"
+      >
+        <defs>
+          <linearGradient id="wg-dark" x1="0" y1="0" x2="1" y2="1">
+            <stop offset="0%" stopColor="#2c4a20" />
+            <stop offset="100%" stopColor="#1a2d14" />
+          </linearGradient>
+          <linearGradient id="wg-light" x1="0" y1="0" x2="1" y2="1">
+            <stop offset="0%" stopColor="#4a7032" />
+            <stop offset="100%" stopColor="#2d4a1e" />
+          </linearGradient>
+        </defs>
+        <path
+          className="wave-path-dark"
+          d="M 0 320 Q 280 480 620 380 Q 900 280 1100 520 Q 1250 680 1400 820 L 1400 1100 L 0 1100 Z"
+          fill="url(#wg-dark)"
+        />
+        <path
+          className="wave-path-light"
+          d="M 0 220 Q 270 390 610 290 Q 890 190 1090 430 Q 1240 590 1400 720 L 1400 1100 L 0 1100 Z"
+          fill="url(#wg-light)"
+        />
+        <circle cx="80"  cy="700" r="2"   fill="rgba(168,208,128,0.22)" />
+        <circle cx="200" cy="800" r="1.5" fill="rgba(168,208,128,0.18)" />
+        <circle cx="360" cy="750" r="2.2" fill="rgba(168,208,128,0.15)" />
+        <circle cx="120" cy="900" r="1.8" fill="rgba(168,208,128,0.2)"  />
+        <circle cx="500" cy="820" r="1.5" fill="rgba(168,208,128,0.12)" />
+      </svg>
 
-        {onBack && (
-          <button
-            onClick={onBack}
-            style={{
-              position: "absolute", top: 48, right: 60,
-              background: "rgba(255,255,255,0.08)", border: "1px solid rgba(255,255,255,0.12)",
-              color: "rgba(255,255,255,0.6)", borderRadius: "var(--radius-pill)",
-              fontFamily: "var(--font-body)", fontSize: 12, padding: "8px 16px",
-              cursor: "pointer", zIndex: 1, transition: "background 0.2s, color 0.2s",
-            }}
-          >
-            ← Back to site
-          </button>
-        )}
-
-        <div className="auth-panel__content">
-          <span className="auth-panel__eyebrow">Admin Portal</span>
-          <h1 className="auth-panel__title">
-            Manage with<br /><em>purpose &amp;</em><br />precision.
-          </h1>
-          <p className="auth-panel__sub">
-            Control beneficiaries, campaigns, donations, and blog
-            content — all from one secure dashboard.
-          </p>
-        </div>
+      {/* ── Logo top-left ── */}
+      <div className="auth-logo-area">
+        <img src={imgLogo} alt="Widows Flour" className="auth-logo-img" />
       </div>
 
-      {/* ── Right form panel ── */}
-      <div className="auth-form-panel">
-        <div className="auth-form-wrap">
+      {/* ── Back to site button ── */}
+      {onBack && (
+        <button className="auth-back-btn" onClick={onBack}>
+          ← Back to site
+        </button>
+      )}
 
-          <p className="auth-form__eyebrow">
-            {mode === "login" ? "Welcome back" : "Get started"}
-          </p>
-          <h2 className="auth-form__title">
-            {mode === "login" ? "Sign in to your account" : "Create an admin account"}
-          </h2>
-          <p className="auth-form__sub">
-            {mode === "login"
-              ? "Enter your email and password to access the dashboard."
-              : "Register with your name, email, and a secure password."}
-          </p>
+      {/* ── Tagline ── */}
+      <div className="auth-tagline">
+        <h2>
+          Manage with<br /><em>purpose &amp;</em><br />precision.
+        </h2>
+        <p>
+          Control beneficiaries, campaigns, donations, and blog
+          content from one secure dashboard.
+        </p>
+      </div>
 
-          {/* ── Register form ── */}
-          {mode === "register" && (
-            <form onSubmit={handleRegister} noValidate>
-              <div className="auth-field">
-                <label>Full Name</label>
-                <input
-                  type="text"
-                  placeholder="Jane Doe"
-                  value={name}
-                  onChange={(e) => setName(e.target.value)}
-                  autoComplete="name"
-                  disabled={loading}
-                />
-              </div>
-              <div className="auth-field">
-                <label>Email</label>
-                <input
-                  type="email"
-                  placeholder="jane@example.com"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  autoComplete="email"
-                  disabled={loading}
-                />
-              </div>
-              <div className="auth-field">
-                <label>Password</label>
-                <input
-                  type="password"
-                  placeholder="At least 6 characters"
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  autoComplete="new-password"
-                  disabled={loading}
-                />
-              </div>
-              <button className="auth-submit" type="submit" disabled={loading}>
-                {loading ? "Creating account…" : "Create Account"}
+      {/* ── Auth card ── */}
+      <div className="auth-card">
+
+        {/* ── Login form ── */}
+        {mode === "login" && (
+          <form onSubmit={handleLogin} noValidate>
+            <span className="auth-form__eyebrow">Welcome back</span>
+            <h2 className="auth-form__title">Sign in to your<br />account</h2>
+            <p className="auth-form__sub">
+              Enter your email and password to access the dashboard.
+            </p>
+
+            <div className="auth-field">
+              <label>Email</label>
+              <input
+                type="email"
+                placeholder="jane@example.com"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                autoComplete="email"
+                disabled={loading}
+              />
+            </div>
+            <div className="auth-field">
+              <label>Password</label>
+              <input
+                type="password"
+                placeholder="Your password"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                autoComplete="current-password"
+                disabled={loading}
+              />
+            </div>
+
+            <button className="auth-submit" type="submit" disabled={loading}>
+              {loading ? "Signing in…" : "Sign In"}
+            </button>
+
+            <div className="auth-toggle">
+              Don't have an account?
+              <button type="button" onClick={() => switchTo("register")}>
+                Register
               </button>
-            </form>
-          )}
+            </div>
+          </form>
+        )}
 
-          {/* ── Login form ── */}
-          {mode === "login" && (
-            <form onSubmit={handleLogin} noValidate>
-              <div className="auth-field">
-                <label>Email</label>
-                <input
-                  type="email"
-                  placeholder="jane@example.com"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  autoComplete="email"
-                  disabled={loading}
-                />
-              </div>
-              <div className="auth-field">
-                <label>Password</label>
-                <input
-                  type="password"
-                  placeholder="Your password"
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  autoComplete="current-password"
-                  disabled={loading}
-                />
-              </div>
-              <button className="auth-submit" type="submit" disabled={loading}>
-                {loading ? "Signing in…" : "Sign In"}
+        {/* ── Register form ── */}
+        {mode === "register" && (
+          <form onSubmit={handleRegister} noValidate>
+            <span className="auth-form__eyebrow">Get started</span>
+            <h2 className="auth-form__title">Create an admin<br />account</h2>
+            <p className="auth-form__sub">
+              Register with your name, email, and a secure password.
+            </p>
+
+            <div className="auth-field">
+              <label>Full Name</label>
+              <input
+                type="text"
+                placeholder="Jane Doe"
+                value={name}
+                onChange={(e) => setName(e.target.value)}
+                autoComplete="name"
+                disabled={loading}
+              />
+            </div>
+            <div className="auth-field">
+              <label>Email</label>
+              <input
+                type="email"
+                placeholder="jane@example.com"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                autoComplete="email"
+                disabled={loading}
+              />
+            </div>
+            <div className="auth-field">
+              <label>Password</label>
+              <input
+                type="password"
+                placeholder="At least 6 characters"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                autoComplete="new-password"
+                disabled={loading}
+              />
+            </div>
+
+            <button className="auth-submit" type="submit" disabled={loading}>
+              {loading ? "Creating account…" : "Create Account"}
+            </button>
+
+            <div className="auth-toggle">
+              Already have an account?
+              <button type="button" onClick={() => switchTo("login")}>
+                Sign in
               </button>
-            </form>
-          )}
+            </div>
+          </form>
+        )}
 
-          <div className="auth-toggle">
-            {mode === "login" ? (
-              <>Don't have an account?{" "}
-                <button onClick={() => { setMode("register"); setEmail(""); setPassword(""); }}>
-                  Register
-                </button>
-              </>
-            ) : (
-              <>Already have an account?{" "}
-                <button onClick={() => { setMode("login"); setName(""); setPassword(""); }}>
-                  Sign in
-                </button>
-              </>
-            )}
-          </div>
-
-        </div>
       </div>
     </div>
   );

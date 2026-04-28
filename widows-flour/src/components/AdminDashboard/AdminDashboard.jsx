@@ -10,7 +10,7 @@ import DonationCrud    from "./DonationCrud";
 import BlogCrud        from "./BlogCrud";
 import ActivityLog     from "./ActivityLog";
 
-const API = import.meta.env.VITE_API_URL ?? "";
+const API =  "http://127.0.0.1:5000";
 
 const NAV = [
   { id: "beneficiaries", label: "Beneficiaries", icon: "bi-people",        section: "People"     },

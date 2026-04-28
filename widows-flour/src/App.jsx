@@ -20,6 +20,8 @@ import GlobeSection        from "./components/GlobeSection";
 import AuthPage       from "./components/Auth/AuthPage";
 import AdminDashboard from "./components/AdminDashboard/AdminDashboard";
 
+const API = import.meta.env.VITE_API_URL ?? "http://127.0.0.1:5000";
+
 // ── Read localStorage synchronously so initial state is correct ──
 function getStoredSession() {
   try {
@@ -35,35 +37,78 @@ function PrivateRoute({ admin, token, children }) {
   return children;
 }
 
+// Redirect logged-in users away from /login and /register
 function PublicOnlyRoute({ admin, token, children }) {
   if (admin && token) return <Navigate to="/admin-dashboard" replace />;
   return children;
 }
 
-export default function App() {
-  const cursorRef   = useRef(null);
-  const followerRef = useRef(null);
-  const navigate    = useNavigate();
+const INACTIVITY_MS = 15 * 60 * 1000;
 
-  // ── Initialize state synchronously from localStorage ──
-  const [session, setSession] = useState(getStoredSession);
+export default function App() {
+  const cursorRef     = useRef(null);
+  const followerRef   = useRef(null);
+  const inactivityRef = useRef(null);
+  const navigate      = useNavigate();
+
+  const [pendingNav, setPendingNav] = useState(null);
+  const [session, setSession]       = useState(getStoredSession);
   const { admin, token } = session;
 
-  const handleLogin = (adminData, fbToken) => {
-    localStorage.setItem("fb_token", fbToken);
-    localStorage.setItem("admin", JSON.stringify(adminData));
-    setSession({ admin: adminData, token: fbToken });
-    navigate("/admin-dashboard", { replace: true });
+  // ── Navigate AFTER React commits the new session state ──
+  useEffect(() => {
+    if (pendingNav) {
+      navigate(pendingNav, { replace: true });
+      setPendingNav(null);
+    }
+  }, [session, pendingNav, navigate]);
+
+  // ── Inactivity logout ──
+  const resetInactivityTimer = () => {
+    if (inactivityRef.current) clearTimeout(inactivityRef.current);
+    inactivityRef.current = setTimeout(() => handleLogout(true), INACTIVITY_MS);
   };
 
-  const handleLogout = () => {
+  useEffect(() => {
+    if (!admin || !token) return;
+    const events = ["mousemove", "mousedown", "keydown", "scroll", "touchstart"];
+    events.forEach((e) => window.addEventListener(e, resetInactivityTimer));
+    resetInactivityTimer();
+    return () => {
+      events.forEach((e) => window.removeEventListener(e, resetInactivityTimer));
+      if (inactivityRef.current) clearTimeout(inactivityRef.current);
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [admin, token]);
+
+  // ── Login ──
+  const handleLogin = (adminData, fbToken) => {
+    localStorage.setItem("fb_token", fbToken);
+    localStorage.setItem("admin",    JSON.stringify(adminData));
+    setSession({ admin: adminData, token: fbToken });
+    setPendingNav("/admin-dashboard");   // navigates after state commits
+  };
+
+  // ── Logout ──
+  const handleLogout = async (silent = false) => {
+    const currentToken = localStorage.getItem("fb_token");
     localStorage.removeItem("fb_token");
     localStorage.removeItem("admin");
     setSession({ admin: null, token: null });
-    navigate("/", { replace: true });
+    setPendingNav("/");
+
+    // Tell Flask to terminate the session — must use backend port, not Vite's
+    if (currentToken) {
+      try {
+        await fetch(`${API}/auth/logout`, {
+          method: "POST",
+          headers: { Authorization: `Bearer ${currentToken}` },
+        });
+      } catch { /* swallow — client is already logged out */ }
+    }
   };
 
-  // Custom cursor
+  // ── Custom cursor ──
   useEffect(() => {
     const cursor   = cursorRef.current;
     const follower = followerRef.current;
@@ -112,7 +157,7 @@ export default function App() {
             <>
               <div className="cursor"          ref={cursorRef} />
               <div className="cursor-follower" ref={followerRef} />
-              <Navbar onAdminClick={() => navigate("/login")} />
+              <Navbar />
               <main className="app-main">
                 <HeroSection />
                 <IntroSection />
@@ -141,12 +186,26 @@ export default function App() {
           }
         />
 
+        {/* ── Register ── */}
+        <Route
+          path="/register"
+          element={
+            <PublicOnlyRoute admin={admin} token={token}>
+              <AuthPage onLogin={handleLogin} onBack={() => navigate("/")} />
+            </PublicOnlyRoute>
+          }
+        />
+
         {/* ── Admin dashboard ── */}
         <Route
           path="/admin-dashboard"
           element={
             <PrivateRoute admin={admin} token={token}>
-              <AdminDashboard admin={admin} token={token} onLogout={handleLogout} />
+              <AdminDashboard
+                admin={admin}
+                token={token}
+                onLogout={() => handleLogout(false)}
+              />
             </PrivateRoute>
           }
         />

@@ -1,16 +1,15 @@
-// Navbar.jsx
+ // Navbar.jsx
 import { useEffect, useRef, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { gsap } from "gsap";
 import "./Navbar.css";
-import AuthPage from "./Auth/AuthPage"; // ← adjust path if needed
-
 import imgLogo from "../assets/logo.png";
 
 export default function Navbar() {
-  const navRef = useRef(null);
-  const [scrolled, setScrolled] = useState(false);
+  const navRef      = useRef(null);
+  const navigate    = useNavigate();
+  const [scrolled, setScrolled]     = useState(false);
   const [drawerOpen, setDrawerOpen] = useState(false);
-  const [showAuth, setShowAuth] = useState(false); // ← new
 
   useEffect(() => {
     gsap.fromTo(
@@ -27,14 +26,16 @@ export default function Navbar() {
   }, []);
 
   useEffect(() => {
-    document.body.style.overflow = drawerOpen || showAuth ? "hidden" : "";
+    document.body.style.overflow = drawerOpen ? "hidden" : "";
     return () => { document.body.style.overflow = ""; };
-  }, [drawerOpen, showAuth]);
+  }, [drawerOpen]);
 
   const links = ["Home", "About", "Causes", "Impact", "Contact"];
 
-  const openAuth  = () => { setDrawerOpen(false); setShowAuth(true); };
-  const closeAuth = () => setShowAuth(false);
+  const goToLogin = () => {
+    setDrawerOpen(false);
+    navigate("/login");
+  };
 
   return (
     <>
@@ -55,7 +56,7 @@ export default function Navbar() {
         <div className="navbar__cta-group">
           <button
             className="navbar__cta navbar__cta-login navbar__cta-desktop"
-            onClick={openAuth}
+            onClick={goToLogin}
           >
             Login
           </button>
@@ -88,7 +89,7 @@ export default function Navbar() {
           </a>
         ))}
         <button
-          onClick={openAuth}
+          onClick={goToLogin}
           style={{ background: "none", border: "none", textAlign: "left",
                    font: "inherit", cursor: "pointer", color: "inherit" }}
         >
@@ -98,19 +99,6 @@ export default function Navbar() {
           Donate Now ♥
         </a>
       </div>
-
-      {/* Auth modal overlay */}
-      {showAuth && (
-        <div className="navbar__auth-overlay">
-          <AuthPage
-            onLogin={(adminData, token) => {
-              console.log("Logged in:", adminData);
-              closeAuth();
-            }}
-            onBack={closeAuth}
-          />
-        </div>
-      )}
     </>
   );
 }
