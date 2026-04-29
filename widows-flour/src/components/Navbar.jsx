@@ -95,7 +95,7 @@ export default function Navbar() {
         >
           Login
         </button>
-        <a href="#donate" onClick={() => setDrawerOpen(false)} style={{ color: "var(--green-deep)" }}>
+        <a href="/donate" onClick={() => setDrawerOpen(false)} style={{ color: "var(--green-deep)" }}>
           Donate Now ♥
         </a>
       </div>

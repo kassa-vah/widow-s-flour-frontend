@@ -17,8 +17,9 @@ import TestimonialsSection from "./components/TestimonialsSection";
 import { CTASection, Footer } from "./components/CTASection";
 import GlobeSection        from "./components/GlobeSection";
 
-import AuthPage       from "./components/Auth/AuthPage";
-import AdminDashboard from "./components/AdminDashboard/AdminDashboard";
+import AuthPage            from "./components/Auth/AuthPage";
+import AdminDashboard      from "./components/AdminDashboard/AdminDashboard";
+import DonationMethods     from "./components/DonationMethods";
 
 const API = import.meta.env.VITE_API_URL ?? "http://127.0.0.1:5000";
 
@@ -41,6 +42,31 @@ function PrivateRoute({ admin, token, children }) {
 function PublicOnlyRoute({ admin, token, children }) {
   if (admin && token) return <Navigate to="/admin-dashboard" replace />;
   return children;
+}
+
+// ── Minimal page shell for standalone /donate route ──
+function DonatePage({ onBack }) {
+  return (
+    <>
+      <Navbar />
+      <main className="app-main">
+        <section
+          style={{
+            minHeight:       "100vh",
+            display:         "flex",
+            flexDirection:   "column",
+            alignItems:      "center",
+            justifyContent:  "center",
+            padding:         "120px 24px 80px",
+            background:      "var(--off-white)",
+          }}
+        >
+          <DonationMethods />
+        </section>
+      </main>
+      <Footer />
+    </>
+  );
 }
 
 const INACTIVITY_MS = 15 * 60 * 1000;
@@ -174,6 +200,18 @@ export default function App() {
               <Footer />
             </>
           }
+        />
+
+        {/* ── Standalone donate page ── */}
+        <Route
+          path="/donate"
+          element={<DonatePage onBack={() => navigate("/")} />}
+        />
+
+        {/* ── Donate with a pre-selected campaign ── */}
+        <Route
+          path="/donate/:campaignId"
+          element={<DonatePage onBack={() => navigate("/")} />}
         />
 
         {/* ── Login ── */}
