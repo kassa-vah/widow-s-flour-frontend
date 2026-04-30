@@ -1,4 +1,7 @@
 // src/components/AdminDashboard/CampaignCrud.jsx
+// Updated: adds category, image_url, cta_label fields to create/edit modal
+// so admins can control what appears on the public Causes page.
+
 import { useState, useEffect, useCallback, useRef } from "react";
 import "./Crud.css";
 
@@ -7,9 +10,22 @@ const BASE     = `${API}/campaigns`;
 const BEN_BASE = `${API}/beneficiaries`;
 const PER_PAGE = 10;
 
+const CATEGORIES = [
+  "Food Relief",
+  "Education",
+  "Livelihood",
+  "Health",
+  "Emergency",
+  "Other",
+];
+
 const EMPTY_FORM = {
   title: "", description: "", goal_amount: "", beneficiary_id: "",
   status: "draft", start_date: "", end_date: "",
+  // New display fields for the public causes page
+  category: "Food Relief",
+  image_url: "",
+  cta_label: "",
 };
 
 const STATUS_COLORS = { draft: "grey", active: "green", completed: "blue", paused: "yellow" };
@@ -59,16 +75,8 @@ function BeneficiaryPicker({ beneficiaries, value, onChange, loading }) {
     }
   }, [open]);
 
-  const handleSelect = (b) => {
-    onChange(String(b.id));
-    setOpen(false);
-    setSearch("");
-  };
-
-  const handleClear = (e) => {
-    e.stopPropagation();
-    onChange("");
-  };
+  const handleSelect = (b) => { onChange(String(b.id)); setOpen(false); setSearch(""); };
+  const handleClear  = (e) => { e.stopPropagation(); onChange(""); };
 
   return (
     <div className="ben-picker" ref={containerRef}>
@@ -79,11 +87,7 @@ function BeneficiaryPicker({ beneficiaries, value, onChange, loading }) {
       >
         <i className="bi bi-person-heart ben-picker__trigger-icon" />
         <span className="ben-picker__trigger-label">
-          {loading
-            ? "Loading beneficiaries…"
-            : selected
-              ? selected.name
-              : "Select a beneficiary…"}
+          {loading ? "Loading beneficiaries…" : selected ? selected.name : "Select a beneficiary…"}
         </span>
         <div className="ben-picker__trigger-right">
           {selected && (
@@ -112,7 +116,6 @@ function BeneficiaryPicker({ beneficiaries, value, onChange, loading }) {
               </button>
             )}
           </div>
-
           <div className="ben-picker__list">
             {loading ? (
               <div className="ben-picker__empty"><i className="bi bi-arrow-repeat" /> Loading…</div>
@@ -149,7 +152,6 @@ function BeneficiaryPicker({ beneficiaries, value, onChange, loading }) {
               ))
             )}
           </div>
-
           <div className="ben-picker__footer">
             {filtered.length} of {beneficiaries.length} beneficiaries
           </div>
@@ -180,7 +182,6 @@ export default function CampaignCrud({ token }) {
     [token]
   );
 
-  // Load beneficiaries
   useEffect(() => {
     setBenLoading(true);
     fetch(`${BEN_BASE}?per_page=200`, { headers: headers() })
@@ -190,7 +191,6 @@ export default function CampaignCrud({ token }) {
       .finally(() => setBenLoading(false));
   }, [token]);
 
-  // GET /campaigns
   const load = useCallback(async () => {
     setLoading(true);
     const params = new URLSearchParams({ page, per_page: PER_PAGE });
@@ -208,19 +208,20 @@ export default function CampaignCrud({ token }) {
 
   const openCreate = () => { setForm(EMPTY_FORM); setModalErr(""); setModal("create"); };
 
-  // ── FIX: Explicitly map every field from the row, including status ──────────
   const openEdit = (r) => {
     setSelected(r);
     setForm({
       title:          r.title          ?? "",
       description:    r.description    ?? "",
       goal_amount:    r.goal_amount    ?? "",
-      // FIX: beneficiary_id may be nested under r.beneficiary.id — handle both
       beneficiary_id: String(r.beneficiary_id ?? r.beneficiary?.id ?? ""),
-      // FIX: explicitly cast status — never fall back silently to "draft"
       status:         r.status         ?? "draft",
       start_date:     r.start_date     ? r.start_date.slice(0, 10) : "",
       end_date:       r.end_date       ? r.end_date.slice(0, 10)   : "",
+      // Public-facing display fields
+      category:       r.category  ?? "Food Relief",
+      image_url:      r.image_url ?? "",
+      cta_label:      r.cta_label ?? "",
     });
     setModalErr("");
     setModal("edit");
@@ -241,30 +242,26 @@ export default function CampaignCrud({ token }) {
       description:    form.description.trim() || null,
       goal_amount:    parseFloat(form.goal_amount),
       beneficiary_id: parseInt(form.beneficiary_id, 10),
-      // FIX: explicitly include status — never omit it
       status:         form.status,
       start_date:     form.start_date || null,
       end_date:       form.end_date   || null,
+      // Public-facing display fields
+      category:  form.category  || "Cause",
+      image_url: form.image_url.trim() || null,
+      cta_label: form.cta_label.trim() || null,
     };
 
-    // Debug log — remove after confirming fix
     console.log("[CampaignCrud] Saving body:", JSON.stringify(body));
 
     try {
       const url    = modal === "edit" ? `${BASE}/${selected.id}` : BASE;
       const method = modal === "edit" ? "PUT" : "POST";
+      const res    = await fetch(url, { method, headers: headers(), body: JSON.stringify(body) });
+      const data   = await res.json();
 
-      const res  = await fetch(url, { method, headers: headers(), body: JSON.stringify(body) });
-      const data = await res.json();
-
-      // Debug log — remove after confirming fix
       console.log("[CampaignCrud] Response:", res.status, JSON.stringify(data));
 
-      if (!res.ok) {
-        setModalErr(data.error || data.message || "Save failed.");
-        setSaving(false);
-        return;
-      }
+      if (!res.ok) { setModalErr(data.error || data.message || "Save failed."); setSaving(false); return; }
 
       closeModal();
       load();
@@ -281,10 +278,7 @@ export default function CampaignCrud({ token }) {
     try {
       const res = await fetch(`${BASE}/${selected.id}`, { method: "DELETE", headers: headers() });
       if (res.ok) { closeModal(); load(); }
-      else {
-        const data = await res.json();
-        console.error("[CampaignCrud] Delete failed:", data);
-      }
+      else { const d = await res.json(); console.error("[CampaignCrud] Delete failed:", d); }
     } catch (err) {
       console.error("[CampaignCrud] Delete network error:", err);
     }
@@ -327,7 +321,7 @@ export default function CampaignCrud({ token }) {
             <table className="crud__table">
               <thead>
                 <tr>
-                  <th>Title</th><th>Goal</th><th>Raised</th>
+                  <th>Title</th><th>Category</th><th>Goal</th><th>Raised</th>
                   <th>Progress</th><th>Status</th><th>End Date</th><th>Actions</th>
                 </tr>
               </thead>
@@ -335,6 +329,11 @@ export default function CampaignCrud({ token }) {
                 {rows.map((r) => (
                   <tr key={r.id}>
                     <td><strong>{r.title}</strong></td>
+                    <td>
+                      <span style={{ fontSize: 12, color: "var(--text-light)", fontWeight: 500 }}>
+                        {r.category || "—"}
+                      </span>
+                    </td>
                     <td>{fmtCurrency(r.goal_amount)}</td>
                     <td>{fmtCurrency(r.raised_amount)}</td>
                     <td>
@@ -385,9 +384,11 @@ export default function CampaignCrud({ token }) {
               </h2>
               <button className="crud__modal-close" onClick={closeModal}><i className="bi bi-x-lg" /></button>
             </div>
+
             <div className="crud__modal-body">
               {modalErr && <div className="crud__modal-error">{modalErr}</div>}
 
+              {/* ── Core fields ── */}
               <div className="crud__field">
                 <label>Title *</label>
                 <input
@@ -402,7 +403,8 @@ export default function CampaignCrud({ token }) {
                 <textarea
                   value={form.description}
                   onChange={(e) => setForm({ ...form, description: e.target.value })}
-                  placeholder="What is this campaign for?"
+                  placeholder="Tell the story of this cause — who it helps, what the impact is."
+                  rows={4}
                 />
               </div>
 
@@ -418,7 +420,6 @@ export default function CampaignCrud({ token }) {
                 </div>
                 <div className="crud__field">
                   <label>Status</label>
-                  {/* FIX: confirm value is bound and onChange fires correctly */}
                   <select
                     value={form.status}
                     onChange={(e) => {
@@ -462,7 +463,58 @@ export default function CampaignCrud({ token }) {
                   />
                 </div>
               </div>
+
+              {/* ── Public causes-page display fields ── */}
+              <div className="crud__section-divider">
+                <span>Public Causes Page</span>
+              </div>
+              <p className="crud__section-hint">
+                These fields control how this campaign appears on the public <em>/causes</em> page.
+              </p>
+
+              <div className="crud__fields-row">
+                <div className="crud__field">
+                  <label>Category</label>
+                  <select
+                    value={form.category}
+                    onChange={(e) => setForm({ ...form, category: e.target.value })}
+                  >
+                    {CATEGORIES.map(c => (
+                      <option key={c} value={c}>{c}</option>
+                    ))}
+                  </select>
+                </div>
+                <div className="crud__field">
+                  <label>Button Label <span style={{ color: "var(--text-light)", fontWeight: 400 }}>(optional)</span></label>
+                  <input
+                    value={form.cta_label}
+                    onChange={(e) => setForm({ ...form, cta_label: e.target.value })}
+                    placeholder='e.g. "Give a Meal" — defaults to "Donate Now"'
+                  />
+                </div>
+              </div>
+
+              <div className="crud__field">
+                <label>Hero Image URL <span style={{ color: "var(--text-light)", fontWeight: 400 }}>(optional)</span></label>
+                <input
+                  type="url"
+                  value={form.image_url}
+                  onChange={(e) => setForm({ ...form, image_url: e.target.value })}
+                  placeholder="https://… (leave blank to use beneficiary's photo)"
+                />
+                {form.image_url && (
+                  <div style={{ marginTop: 8 }}>
+                    <img
+                      src={form.image_url}
+                      alt="Preview"
+                      style={{ width: "100%", maxHeight: 140, objectFit: "cover", borderRadius: 10, border: "1px solid rgba(0,0,0,0.1)" }}
+                      onError={(e) => { e.target.style.display = "none"; }}
+                    />
+                  </div>
+                )}
+              </div>
             </div>
+
             <div className="crud__modal-footer">
               <button className="crud__btn-cancel" onClick={closeModal}>Cancel</button>
               <button className="crud__btn-save" onClick={handleSave} disabled={saving}>

@@ -20,6 +20,7 @@ import GlobeSection        from "./components/GlobeSection";
 import AuthPage            from "./components/Auth/AuthPage";
 import AdminDashboard      from "./components/AdminDashboard/AdminDashboard";
 import DonationMethods     from "./components/DonationMethods";
+import CampaignsPage       from "./components/CampaignsPage";   // ← new
 
 const API = import.meta.env.VITE_API_URL ?? "http://127.0.0.1:5000";
 
@@ -38,32 +39,42 @@ function PrivateRoute({ admin, token, children }) {
   return children;
 }
 
-// Redirect logged-in users away from /login and /register
 function PublicOnlyRoute({ admin, token, children }) {
   if (admin && token) return <Navigate to="/admin-dashboard" replace />;
   return children;
 }
 
 // ── Minimal page shell for standalone /donate route ──
-function DonatePage({ onBack }) {
+function DonatePage() {
   return (
     <>
       <Navbar />
       <main className="app-main">
         <section
           style={{
-            minHeight:       "100vh",
-            display:         "flex",
-            flexDirection:   "column",
-            alignItems:      "center",
-            justifyContent:  "center",
-            padding:         "120px 24px 80px",
-            background:      "var(--off-white)",
+            minHeight:      "100vh",
+            display:        "flex",
+            flexDirection:  "column",
+            alignItems:     "center",
+            justifyContent: "center",
+            padding:        "120px 24px 80px",
+            background:     "var(--off-white)",
           }}
         >
           <DonationMethods />
         </section>
       </main>
+      <Footer />
+    </>
+  );
+}
+
+// ── Causes page shell (Navbar + CampaignsPage + Footer) ──
+function CausesPageShell() {
+  return (
+    <>
+      <Navbar />
+      <CampaignsPage />
       <Footer />
     </>
   );
@@ -112,7 +123,7 @@ export default function App() {
     localStorage.setItem("fb_token", fbToken);
     localStorage.setItem("admin",    JSON.stringify(adminData));
     setSession({ admin: adminData, token: fbToken });
-    setPendingNav("/admin-dashboard");   // navigates after state commits
+    setPendingNav("/admin-dashboard");
   };
 
   // ── Logout ──
@@ -123,11 +134,10 @@ export default function App() {
     setSession({ admin: null, token: null });
     setPendingNav("/");
 
-    // Tell Flask to terminate the session — must use backend port, not Vite's
     if (currentToken) {
       try {
         await fetch(`${API}/auth/logout`, {
-          method: "POST",
+          method:  "POST",
           headers: { Authorization: `Bearer ${currentToken}` },
         });
       } catch { /* swallow — client is already logged out */ }
@@ -176,7 +186,7 @@ export default function App() {
       <Toaster position="top-right" />
       <Routes>
 
-        {/* ── Public site ── */}
+        {/* ── Public home ── */}
         <Route
           path="/"
           element={
@@ -202,17 +212,14 @@ export default function App() {
           }
         />
 
-        {/* ── Standalone donate page ── */}
-        <Route
-          path="/donate"
-          element={<DonatePage onBack={() => navigate("/")} />}
-        />
+        {/* ── All causes / campaigns page ── */}
+        <Route path="/causes"              element={<CausesPageShell />} />
+
+        {/* ── Standalone donate (no campaign) ── */}
+        <Route path="/donate"              element={<DonatePage />} />
 
         {/* ── Donate with a pre-selected campaign ── */}
-        <Route
-          path="/donate/:campaignId"
-          element={<DonatePage onBack={() => navigate("/")} />}
-        />
+        <Route path="/donate/:campaignId"  element={<DonatePage />} />
 
         {/* ── Login ── */}
         <Route
@@ -248,7 +255,7 @@ export default function App() {
           }
         />
 
-        {/* ── Catch-all ── */}
+        {/* ── Catch-all → home ── */}
         <Route path="*" element={<Navigate to="/" replace />} />
 
       </Routes>
