@@ -2,6 +2,17 @@ import { useState, useEffect, useRef, useCallback } from "react";
 import DonationMethods from "../components/DonationMethods";
 import "./CampaignsPage.css";
 
+import {
+  FaBreadSlice,
+  FaBookOpen,
+  FaSeedling,
+  FaHospitalAlt,
+  FaHeart,
+  FaMapMarkerAlt,
+  FaExclamationTriangle,
+  FaLeaf,
+} from "react-icons/fa";
+
 const API = import.meta.env.VITE_API_URL ?? "http://127.0.0.1:5000";
 
 /* ── Helpers ── */
@@ -9,12 +20,16 @@ function fmtKES(n) {
   return `KES ${Number(n ?? 0).toLocaleString()}`;
 }
 
+/* All category icons share this single color — change here to update everywhere */
+const ICON_COLOR = "var(--green)";
+const ICON_SIZE  = 32;
+
 const CATEGORY_ICONS = {
-  "Food Relief": "🌾",
-  "Education":   "📚",
-  "Livelihood":  "🌱",
-  "Health":      "🏥",
-  "default":     "💛",
+  "Food Relief": <FaBreadSlice  color={ICON_COLOR} size={ICON_SIZE} />,
+  "Education":   <FaBookOpen   color={ICON_COLOR} size={ICON_SIZE} />,
+  "Livelihood":  <FaSeedling   color={ICON_COLOR} size={ICON_SIZE} />,
+  "Health":      <FaHospitalAlt color={ICON_COLOR} size={ICON_SIZE} />,
+  "default":     <FaHeart      color={ICON_COLOR} size={ICON_SIZE} />,
 };
 
 function categoryIcon(cat) {
@@ -57,7 +72,7 @@ function CampaignCard({ campaign, onDonate, featured }) {
         {imgSrc
           ? <img src={imgSrc} alt={campaign.title} className="cp-card__img" />
           : <div className="cp-card__img-placeholder">
-              <span>{categoryIcon(category)}</span>
+              <span className="cp-card__img-placeholder-icon">{categoryIcon(category)}</span>
             </div>
         }
         <span className="cp-card__category-pill">{category}</span>
@@ -75,7 +90,12 @@ function CampaignCard({ campaign, onDonate, featured }) {
             <div>
               <span className="cp-card__ben-label">Beneficiary</span>
               <span className="cp-card__ben-name">{ben.name}</span>
-              {ben.location && <span className="cp-card__ben-loc">📍 {ben.location}</span>}
+              {ben.location && (
+                <span className="cp-card__ben-loc">
+                  <FaMapMarkerAlt color={ICON_COLOR} size={12} style={{ marginRight: 3 }} />
+                  {ben.location}
+                </span>
+              )}
             </div>
           </div>
         )}
@@ -245,8 +265,8 @@ function AutoProgressBar({ duration, running, onComplete }) {
 /* ══════════════════════════════════════════
    Main Page
 ══════════════════════════════════════════ */
-const PAGE_SIZE      = 5;   // 1 featured large + 2×2 right grid
-const AUTO_INTERVAL  = 30000; // 30 s
+const PAGE_SIZE      = 5;
+const AUTO_INTERVAL  = 30000;
 
 export default function CampaignsPage() {
   const [campaigns, setCampaigns]   = useState([]);
@@ -255,7 +275,7 @@ export default function CampaignsPage() {
   const [activeCampaign, setActive] = useState(null);
   const [filter, setFilter]         = useState("all");
   const [page, setPage]             = useState(0);
-  const [autoKey, setAutoKey]       = useState(0); // resets progress bar
+  const [autoKey, setAutoKey]       = useState(0);
 
   /* ── fetch ── */
   useEffect(() => {
@@ -285,7 +305,7 @@ export default function CampaignsPage() {
   /* ── navigation ── */
   const goTo = useCallback((p) => {
     setPage(p);
-    setAutoKey(k => k + 1); // reset timer
+    setAutoKey(k => k + 1);
   }, []);
 
   const prev = () => goTo(safePage === 0 ? totalPages - 1 : safePage - 1);
@@ -293,12 +313,10 @@ export default function CampaignsPage() {
     goTo(safePage === totalPages - 1 ? 0 : safePage + 1);
   }, [safePage, totalPages, goTo]);
 
-  /* ── auto-advance ── */
   const handleAutoComplete = useCallback(() => {
     next();
   }, [next]);
 
-  /* Reset page when filter changes */
   useEffect(() => { setPage(0); setAutoKey(k => k + 1); }, [filter]);
 
   return (
@@ -347,7 +365,9 @@ export default function CampaignsPage() {
 
         {!loading && error && (
           <div className="cp-error">
-            <span className="cp-error__icon">⚠️</span>
+            <span className="cp-error__icon">
+              <FaExclamationTriangle color={ICON_COLOR} size={24} />
+            </span>
             <p>Could not load campaigns: {error}</p>
             <button onClick={() => window.location.reload()} className="cp-retry-btn">Try Again</button>
           </div>
@@ -355,14 +375,15 @@ export default function CampaignsPage() {
 
         {!loading && !error && visible.length === 0 && (
           <div className="cp-empty">
-            <span className="cp-empty__icon">🌿</span>
+            <span className="cp-empty__icon">
+              <FaLeaf color={ICON_COLOR} size={32} />
+            </span>
             <p>No {filter !== "all" ? filter : ""} campaigns found right now.</p>
           </div>
         )}
 
         {!loading && !error && visible.length > 0 && (
           <>
-            {/* ── Carousel header: label + arrows ── */}
             <div className="cp-carousel-header">
               <div className="cp-carousel-header__left">
                 <h2 className="cp-carousel-title">Fundraisers inspired by what you care about</h2>
@@ -394,9 +415,8 @@ export default function CampaignsPage() {
               )}
             </div>
 
-            {/* ── Grid ── */}
             <div className="cp-grid cp-grid--animated" key={`${safePage}-${filter}`}>
-              {pageItems.map((c, i) => (
+              {pageItems.map((c) => (
                 <CampaignCard
                   key={c.id}
                   campaign={c}
@@ -405,7 +425,6 @@ export default function CampaignsPage() {
               ))}
             </div>
 
-            {/* ── Dots ── */}
             {totalPages > 1 && (
               <ProgressDots total={totalPages} current={safePage} onDotClick={goTo} />
             )}
@@ -426,7 +445,7 @@ export default function CampaignsPage() {
                 if (general) setActive(general);
               }}
             >
-              Give Now ♥
+              Give Now <FaHeart color="currentColor" size={14} style={{ display: "inline", verticalAlign: "middle" }} />
             </button>
           </div>
         </section>

@@ -1,0 +1,241 @@
+/* ── HowToDonatePage.css ── */
+
+.htd-page {
+  min-height: 100vh;
+  background: var(--off-white);
+}
+
+/* Hero */
+.htd-hero {
+  position: relative;
+  padding: 120px 64px 80px;
+  background: var(--white);
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+.htd-hero__inner { position: relative; z-index: 1; max-width: 580px; }
+.htd-hero__headline {
+  font-family: var(--font-display);
+  font-size: clamp(48px, 6.5vw, 88px);
+  font-weight: 300;
+  line-height: 1.05;
+  margin: 20px 0 18px;
+  color: var(--text-dark);
+}
+.htd-hero__headline em { font-style: italic; color: var(--green-deep); }
+.htd-hero__sub {
+  font-family: var(--font-body);
+  font-size: 16px;
+  color: var(--text-mid);
+  line-height: 1.75;
+  max-width: 460px;
+}
+.htd-hero__deco {
+  opacity: 0.18;
+  position: absolute;
+  right: 64px;
+  top: 50%;
+  transform: translateY(-50%);
+}
+
+/* Trust bar */
+.htd-trust-bar {
+  background: var(--green-pale);
+  border-top: 1px solid rgba(90,158,58,0.15);
+  border-bottom: 1px solid rgba(90,158,58,0.15);
+  padding: 16px 64px;
+}
+.htd-trust-bar__inner {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 40px;
+  flex-wrap: wrap;
+}
+.htd-trust-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-family: var(--font-body);
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--green-deep);
+}
+
+/* Sections */
+.htd-section-title {
+  font-family: var(--font-display);
+  font-size: clamp(32px, 4vw, 52px);
+  font-weight: 300;
+  color: var(--text-dark);
+  margin-bottom: 40px;
+  text-align: center;
+}
+
+/* Methods */
+.htd-methods {
+  padding-top: 80px;
+  padding-bottom: 80px;
+}
+.htd-methods-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 24px;
+}
+.htd-method-card {
+  position: relative;
+  background: var(--white);
+  border-radius: var(--radius-md);
+  border: 1px solid rgba(0,0,0,0.07);
+  padding: 36px 32px;
+  transition: transform 0.25s var(--ease-out), box-shadow 0.25s;
+}
+.htd-method-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 16px 48px rgba(0,0,0,0.08);
+}
+.htd-method-card--highlight {
+  border-color: var(--green-deep);
+  box-shadow: 0 0 0 2px rgba(90,158,58,0.15);
+}
+.htd-recommended {
+  position: absolute;
+  top: -12px;
+  left: 28px;
+  background: var(--green-deep);
+  color: var(--white);
+  font-family: var(--font-body);
+  font-size: 11px;
+  font-weight: 500;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  padding: 4px 14px;
+  border-radius: var(--radius-pill);
+}
+.htd-method-icon {
+  width: 56px;
+  height: 56px;
+  border-radius: var(--radius-sm);
+  background: var(--green-pale);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 20px;
+}
+.htd-method-title {
+  font-family: var(--font-display);
+  font-size: 26px;
+  font-weight: 400;
+  color: var(--text-dark);
+  margin-bottom: 4px;
+}
+.htd-method-sub {
+  font-size: 13px;
+  color: var(--text-light);
+  margin-bottom: 24px;
+}
+.htd-steps {
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+.htd-step {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  font-size: 14px;
+  color: var(--text-mid);
+  line-height: 1.5;
+}
+.htd-step-num {
+  flex-shrink: 0;
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  background: var(--green-pale);
+  color: var(--green-deep);
+  font-size: 11px;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-top: 1px;
+}
+
+/* FAQ */
+.htd-faq-section {
+  padding-bottom: 80px;
+}
+.htd-faq-list {
+  max-width: 720px;
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+.htd-faq-item {
+  background: var(--white);
+  border-radius: var(--radius-sm);
+  border: 1px solid rgba(0,0,0,0.07);
+  overflow: hidden;
+  transition: border-color 0.2s;
+}
+.htd-faq-item.open { border-color: var(--green-mid); }
+.htd-faq-q {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 20px 24px;
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-family: var(--font-body);
+  font-size: 15px;
+  font-weight: 500;
+  color: var(--text-dark);
+  text-align: left;
+}
+.htd-faq-a {
+  padding: 0 24px 20px;
+  font-size: 14px;
+  color: var(--text-mid);
+  line-height: 1.75;
+}
+
+/* CTA */
+.htd-cta {
+  background: var(--green-pale);
+  padding: 80px 64px;
+  text-align: center;
+}
+.htd-cta__inner h2 {
+  font-family: var(--font-display);
+  font-size: clamp(32px, 4vw, 52px);
+  font-weight: 300;
+  color: var(--text-dark);
+  margin-bottom: 12px;
+}
+.htd-cta__inner p {
+  font-size: 16px;
+  color: var(--text-mid);
+  margin-bottom: 32px;
+}
+
+/* Responsive */
+@media (max-width: 1024px) {
+  .htd-hero { padding: 100px 36px 60px; }
+  .htd-methods-grid { grid-template-columns: 1fr 1fr; }
+}
+@media (max-width: 768px) {
+  .htd-hero { padding: 80px 24px 48px; flex-direction: column; }
+  .htd-hero__deco { display: none; }
+  .htd-trust-bar { padding: 16px 24px; }
+  .htd-trust-bar__inner { gap: 20px; }
+  .htd-methods-grid { grid-template-columns: 1fr; }
+  .htd-cta { padding: 60px 24px; }
+}

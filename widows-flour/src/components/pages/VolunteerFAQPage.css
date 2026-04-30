@@ -1,0 +1,219 @@
+/* ── VolunteerFAQPage.css ── */
+
+.vfaq-page {
+  min-height: 100vh;
+  background: var(--off-white);
+}
+
+/* Hero */
+.vfaq-hero {
+  padding: 120px 64px 80px;
+  background: var(--white);
+  display: grid;
+  grid-template-columns: 1fr auto;
+  align-items: center;
+  gap: 60px;
+}
+.vfaq-hero__headline {
+  font-family: var(--font-display);
+  font-size: clamp(48px, 6.5vw, 88px);
+  font-weight: 300;
+  line-height: 1.05;
+  margin: 20px 0 18px;
+  color: var(--text-dark);
+}
+.vfaq-hero__headline em { font-style: italic; color: var(--green-deep); }
+.vfaq-hero__sub {
+  font-size: 16px;
+  color: var(--text-mid);
+  line-height: 1.75;
+  max-width: 480px;
+  margin-bottom: 32px;
+}
+.vfaq-hero__cta { text-decoration: none; }
+
+/* Stats */
+.vfaq-hero__stats {
+  display: flex;
+  flex-direction: column;
+  gap: 28px;
+  background: var(--green-pale);
+  border-radius: var(--radius-lg);
+  padding: 36px 40px;
+  border: 1px solid rgba(90,158,58,0.2);
+  min-width: 220px;
+}
+.vfaq-stat {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  gap: 4px;
+}
+.vfaq-stat__val {
+  font-family: var(--font-display);
+  font-size: 36px;
+  font-weight: 300;
+  color: var(--text-dark);
+  line-height: 1;
+}
+.vfaq-stat__label {
+  font-size: 12px;
+  color: var(--text-mid);
+  font-weight: 500;
+}
+
+/* Section header */
+.vfaq-roles__header {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin-bottom: 40px;
+}
+.vfaq-section-title {
+  font-family: var(--font-display);
+  font-size: clamp(32px, 4vw, 52px);
+  font-weight: 300;
+  color: var(--text-dark);
+  line-height: 1.1;
+}
+
+/* Roles */
+.vfaq-roles {
+  padding-top: 80px;
+  padding-bottom: 80px;
+}
+.vfaq-roles-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 20px;
+}
+.vfaq-role-card {
+  background: var(--white);
+  border-radius: var(--radius-md);
+  border: 1px solid rgba(0,0,0,0.07);
+  padding: 28px 24px;
+  display: flex;
+  gap: 16px;
+  align-items: flex-start;
+  transition: transform 0.2s var(--ease-out), box-shadow 0.2s;
+}
+.vfaq-role-card:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 12px 36px rgba(0,0,0,0.07);
+}
+.vfaq-role-icon {
+  flex-shrink: 0;
+  width: 44px; height: 44px;
+  background: var(--green-pale);
+  border-radius: var(--radius-sm);
+  display: flex; align-items: center; justify-content: center;
+}
+.vfaq-role-title {
+  font-family: var(--font-display);
+  font-size: 20px;
+  font-weight: 400;
+  color: var(--text-dark);
+  margin-bottom: 6px;
+}
+.vfaq-role-desc {
+  font-size: 13px;
+  color: var(--text-mid);
+  line-height: 1.65;
+  margin-bottom: 10px;
+}
+.vfaq-role-time {
+  display: inline-flex;
+  align-items: center;
+  font-size: 12px;
+  color: var(--text-light);
+  font-weight: 500;
+}
+
+/* FAQ */
+.vfaq-faq-section {
+  padding-bottom: 80px;
+}
+.vfaq-categories {
+  display: flex;
+  flex-direction: column;
+  gap: 40px;
+  max-width: 760px;
+}
+.vfaq-category-title {
+  font-family: var(--font-display);
+  font-size: 22px;
+  font-weight: 400;
+  color: var(--green-deep);
+  margin-bottom: 12px;
+  padding-bottom: 12px;
+  border-bottom: 1px solid var(--green-light);
+}
+.vfaq-list { display: flex; flex-direction: column; gap: 2px; }
+.vfaq-item {
+  background: var(--white);
+  border: 1px solid rgba(0,0,0,0.07);
+  border-radius: var(--radius-sm);
+  overflow: hidden;
+}
+.vfaq-item.open { border-color: var(--green-mid); }
+.vfaq-q {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 18px 22px;
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-family: var(--font-body);
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--text-dark);
+  text-align: left;
+}
+.vfaq-a {
+  padding: 0 22px 18px;
+  font-size: 14px;
+  color: var(--text-mid);
+  line-height: 1.75;
+}
+
+/* CTA */
+.vfaq-cta {
+  background: var(--green-deep);
+  padding: 80px 64px;
+  text-align: center;
+}
+.vfaq-cta__inner h2 {
+  font-family: var(--font-display);
+  font-size: clamp(32px, 4vw, 52px);
+  font-weight: 300;
+  color: var(--white);
+  margin-bottom: 12px;
+}
+.vfaq-cta__inner p {
+  font-size: 16px;
+  color: rgba(255,255,255,0.75);
+  margin-bottom: 32px;
+}
+.vfaq-cta .btn-primary {
+  background: var(--white);
+  color: var(--green-deep);
+}
+.vfaq-cta .btn-primary:hover {
+  background: var(--green-pale);
+}
+
+/* Responsive */
+@media (max-width: 1024px) {
+  .vfaq-hero { padding: 100px 36px 60px; }
+  .vfaq-roles-grid { grid-template-columns: repeat(2, 1fr); }
+}
+@media (max-width: 768px) {
+  .vfaq-hero { padding: 80px 24px 48px; grid-template-columns: 1fr; }
+  .vfaq-hero__stats { flex-direction: row; justify-content: space-around; min-width: unset; }
+  .vfaq-roles-grid { grid-template-columns: 1fr; }
+  .vfaq-cta { padding: 60px 24px; }
+}

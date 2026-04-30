@@ -20,7 +20,14 @@ import GlobeSection        from "./components/GlobeSection";
 import AuthPage            from "./components/Auth/AuthPage";
 import AdminDashboard      from "./components/AdminDashboard/AdminDashboard";
 import DonationMethods     from "./components/DonationMethods";
-import CampaignsPage       from "./components/CampaignsPage";   // ← new
+import CampaignsPage       from "./components/CampaignsPage";
+
+// ── New pages ──
+import NewsPage            from "./components/pages/NewsPage";
+import HowToDonatePage     from "./components/pages/HowToDonatePage";
+import VolunteerFAQPage    from "./components/pages/VolunteerFAQPage";
+import ContactPage         from "./components/pages/ContactPage";
+import PrivacyPolicyPage   from "./components/pages/PrivacyPolicyPage";
 
 const API = import.meta.env.VITE_API_URL ?? "http://127.0.0.1:5000";
 
@@ -44,39 +51,35 @@ function PublicOnlyRoute({ admin, token, children }) {
   return children;
 }
 
-// ── Minimal page shell for standalone /donate route ──
-function DonatePage() {
+// ── Reusable shell: Navbar + page content + Footer ──
+function PageShell({ children }) {
   return (
     <>
       <Navbar />
-      <main className="app-main">
-        <section
-          style={{
-            minHeight:      "100vh",
-            display:        "flex",
-            flexDirection:  "column",
-            alignItems:     "center",
-            justifyContent: "center",
-            padding:        "120px 24px 80px",
-            background:     "var(--off-white)",
-          }}
-        >
-          <DonationMethods />
-        </section>
-      </main>
+      <main className="app-main">{children}</main>
       <Footer />
     </>
   );
 }
 
-// ── Causes page shell (Navbar + CampaignsPage + Footer) ──
-function CausesPageShell() {
+// ── Standalone /donate shell ──
+function DonatePage() {
   return (
-    <>
-      <Navbar />
-      <CampaignsPage />
-      <Footer />
-    </>
+    <PageShell>
+      <section
+        style={{
+          minHeight:      "100vh",
+          display:        "flex",
+          flexDirection:  "column",
+          alignItems:     "center",
+          justifyContent: "center",
+          padding:        "120px 24px 80px",
+          background:     "var(--off-white)",
+        }}
+      >
+        <DonationMethods />
+      </section>
+    </PageShell>
   );
 }
 
@@ -144,7 +147,7 @@ export default function App() {
     }
   };
 
-  // ── Custom cursor ──
+  // ── Custom cursor (home page only) ──
   useEffect(() => {
     const cursor   = cursorRef.current;
     const follower = followerRef.current;
@@ -212,14 +215,28 @@ export default function App() {
           }
         />
 
-        {/* ── All causes / campaigns page ── */}
-        <Route path="/causes"              element={<CausesPageShell />} />
+        {/* ── All causes / campaigns ── */}
+        <Route
+          path="/causes"
+          element={
+            <PageShell>
+              <CampaignsPage />
+            </PageShell>
+          }
+        />
 
         {/* ── Standalone donate (no campaign) ── */}
-        <Route path="/donate"              element={<DonatePage />} />
+        <Route path="/donate"             element={<DonatePage />} />
 
         {/* ── Donate with a pre-selected campaign ── */}
-        <Route path="/donate/:campaignId"  element={<DonatePage />} />
+        <Route path="/donate/:campaignId" element={<DonatePage />} />
+
+        {/* ── Pages ── */}
+        <Route path="/news"          element={<PageShell><NewsPage /></PageShell>} />
+        <Route path="/how-to-donate" element={<PageShell><HowToDonatePage /></PageShell>} />
+        <Route path="/volunteer"     element={<PageShell><VolunteerFAQPage /></PageShell>} />
+        <Route path="/contact"       element={<PageShell><ContactPage /></PageShell>} />
+        <Route path="/privacy"       element={<PageShell><PrivacyPolicyPage /></PageShell>} />
 
         {/* ── Login ── */}
         <Route

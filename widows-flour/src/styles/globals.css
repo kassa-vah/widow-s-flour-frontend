@@ -32,12 +32,7 @@
      box-sizing: border-box;
    }
    
-   /*
-    * OVERFLOW STRATEGY:
-    * html: overflow-x hidden — kills horizontal scrollbar at document level
-    * body: NO overflow — setting overflow on body breaks position:sticky
-    * main: NO overflow — same reason
-    */
+   
    html {
      overflow-x: hidden;
      scroll-behavior: smooth;
@@ -49,20 +44,17 @@
      background: var(--off-white);
      color: var(--text-dark);
      width: 100%;
-     /* NO overflow:hidden — breaks sticky */
+     
    }
-   
-   /* ── app-main: the <main> wrapper in App.jsx ──
-      Must be full width with zero margin/padding.
-      NO overflow property — kills position:sticky on child sections. */
+  
    .app-main {
      width: 100%;
      margin: 0;
      padding: 0;
-     /* display:block is the default for <main> — fine */
+     
    }
    
-   /* ── Root element ── */
+  
    #root {
      width: 100%;
      margin: 0;
@@ -134,8 +126,7 @@
      transform: translateY(-2px);
    }
    
-   /* ── .container utility (used nowhere currently but kept for safety) ──
-      FIXED: added margin: 0 auto and max-width base so it centres correctly */
+   
    .container {
      width: 100%;
      max-width: 1280px;

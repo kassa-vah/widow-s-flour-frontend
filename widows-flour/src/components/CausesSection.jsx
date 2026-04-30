@@ -1,11 +1,6 @@
 // src/components/CausesSection/CausesSection.jsx
-// Home-page teaser section — shows up to 3 active campaigns fetched from the DB.
-// "See All Causes" navigates to /causes (CampaignsPage).
-//
-// Uses react-router-dom <Link> — swap for <a href="/causes"> if not using router.
-
 import { useEffect, useRef, useState } from "react";
-import { Link } from "react-router-dom";   // ← remove if not using react-router
+import { Link } from "react-router-dom";
 import { gsap } from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 import "./CausesSection.css";
@@ -14,7 +9,6 @@ gsap.registerPlugin(ScrollTrigger);
 
 const API = import.meta.env.VITE_API_URL ?? "http://127.0.0.1:5000";
 
-/* ── Fallback placeholder data (shown while loading or on error) ── */
 const FALLBACK_CAUSES = [
   {
     id: null,
@@ -48,7 +42,6 @@ const FALLBACK_CAUSES = [
   },
 ];
 
-/* ── Map a campaign from the API into the shape the section expects ── */
 function normalise(c) {
   const raised = c.raised_amount ?? 0;
   const goal   = c.goal_amount   ?? 1;
@@ -67,9 +60,10 @@ function normalise(c) {
 }
 
 export default function CausesSection() {
-  const sectionRef = useRef(null);
-  const itemsRef   = useRef([]);
-  const fillsRef   = useRef([]);
+  const sectionRef  = useRef(null);
+  const itemsRef    = useRef([]);
+  const fillsRef    = useRef([]);
+  const counterRefs = useRef([]);   // ← refs for the % counter spans
 
   const [causes, setCauses] = useState(FALLBACK_CAUSES);
 
@@ -82,33 +76,63 @@ export default function CausesSection() {
         if (items && items.length > 0) {
           setCauses(items.slice(0, 3).map(normalise));
         }
-        // else keep fallback
       })
-      .catch(() => { /* keep fallback */ });
+      .catch(() => {});
   }, []);
 
-  /* GSAP animations */
+  /* GSAP animations — re-run whenever causes data changes */
   useEffect(() => {
     const ctx = gsap.context(() => {
+
+      /* ── Card entrance ── */
       itemsRef.current.forEach((item) => {
         if (!item) return;
         gsap.fromTo(item,
           { y: 60, opacity: 0 },
-          { y: 0, opacity: 1, duration: 0.9, ease: "power3.out",
-            scrollTrigger: { trigger: item, start: "top 85%" } }
+          {
+            y: 0, opacity: 1, duration: 0.9, ease: "power3.out",
+            scrollTrigger: { trigger: item, start: "top 85%" },
+          }
         );
       });
 
+      /* ── Progress bar fill + live % counter ── */
       fillsRef.current.forEach((fill, i) => {
         if (!fill) return;
-        const pct = causes[i]?.raised || 50;
+        const targetPct  = causes[i]?.raised ?? 0;
+        const counterEl  = counterRefs.current[i];
+        const obj        = { value: 0 };   // proxy object for gsap to tween
+
         gsap.fromTo(fill,
           { scaleX: 0 },
-          { scaleX: pct / 100, duration: 1.4, ease: "power3.out",
-            scrollTrigger: { trigger: fill, start: "top 85%" } }
+          {
+            scaleX: targetPct / 100,
+            duration: 1.6,
+            ease: "power3.out",
+            scrollTrigger: {
+              trigger: fill,
+              start: "top 88%",
+              once: true,             // ← only fires once per page load
+            },
+            // ── Simultaneously tween the counter number ──
+            onStart() {
+              gsap.to(obj, {
+                value: targetPct,
+                duration: 1.6,
+                ease: "power3.out",
+                onUpdate() {
+                  if (counterEl) {
+                    counterEl.textContent = `${Math.round(obj.value)}%`;
+                  }
+                },
+              });
+            },
+          }
         );
       });
+
     }, sectionRef);
+
     return () => ctx.revert();
   }, [causes]);
 
@@ -125,7 +149,6 @@ export default function CausesSection() {
           </div>
           <div className="causes__header-right">
             <p>Every donation is directed toward verified, transparent causes that change real lives.</p>
-            {/* ── Swap <Link> for <a href="/causes"> if not using react-router ── */}
             <Link to="/causes" className="btn-primary">
               See All Causes →
             </Link>
@@ -139,7 +162,7 @@ export default function CausesSection() {
               className="cause-item"
               ref={(el) => (itemsRef.current[i] = el)}
             >
-              {/* Image or emoji placeholder */}
+              {/* Image column */}
               <div className="cause-item__image">
                 {cause.img
                   ? <img src={cause.img} alt={cause.title} />
@@ -149,7 +172,7 @@ export default function CausesSection() {
                 }
               </div>
 
-              {/* Body */}
+              {/* Body column */}
               <div className="cause-item__body">
                 <span className="cause-item__category">{cause.category}</span>
                 <h3 className="cause-item__title">{cause.title}</h3>
@@ -160,22 +183,29 @@ export default function CausesSection() {
                     <div
                       className="cause-item__progress-fill"
                       ref={(el) => (fillsRef.current[i] = el)}
-                      style={{ transform: "scaleX(0)" }}
                     />
                   </div>
                   <div className="cause-item__progress-label">
-                    <span>{cause.raised}% raised</span>
+                    {/* ✅ Live counter — starts at 0%, animates to real % on scroll */}
+                    <span>
+                      <span
+                        className="pct-counter"
+                        ref={(el) => (counterRefs.current[i] = el)}
+                      >
+                        0%
+                      </span>
+                      {" "}raised
+                    </span>
                     <span>Goal: {cause.goal}</span>
                   </div>
                 </div>
               </div>
 
-              {/* Meta */}
+              {/* Meta column */}
               <div className="cause-item__meta">
                 <div className="cause-item__goal">
                   Goal: <span>{cause.goal}</span>
                 </div>
-                {/* Link to the full causes page, anchored to this campaign if it has an id */}
                 <Link
                   to={cause.id ? `/causes#campaign-${cause.id}` : "/causes"}
                   className="cause-item__cta"
@@ -187,7 +217,7 @@ export default function CausesSection() {
           ))}
         </div>
 
-        {/* View all link below the list on mobile */}
+        {/* Mobile view-all */}
         <div className="causes__view-all">
           <Link to="/causes" className="btn-primary">
             View All Causes →
