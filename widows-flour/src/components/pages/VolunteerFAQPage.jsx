@@ -140,7 +140,7 @@ export default function VolunteerFAQPage() {
       {/* CTA */}
       <section className="vfaq-cta">
         <div className="vfaq-cta__inner container">
-          <FaHeart size={36} color="var(--green-deep)" style={{ marginBottom: 16 }} />
+          <FaHeart size={36} color="var(--green-light)" style={{ marginBottom: 16 }} />
           <h2>Still Have Questions?</h2>
           <p>Our volunteer coordinator is happy to have a chat and find the right fit for you.</p>
           <a href="/contact" className="btn-primary">Get in Touch</a>

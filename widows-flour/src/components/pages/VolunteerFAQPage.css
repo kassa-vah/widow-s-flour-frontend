@@ -182,7 +182,7 @@
 
 /* CTA */
 .vfaq-cta {
-  background: var(--green-deep);
+  background: var(--green-mid);
   padding: 80px 64px;
   text-align: center;
 }
@@ -190,17 +190,17 @@
   font-family: var(--font-display);
   font-size: clamp(32px, 4vw, 52px);
   font-weight: 300;
-  color: var(--white);
+  color: var(--text-dark);
   margin-bottom: 12px;
 }
 .vfaq-cta__inner p {
   font-size: 16px;
-  color: rgba(255,255,255,0.75);
+  color: var(--text-dark);
   margin-bottom: 32px;
 }
 .vfaq-cta .btn-primary {
   background: var(--white);
-  color: var(--green-deep);
+  color: var(--text-dark);
 }
 .vfaq-cta .btn-primary:hover {
   background: var(--green-pale);
