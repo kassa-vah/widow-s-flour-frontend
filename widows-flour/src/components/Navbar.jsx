@@ -11,7 +11,7 @@ import {
   FaChevronDown,
 } from "react-icons/fa";
 import "./Navbar.css";
-import imgLogo from "../assets/logo.png";
+import imgLogo from "../assets/logo3.jpeg";
 
 const PAGES_LINKS = [
   { to: "/news",          label: "News & Blog",    icon: <FaNewspaper size={14} />,        desc: "Stories & updates" },
@@ -81,11 +81,7 @@ export default function Navbar() {
     }
   }, [location]);
 
-  /**
-   * Smart anchor navigation:
-   * - If already on "/", scroll directly to the section.
-   * - If on any other page, navigate home and carry the section id in state.
-   */
+  
   const handleAnchorClick = useCallback(
     (sectionId) => {
       setDrawerOpen(false);

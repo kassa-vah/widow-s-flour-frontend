@@ -3,7 +3,7 @@ import { useState } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import toast from "react-hot-toast";
 import "./Auth.css";
-import imgLogo from "../../assets/logo.png";
+import imgLogo from "../../assets/logo3.jpeg";
 import { getAuth, signInWithEmailAndPassword } from "firebase/auth";
 
 const API = import.meta.env.VITE_API_URL ?? "http://127.0.0.1:5000";
@@ -146,11 +146,7 @@ export default function AuthPage({ onLogin, onBack }) {
         <circle cx="500" cy="820" r="1.5" fill="rgba(168,208,128,0.12)" />
       </svg>
 
-      {/* ── Logo top-left ── */}
-      <div className="auth-logo-area">
-        <img src={imgLogo} alt="Widows Flour" className="auth-logo-img" />
-      </div>
-
+    
       {/* ── Back to site button ── */}
       {onBack && (
         <button className="auth-back-btn" onClick={onBack}>
