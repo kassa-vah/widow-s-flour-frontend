@@ -8,16 +8,18 @@ import BeneficiaryCrud from "./BeneficiaryCrud";
 import CampaignCrud    from "./CampaignCrud";
 import DonationCrud    from "./DonationCrud";
 import BlogCrud        from "./BlogCrud";
+import StoriesCrud     from "./StoriesCrud";   // ← new
 import ActivityLog     from "./ActivityLog";
 
-const API =  "http://127.0.0.1:5000";
+const API = import.meta.env.VITE_API_URL ?? "http://127.0.0.1:5000";
 
 const NAV = [
-  { id: "beneficiaries", label: "Beneficiaries", icon: "bi-people",        section: "People"     },
-  { id: "campaigns",     label: "Campaigns",     icon: "bi-megaphone",     section: "Operations" },
-  { id: "donations",     label: "Donations",     icon: "bi-heart",         section: "Operations" },
-  { id: "blogs",         label: "Blog Posts",    icon: "bi-file-earmark-text", section: "Content"},
-  { id: "activity",      label: "Activity Log",  icon: "bi-clipboard-data",section: "System"     },
+  { id: "beneficiaries", label: "Beneficiaries", icon: "bi-people",             section: "People"     },
+  { id: "campaigns",     label: "Campaigns",     icon: "bi-megaphone",           section: "Operations" },
+  { id: "donations",     label: "Donations",     icon: "bi-heart",               section: "Operations" },
+  { id: "stories",       label: "Stories",       icon: "bi-newspaper",           section: "Content"    }, // ← new
+  { id: "blogs",         label: "Blog Posts",    icon: "bi-file-earmark-text",   section: "Content"    },
+  { id: "activity",      label: "Activity Log",  icon: "bi-clipboard-data",      section: "System"     },
 ];
 
 export default function AdminDashboard({ admin, token, onLogout }) {
@@ -118,9 +120,9 @@ export default function AdminDashboard({ admin, token, onLogout }) {
                 <i className="bi bi-calendar3" />
                 {new Date().toLocaleDateString("en-GB", {
                   weekday: "long",
-                  year: "numeric",
-                  month: "long",
-                  day: "numeric",
+                  year:    "numeric",
+                  month:   "long",
+                  day:     "numeric",
                 })}
               </span>
               <span className="dash__topbar-badge">
@@ -134,6 +136,7 @@ export default function AdminDashboard({ admin, token, onLogout }) {
             {active === "beneficiaries" && <BeneficiaryCrud token={token} />}
             {active === "campaigns"     && <CampaignCrud    token={token} />}
             {active === "donations"     && <DonationCrud    token={token} />}
+            {active === "stories"       && <StoriesCrud     token={token} />}  {/* ← new */}
             {active === "blogs"         && <BlogCrud        token={token} />}
             {active === "activity"      && <ActivityLog     token={token} />}
           </div>

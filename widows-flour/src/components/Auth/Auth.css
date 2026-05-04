@@ -33,8 +33,8 @@
 }
 
 /*
-  Both paths originate from the left, curve with an inverted belly
-  (dipping downward then rising), and terminate at bottom-right.
+  Waves raised so they pass through the vertical centre of the viewport
+  (~550px on a 1100px-tall viewBox), slicing through the form card.
   Top region above both curves = white page bg.
   Band between curves = lighter green.
   Region below both = darker green.
@@ -44,17 +44,17 @@
   0%,
   100% {
     d: path(
-      "M 0 320 Q 280 480 620 380 Q 900 280 1100 520 Q 1250 680 1400 820 L 1400 1100 L 0 1100 Z"
+      "M 0 520 Q 280 680 620 580 Q 900 480 1100 620 Q 1250 720 1400 820 L 1400 1100 L 0 1100 Z"
     );
   }
   40% {
     d: path(
-      "M 0 300 Q 260 460 600 370 Q 880 270 1090 510 Q 1240 670 1400 800 L 1400 1100 L 0 1100 Z"
+      "M 0 500 Q 260 660 600 570 Q 880 470 1090 610 Q 1240 710 1400 800 L 1400 1100 L 0 1100 Z"
     );
   }
   70% {
     d: path(
-      "M 0 340 Q 290 500 640 390 Q 920 290 1110 530 Q 1260 690 1400 840 L 1400 1100 L 0 1100 Z"
+      "M 0 540 Q 290 700 640 590 Q 920 490 1110 630 Q 1260 730 1400 840 L 1400 1100 L 0 1100 Z"
     );
   }
 }
@@ -63,17 +63,17 @@
   0%,
   100% {
     d: path(
-      "M 0 220 Q 270 390 610 290 Q 890 190 1090 430 Q 1240 590 1400 720 L 1400 1100 L 0 1100 Z"
+      "M 0 420 Q 270 590 610 490 Q 890 390 1090 530 Q 1240 640 1400 720 L 1400 1100 L 0 1100 Z"
     );
   }
   35% {
     d: path(
-      "M 0 200 Q 250 370 590 280 Q 870 175 1070 415 Q 1225 575 1400 700 L 1400 1100 L 0 1100 Z"
+      "M 0 400 Q 250 570 590 480 Q 870 375 1070 515 Q 1225 625 1400 700 L 1400 1100 L 0 1100 Z"
     );
   }
   70% {
     d: path(
-      "M 0 245 Q 285 410 625 305 Q 905 205 1105 445 Q 1255 605 1400 740 L 1400 1100 L 0 1100 Z"
+      "M 0 445 Q 285 610 625 505 Q 905 405 1105 545 Q 1255 655 1400 740 L 1400 1100 L 0 1100 Z"
     );
   }
 }
@@ -121,16 +121,16 @@
   bottom: 48px;
   left: 52px;
   z-index: 10;
-  max-width: 280px;
+  max-width: 340px;
 }
 
 .auth-tagline h2 {
   font-family: var(--font-display);
-  font-size: clamp(1.4rem, 2.2vw, 2rem);
+  font-size: clamp(2rem, 3.2vw, 2.8rem);
   font-weight: 300;
   color: #fff;
   line-height: 1.2;
-  margin-bottom: 8px;
+  margin-bottom: 12px;
 }
 
 .auth-tagline h2 em {
@@ -139,9 +139,9 @@
 }
 
 .auth-tagline p {
-  font-size: 12.5px;
-  color: rgba(255, 255, 255, 0.45);
-  line-height: 1.65;
+  font-size: 15px;
+  color: rgba(255, 255, 255, 0.65);
+  line-height: 1.7;
 }
 
 /* ── Auth card ── */

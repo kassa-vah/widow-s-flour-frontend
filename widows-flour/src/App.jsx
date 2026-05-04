@@ -22,12 +22,13 @@ import AdminDashboard      from "./components/AdminDashboard/AdminDashboard";
 import DonationMethods     from "./components/DonationMethods";
 import CampaignsPage       from "./components/CampaignsPage";
 
-// ── New pages ──
+// ── Pages ──
 import NewsPage            from "./components/pages/NewsPage";
 import HowToDonatePage     from "./components/pages/HowToDonatePage";
 import VolunteerFAQPage    from "./components/pages/VolunteerFAQPage";
 import ContactPage         from "./components/pages/ContactPage";
 import PrivacyPolicyPage   from "./components/pages/PrivacyPolicyPage";
+import StoryDetail         from "./components/StoryDetail";
 
 const API = import.meta.env.VITE_API_URL ?? "http://127.0.0.1:5000";
 
@@ -231,8 +232,16 @@ export default function App() {
         {/* ── Donate with a pre-selected campaign ── */}
         <Route path="/donate/:campaignId" element={<DonatePage />} />
 
-        {/* ── Pages ── */}
-        <Route path="/news"          element={<PageShell><NewsPage /></PageShell>} />
+        {/* ── News & stories listing (public) ── */}
+        <Route path="/news" element={<PageShell><NewsPage /></PageShell>} />
+
+        {/* ── Single story detail page ── */}
+        <Route
+          path="/stories/:id"
+          element={<PageShell><StoryDetail /></PageShell>}
+        />
+
+        {/* ── Other pages ── */}
         <Route path="/how-to-donate" element={<PageShell><HowToDonatePage /></PageShell>} />
         <Route path="/volunteer"     element={<PageShell><VolunteerFAQPage /></PageShell>} />
         <Route path="/contact"       element={<PageShell><ContactPage /></PageShell>} />
