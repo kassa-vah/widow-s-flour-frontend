@@ -8,7 +8,7 @@ import BeneficiaryCrud from "./BeneficiaryCrud";
 import CampaignCrud    from "./CampaignCrud";
 import DonationCrud    from "./DonationCrud";
 import BlogCrud        from "./BlogCrud";
-import StoriesCrud     from "./StoriesCrud";   // ← new
+import StoriesCrud     from "./StoriesCrud";
 import ActivityLog     from "./ActivityLog";
 
 const API = import.meta.env.VITE_API_URL ?? "http://127.0.0.1:5000";
@@ -17,7 +17,7 @@ const NAV = [
   { id: "beneficiaries", label: "Beneficiaries", icon: "bi-people",             section: "People"     },
   { id: "campaigns",     label: "Campaigns",     icon: "bi-megaphone",           section: "Operations" },
   { id: "donations",     label: "Donations",     icon: "bi-heart",               section: "Operations" },
-  { id: "stories",       label: "Stories",       icon: "bi-newspaper",           section: "Content"    }, // ← new
+  { id: "stories",       label: "Stories",       icon: "bi-newspaper",           section: "Content"    },
   { id: "blogs",         label: "Blog Posts",    icon: "bi-file-earmark-text",   section: "Content"    },
   { id: "activity",      label: "Activity Log",  icon: "bi-clipboard-data",      section: "System"     },
 ];
@@ -136,9 +136,11 @@ export default function AdminDashboard({ admin, token, onLogout }) {
             {active === "beneficiaries" && <BeneficiaryCrud token={token} />}
             {active === "campaigns"     && <CampaignCrud    token={token} />}
             {active === "donations"     && <DonationCrud    token={token} />}
-            {active === "stories"       && <StoriesCrud     token={token} />}  {/* ← new */}
+            {active === "stories"       && <StoriesCrud     token={token} />}
             {active === "blogs"         && <BlogCrud        token={token} />}
-            {active === "activity"      && <ActivityLog     token={token} />}
+            {active === "activity"      && (
+              <ActivityLog token={token} currentAdmin={admin} />  
+            )}
           </div>
         </main>
       </div>
