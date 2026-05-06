@@ -63,19 +63,6 @@ function ActionBadge({ action }) {
   );
 }
 
-function RoleBadge({ role }) {
-  const isSuperAdmin = role === "superadmin";
-  return (
-    <span className="al__badge" style={{
-      background: isSuperAdmin ? "#fef3c7" : "#eff6ff",
-      color:      isSuperAdmin ? "#92400e" : "#1e40af",
-    }}>
-      <i className={`bi ${isSuperAdmin ? "bi-shield-fill" : "bi-person-fill"}`} />
-      {isSuperAdmin ? "Superadmin" : "Admin"}
-    </span>
-  );
-}
-
 function StatCard({ icon, label, value, sub, color = "#22c55e", delay = 0 }) {
   return (
     <div className="al__stat-card" style={{ animationDelay: `${delay}ms` }}>
@@ -107,356 +94,6 @@ function ChartTooltip({ active, payload, label, prefix = "", suffix = "" }) {
   );
 }
 
-// ── Confirm modal ─────────────────────────────────────────────────────────────
-function ConfirmModal({ open, title, message, confirmLabel = "Confirm", danger = false, onConfirm, onCancel }) {
-  if (!open) return null;
-  return (
-    <div className="um__modal-overlay" onClick={onCancel}>
-      <div className="um__modal" onClick={e => e.stopPropagation()}>
-        <div className="um__modal-header">
-          <i className={`bi ${danger ? "bi-exclamation-triangle-fill" : "bi-question-circle-fill"}`}
-             style={{ color: danger ? "#ef4444" : "#f59e0b" }} />
-          <h3>{title}</h3>
-        </div>
-        <p className="um__modal-body">{message}</p>
-        <div className="um__modal-footer">
-          <button className="um__btn um__btn--ghost" onClick={onCancel}>Cancel</button>
-          <button
-            className={`um__btn ${danger ? "um__btn--danger" : "um__btn--primary"}`}
-            onClick={onConfirm}
-          >
-            {confirmLabel}
-          </button>
-        </div>
-      </div>
-    </div>
-  );
-}
-
-// ── Edit Admin Modal ──────────────────────────────────────────────────────────
-function EditAdminModal({ open, admin, token, onClose, onSaved }) {
-  const [name,   setName]   = useState("");
-  const [email,  setEmail]  = useState("");
-  const [saving, setSaving] = useState(false);
-  const [error,  setError]  = useState("");
-
-  useEffect(() => {
-    if (admin) { setName(admin.name); setEmail(admin.email); setError(""); }
-  }, [admin]);
-
-  if (!open || !admin) return null;
-
-  const handleSave = async () => {
-    if (!name.trim() || !email.trim()) { setError("Name and email are required."); return; }
-    setSaving(true); setError("");
-    try {
-      const res  = await fetch(`${API}/auth/admin/${admin.id}`, {
-        method:  "PATCH",
-        headers: { Authorization: `Bearer ${token}`, "Content-Type": "application/json" },
-        body:    JSON.stringify({ name: name.trim(), email: email.trim().toLowerCase() }),
-      });
-      const data = await res.json();
-      if (!res.ok) { setError(data.error || "Failed to update."); return; }
-      onSaved(data.data ?? data.admin ?? { ...admin, name, email });
-    } catch { setError("Network error."); }
-    finally   { setSaving(false); }
-  };
-
-  return (
-    <div className="um__modal-overlay" onClick={onClose}>
-      <div className="um__modal um__modal--edit" onClick={e => e.stopPropagation()}>
-        <div className="um__modal-header">
-          <i className="bi bi-pencil-square" style={{ color: "#3b82f6" }} />
-          <h3>Edit Admin</h3>
-        </div>
-        <div className="um__modal-body um__modal-body--form">
-          <label>Full Name</label>
-          <input
-            className="um__input"
-            value={name}
-            onChange={e => setName(e.target.value)}
-            placeholder="Full name"
-            disabled={saving}
-          />
-          <label>Email</label>
-          <input
-            className="um__input"
-            type="email"
-            value={email}
-            onChange={e => setEmail(e.target.value)}
-            placeholder="Email address"
-            disabled={saving}
-          />
-          {error && <p className="um__form-error">{error}</p>}
-        </div>
-        <div className="um__modal-footer">
-          <button className="um__btn um__btn--ghost" onClick={onClose} disabled={saving}>Cancel</button>
-          <button className="um__btn um__btn--primary" onClick={handleSave} disabled={saving}>
-            {saving ? <><i className="bi bi-arrow-repeat um__spin" /> Saving…</> : "Save Changes"}
-          </button>
-        </div>
-      </div>
-    </div>
-  );
-}
-
-// ── User Management Tab ───────────────────────────────────────────────────────
-function UserManagement({ token, currentAdmin }) {
-  const isSuperAdmin = currentAdmin?.role === "superadmin";
-
-  const [section,       setSection]       = useState("all");
-  const [allAdmins,     setAllAdmins]     = useState([]);
-  const [pending,       setPending]       = useState([]);
-  const [loading,       setLoading]       = useState(true);
-  const [actionLoading, setActionLoading] = useState(null);
-  const [confirm,       setConfirm]       = useState(null);
-  const [editTarget,    setEditTarget]    = useState(null);
-
-  const headers = useCallback(
-    () => ({ Authorization: `Bearer ${token}`, "Content-Type": "application/json" }),
-    [token],
-  );
-
-  const loadAll = useCallback(async () => {
-    if (!token) return;
-    setLoading(true);
-    try {
-      const [allRes, pendRes] = await Promise.all([
-        fetch(`${API}/auth/admins`, { headers: headers() }),
-        isSuperAdmin
-          ? fetch(`${API}/auth/pending`, { headers: headers() })
-          : Promise.resolve(null),
-      ]);
-      if (allRes.ok) {
-        const d = await allRes.json();
-        setAllAdmins(d.data?.admins ?? d.admins ?? []);
-      }
-      if (pendRes?.ok) {
-        const d = await pendRes.json();
-        setPending(d.data?.pending ?? d.pending ?? []);
-      }
-    } catch { /* silent */ }
-    finally { setLoading(false); }
-  }, [token, isSuperAdmin]);
-
-  useEffect(() => { loadAll(); }, [loadAll]);
-
-  if (!currentAdmin) {
-    return (
-      <div className="al__data-loading">
-        <i className="bi bi-arrow-repeat al__spin" />
-        <span>Loading…</span>
-      </div>
-    );
-  }
-
-  // ── Actions ───────────────────────────────────────────────────────────────
-
-  const doAction = async (url, method, adminId, successCb) => {
-    setActionLoading(adminId);
-    try {
-      const res  = await fetch(url, { method, headers: headers() });
-      const data = await res.json();
-      if (!res.ok) { alert(data.error || "Action failed."); return; }
-      successCb(data);
-      await loadAll();
-    } catch { alert("Network error."); }
-    finally { setActionLoading(null); setConfirm(null); }
-  };
-
-  const approve = (admin) => doAction(`${API}/auth/approve/${admin.id}`,  "POST",   admin.id, () => {});
-  const reject  = (admin) => doAction(`${API}/auth/reject/${admin.id}`,   "POST",   admin.id, () => {});
-  const promote = (admin) => doAction(`${API}/auth/set-role/${admin.id}`, "PATCH",  admin.id, () => {});
-  const dismiss = (admin) => doAction(`${API}/auth/dismiss/${admin.id}`,  "DELETE", admin.id, () => {});
-
-  const handleEdited = (updated) => {
-    setAllAdmins(prev => prev.map(a => a.id === updated.id ? { ...a, ...updated } : a));
-    setEditTarget(null);
-  };
-
-  // ── Admin row ─────────────────────────────────────────────────────────────
-
-  const AdminRow = ({ admin, isPending = false }) => {
-    const isMe = admin.id === currentAdmin.id;
-    const busy = actionLoading === admin.id;
-    const isSA = admin.role === "superadmin";
-
-    return (
-      <div className={`um__row ${isPending ? "um__row--pending" : ""}`}>
-        <div className="um__row-info">
-          <div className="um__avatar" style={{ background: isSA ? "#fef3c7" : "#eff6ff" }}>
-            <i className={`bi ${isSA ? "bi-shield-fill" : "bi-person-fill"}`}
-               style={{ color: isSA ? "#92400e" : "#1e40af" }} />
-          </div>
-          <div className="um__row-details">
-            <div className="um__row-name">
-              {admin.name}
-              {isMe && <span className="um__you-badge">you</span>}
-            </div>
-            <div className="um__row-email">{admin.email}</div>
-            <div className="um__row-meta">
-              <RoleBadge role={admin.role} />
-              {admin.created_at && (
-                <span className="um__row-date">
-                  <i className="bi bi-calendar3" />
-                  Joined {new Date(admin.created_at).toLocaleDateString("en-GB", { dateStyle: "medium" })}
-                </span>
-              )}
-              {admin.last_login && (
-                <span className="um__row-date">
-                  <i className="bi bi-clock-history" />
-                  Last login {new Date(admin.last_login).toLocaleDateString("en-GB", { dateStyle: "medium" })}
-                </span>
-              )}
-            </div>
-          </div>
-        </div>
-
-        {isSuperAdmin && !isMe && (
-          <div className="um__row-actions">
-            {busy ? (
-              <span className="um__busy"><i className="bi bi-arrow-repeat um__spin" /></span>
-            ) : isPending ? (
-              <>
-                <button className="um__btn um__btn--approve"
-                  onClick={() => setConfirm({ type: "approve", admin })} title="Approve account">
-                  <i className="bi bi-check-lg" /> Approve
-                </button>
-                <button className="um__btn um__btn--danger"
-                  onClick={() => setConfirm({ type: "reject", admin })} title="Reject & delete">
-                  <i className="bi bi-x-lg" /> Reject
-                </button>
-              </>
-            ) : (
-              <>
-                <button className="um__btn um__btn--ghost"
-                  onClick={() => setEditTarget(admin)} title="Edit name / email">
-                  <i className="bi bi-pencil" />
-                </button>
-                {isSA ? (
-                  <button className="um__btn um__btn--yellow"
-                    onClick={() => setConfirm({ type: "demote", admin })} title="Demote to admin">
-                    <i className="bi bi-shield-minus" /> Demote
-                  </button>
-                ) : (
-                  <button className="um__btn um__btn--promote"
-                    onClick={() => setConfirm({ type: "promote", admin })} title="Promote to superadmin">
-                    <i className="bi bi-shield-plus" /> Make Superadmin
-                  </button>
-                )}
-                <button className="um__btn um__btn--danger"
-                  onClick={() => setConfirm({ type: "dismiss", admin })} title="Remove admin">
-                  <i className="bi bi-person-dash" /> Dismiss
-                </button>
-              </>
-            )}
-          </div>
-        )}
-      </div>
-    );
-  };
-
-  const displayList = section === "pending" ? pending : allAdmins;
-
-  return (
-    <div className="um__root">
-      <div className="um__section-bar">
-        <button
-          className={`um__section-btn ${section === "all" ? "um__section-btn--active" : ""}`}
-          onClick={() => setSection("all")}
-        >
-          <i className="bi bi-people" /> All Admins
-          <span className="um__count">{allAdmins.length}</span>
-        </button>
-        {isSuperAdmin && (
-          <button
-            className={`um__section-btn ${section === "pending" ? "um__section-btn--active" : ""}`}
-            onClick={() => setSection("pending")}
-          >
-            <i className="bi bi-hourglass-split" /> Pending Approval
-            {pending.length > 0 && (
-              <span className="um__count um__count--alert">{pending.length}</span>
-            )}
-          </button>
-        )}
-        <div style={{ flex: 1 }} />
-        <button className="um__refresh" onClick={loadAll} title="Refresh">
-          <i className="bi bi-arrow-clockwise" />
-        </button>
-      </div>
-
-      {loading ? (
-        <div className="al__data-loading">
-          <i className="bi bi-arrow-repeat al__spin" />
-          <span>Loading admins…</span>
-        </div>
-      ) : displayList.length === 0 ? (
-        <div className="al__empty">
-          <i className={`bi ${section === "pending" ? "bi-hourglass" : "bi-people"}`} />
-          <p>{section === "pending" ? "No accounts awaiting approval." : "No admins found."}</p>
-        </div>
-      ) : (
-        <div className="um__list">
-          {section === "pending" && (
-            <div className="um__pending-banner">
-              <i className="bi bi-exclamation-circle-fill" />
-              {pending.length} account{pending.length !== 1 ? "s" : ""} awaiting your approval
-            </div>
-          )}
-          {displayList.map(admin => (
-            <AdminRow key={admin.id} admin={admin} isPending={section === "pending"} />
-          ))}
-        </div>
-      )}
-
-      {/* ── ConfirmModal: only rendered when confirm is non-null ────────── */}
-      {confirm && (
-        <ConfirmModal
-          open={true}
-          danger={confirm.type === "reject" || confirm.type === "dismiss"}
-          title={
-            confirm.type === "approve" ? "Approve Account"         :
-            confirm.type === "reject"  ? "Reject & Delete Account" :
-            confirm.type === "promote" ? "Promote to Superadmin"   :
-            confirm.type === "demote"  ? "Demote to Admin"         :
-            "Dismiss Admin"
-          }
-          message={
-            confirm.type === "approve" ? `Approve ${confirm.admin?.name}'s account? They will receive an email and can log in immediately.`               :
-            confirm.type === "reject"  ? `Permanently delete ${confirm.admin?.name}'s account? This cannot be undone.`                                    :
-            confirm.type === "promote" ? `Give ${confirm.admin?.name} superadmin powers? They will be able to approve, reject, and dismiss other admins.` :
-            confirm.type === "demote"  ? `Remove superadmin powers from ${confirm.admin?.name}? They will become a regular admin.`                         :
-            `Remove ${confirm.admin?.name} from the system? Their account and Firebase user will be deleted.`
-          }
-          confirmLabel={
-            confirm.type === "approve" ? "Approve"        :
-            confirm.type === "reject"  ? "Delete Account" :
-            confirm.type === "promote" ? "Promote"        :
-            confirm.type === "demote"  ? "Demote"         :
-            "Dismiss"
-          }
-          onCancel={() => setConfirm(null)}
-          onConfirm={() => {
-            const { type, admin } = confirm;
-            if      (type === "approve")                      approve(admin);
-            else if (type === "reject")                       reject(admin);
-            else if (type === "promote" || type === "demote") promote(admin);
-            else if (type === "dismiss")                      dismiss(admin);
-          }}
-        />
-      )}
-
-      <EditAdminModal
-        open={!!editTarget}
-        admin={editTarget}
-        token={token}
-        onClose={() => setEditTarget(null)}
-        onSaved={handleEdited}
-      />
-    </div>
-  );
-}
-
 // ══════════════════════════════════════════════════════════════════════════════
 // Main Component
 // ══════════════════════════════════════════════════════════════════════════════
@@ -467,12 +104,11 @@ export default function ActivityLog({ token, currentAdmin }) {
   const [page,       setPage]       = useState(1);
   const [logLoading, setLogLoading] = useState(false);
 
-  const [campaigns,      setCampaigns]      = useState([]);
-  const [donations,      setDonations]      = useState([]);
-  const [beneficiaries,  setBeneficiaries]  = useState([]);
-  const [blogs,          setBlogs]          = useState([]);
-  const [dataLoading,    setDataLoading]    = useState(true);
-  const [pendingCount,   setPendingCount]   = useState(0);
+  const [campaigns,     setCampaigns]     = useState([]);
+  const [donations,     setDonations]     = useState([]);
+  const [beneficiaries, setBeneficiaries] = useState([]);
+  const [blogs,         setBlogs]         = useState([]);
+  const [dataLoading,   setDataLoading]   = useState(true);
 
   const headers = useCallback(
     () => ({ Authorization: `Bearer ${token}`, "Content-Type": "application/json" }),
@@ -488,17 +124,11 @@ export default function ActivityLog({ token, currentAdmin }) {
       fetch(`${API}/admin/donations?per_page=500`, { headers: headers() }).then(r => r.json()),
       fetch(`${API}/beneficiaries?per_page=200`,   { headers: headers() }).then(r => r.json()),
       fetch(`${API}/blogs?per_page=200`,           { headers: headers() }).then(r => r.json()),
-      currentAdmin?.role === "superadmin"
-        ? fetch(`${API}/auth/pending`, { headers: headers() }).then(r => r.json())
-        : Promise.resolve(null),
-    ]).then(([c, d, b, bl, p]) => {
+    ]).then(([c, d, b, bl]) => {
       if (c.status  === "fulfilled") setCampaigns(c.value.data?.items     ?? c.value.data  ?? []);
       if (d.status  === "fulfilled") setDonations(d.value.data?.items     ?? d.value.data  ?? []);
       if (b.status  === "fulfilled") setBeneficiaries(b.value.data?.items ?? b.value.data  ?? []);
       if (bl.status === "fulfilled") setBlogs(bl.value.data?.items        ?? bl.value.data ?? []);
-      if (p?.status === "fulfilled" && p.value) {
-        setPendingCount((p.value.data?.pending ?? p.value.pending ?? []).length);
-      }
     }).finally(() => setDataLoading(false));
   }, [token]);
 
@@ -566,10 +196,10 @@ export default function ActivityLog({ token, currentAdmin }) {
   }, [donations]);
 
   const totalRaised           = useMemo(() => donations.reduce((s, d) => s + (Number(d.amount) || 0), 0), [donations]);
-  const activeCampaigns       = useMemo(() => campaigns.filter(c => c.status === "active").length,    [campaigns]);
-  const completedCampaigns    = useMemo(() => campaigns.filter(c => c.status === "completed").length, [campaigns]);
+  const activeCampaigns       = useMemo(() => campaigns.filter(c => c.status === "active").length,       [campaigns]);
+  const completedCampaigns    = useMemo(() => campaigns.filter(c => c.status === "completed").length,    [campaigns]);
   const approvedBeneficiaries = useMemo(() => beneficiaries.filter(b => b.status === "approved").length, [beneficiaries]);
-  const publishedBlogs        = useMemo(() => blogs.filter(b => b.published).length, [blogs]);
+  const publishedBlogs        = useMemo(() => blogs.filter(b => b.published).length,                     [blogs]);
   const totalPages            = Math.ceil(logTotal / PER_PAGE);
 
   return (
@@ -577,16 +207,18 @@ export default function ActivityLog({ token, currentAdmin }) {
 
       {/* ── Tab bar ──────────────────────────────────────────────────────── */}
       <div className="al__tabs">
-        <button className={`al__tab ${tab === "analytics" ? "al__tab--active" : ""}`} onClick={() => setTab("analytics")}>
+        <button
+          className={`al__tab ${tab === "analytics" ? "al__tab--active" : ""}`}
+          onClick={() => setTab("analytics")}
+        >
           <i className="bi bi-graph-up-arrow" /> Analytics
         </button>
-        <button className={`al__tab ${tab === "feed" ? "al__tab--active" : ""}`} onClick={() => setTab("feed")}>
+        <button
+          className={`al__tab ${tab === "feed" ? "al__tab--active" : ""}`}
+          onClick={() => setTab("feed")}
+        >
           <i className="bi bi-journal-text" /> Activity Feed
           {logTotal > 0 && <span className="al__tab-count">{logTotal}</span>}
-        </button>
-        <button className={`al__tab ${tab === "users" ? "al__tab--active" : ""}`} onClick={() => setTab("users")}>
-          <i className="bi bi-people" /> User Management
-          {pendingCount > 0 && <span className="al__tab-count al__tab-count--alert">{pendingCount}</span>}
         </button>
         <div className="al__tab-spacer" />
         <button className="al__refresh-btn" onClick={loadLogs}>
@@ -605,11 +237,11 @@ export default function ActivityLog({ token, currentAdmin }) {
             <>
               <div className="al__stats-grid">
                 <StatCard icon="bi-cash-stack"       label="Total Raised"           value={`KES ${Math.round(totalRaised).toLocaleString()}`} color="#22c55e" delay={0}   />
-                <StatCard icon="bi-megaphone-fill"   label="Active Campaigns"       value={activeCampaigns}       sub={`${completedCampaigns} completed`}                           color="#3b82f6" delay={60}  />
+                <StatCard icon="bi-megaphone-fill"   label="Active Campaigns"       value={activeCampaigns}       sub={`${completedCampaigns} completed`}                               color="#3b82f6" delay={60}  />
                 <StatCard icon="bi-heart-pulse"      label="Total Donations"        value={donations.length}      sub={`${donationsDaily.filter(d => d.count > 0).length} active days`} color="#f59e0b" delay={120} />
-                <StatCard icon="bi-people-fill"      label="Approved Beneficiaries" value={approvedBeneficiaries} sub={`${beneficiaries.length} total`}                             color="#14b8a6" delay={180} />
-                <StatCard icon="bi-journal-richtext" label="Published Posts"        value={publishedBlogs}        sub={`${blogs.length} total`}                                     color="#a855f7" delay={240} />
-                <StatCard icon="bi-trophy-fill"      label="Campaigns Completed"    value={completedCampaigns}    sub={`${campaigns.length} total`}                                 color="#ef4444" delay={300} />
+                <StatCard icon="bi-people-fill"      label="Approved Beneficiaries" value={approvedBeneficiaries} sub={`${beneficiaries.length} total`}                                 color="#14b8a6" delay={180} />
+                <StatCard icon="bi-journal-richtext" label="Published Posts"        value={publishedBlogs}        sub={`${blogs.length} total`}                                         color="#a855f7" delay={240} />
+                <StatCard icon="bi-trophy-fill"      label="Campaigns Completed"    value={completedCampaigns}    sub={`${campaigns.length} total`}                                     color="#ef4444" delay={300} />
               </div>
 
               <div className="al__charts-row">
@@ -768,11 +400,6 @@ export default function ActivityLog({ token, currentAdmin }) {
             </>
           )}
         </div>
-      )}
-
-      {/* ══ USER MANAGEMENT TAB ════════════════════════════════════════════ */}
-      {tab === "users" && (
-        <UserManagement token={token} currentAdmin={currentAdmin} />
       )}
     </div>
   );

@@ -1,0 +1,741 @@
+/* UserManagement.css — scoped to .um2 */
+/* Aligned with globals.css: DM Sans body, Cormorant Garamond display,
+   cream/green palette, --radius-sm/md/pill, --ease-out               */
+
+/* ── Root ─────────────────────────────────────────────────────────────────── */
+.um2 {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+  font-family: var(--font-body);
+  color: var(--text-dark);
+}
+
+/* ══════════════════════════════════════════════════════════════════════════
+   TOAST
+══════════════════════════════════════════════════════════════════════════ */
+.um2-toast {
+  position: fixed;
+  top: 24px;
+  right: 24px;
+  z-index: 9999;
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  padding: 11px 18px;
+  border-radius: var(--radius-sm);
+  font-family: var(--font-body);
+  font-size: 13.5px;
+  font-weight: 500;
+  letter-spacing: 0.01em;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.10);
+  animation: um2-toast-in 0.28s var(--ease-out) both;
+}
+.um2-toast--ok {
+  background: var(--green-pale);
+  color: var(--green-deep);
+  border: 1.5px solid var(--green-light);
+}
+.um2-toast--err {
+  background: #fef2f2;
+  color: #b91c1c;
+  border: 1.5px solid #fecaca;
+}
+@keyframes um2-toast-in {
+  from { opacity: 0; transform: translateY(-12px) scale(0.97); }
+  to   { opacity: 1; transform: translateY(0)     scale(1);    }
+}
+
+/* ══════════════════════════════════════════════════════════════════════════
+   TOP BAR — tabs + search + refresh
+══════════════════════════════════════════════════════════════════════════ */
+.um2-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 12px;
+  padding-bottom: 16px;
+  border-bottom: 1.5px solid var(--cream);
+  margin-bottom: 8px;
+}
+
+.um2-bar__tabs  { display: flex; align-items: center; gap: 4px; flex-wrap: wrap; }
+.um2-bar__right { display: flex; align-items: center; gap: 8px; }
+
+/* ── Tabs ── */
+.um2-tab {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  padding: 8px 16px;
+  border-radius: var(--radius-sm);
+  border: 1.5px solid transparent;
+  background: transparent;
+  font-family: var(--font-body);
+  font-size: 13.5px;
+  font-weight: 500;
+  color: var(--text-light);
+  cursor: pointer;
+  transition: background 0.15s, color 0.15s, border-color 0.15s;
+  white-space: nowrap;
+}
+.um2-tab:hover {
+  background: var(--off-white);
+  color: var(--text-dark);
+  border-color: var(--cream);
+}
+.um2-tab--active {
+  background: var(--green-pale);
+  color: var(--green-deep);
+  border-color: var(--green-light);
+}
+
+/* Count pills on tabs */
+.um2-count {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 20px;
+  height: 20px;
+  padding: 0 6px;
+  border-radius: var(--radius-pill);
+  background: var(--cream);
+  color: var(--text-mid);
+  font-family: var(--font-body);
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+}
+.um2-count--alert {
+  background: #fee2e2;
+  color: #b91c1c;
+}
+
+/* ── Search ── */
+.um2-search {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+.um2-search__icon {
+  position: absolute;
+  left: 10px;
+  color: var(--text-light);
+  pointer-events: none;
+  flex-shrink: 0;
+}
+.um2-search input {
+  width: 220px;
+  padding: 8px 32px 8px 30px;
+  border: 1.5px solid var(--green-muted);
+  border-radius: var(--radius-sm);
+  background: var(--off-white);
+  font-family: var(--font-body);
+  font-size: 13px;
+  font-weight: 400;
+  color: var(--text-dark);
+  outline: none;
+  transition: border-color 0.15s, box-shadow 0.15s, background 0.15s;
+}
+.um2-search input::placeholder {
+  color: var(--text-light);
+  font-weight: 300;
+}
+.um2-search input:focus {
+  border-color: var(--green-deep);
+  background: var(--white);
+  box-shadow: 0 0 0 3px rgba(90, 158, 58, 0.12);
+}
+.um2-search__clear {
+  position: absolute;
+  right: 8px;
+  display: flex;
+  align-items: center;
+  background: none;
+  border: none;
+  padding: 2px;
+  color: var(--text-light);
+  cursor: pointer;
+  transition: color 0.12s;
+}
+.um2-search__clear:hover { color: var(--text-dark); }
+
+/* ── Refresh icon button ── */
+.um2-icon-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  border: 1.5px solid var(--green-muted);
+  border-radius: var(--radius-sm);
+  background: var(--off-white);
+  color: var(--text-light);
+  cursor: pointer;
+  flex-shrink: 0;
+  transition: background 0.15s, color 0.15s, border-color 0.15s;
+}
+.um2-icon-btn:hover {
+  background: var(--green-pale);
+  color: var(--green-deep);
+  border-color: var(--green-light);
+}
+
+/* ══════════════════════════════════════════════════════════════════════════
+   PENDING BANNER
+══════════════════════════════════════════════════════════════════════════ */
+.um2-banner {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  padding: 11px 16px;
+  margin-bottom: 12px;
+  background: #fef9c3;
+  border: 1.5px solid #fde68a;
+  border-radius: var(--radius-sm);
+  font-family: var(--font-body);
+  font-size: 13px;
+  font-weight: 500;
+  color: #a16207;
+}
+
+/* ══════════════════════════════════════════════════════════════════════════
+   LOADING / EMPTY STATES
+══════════════════════════════════════════════════════════════════════════ */
+.um2-loading,
+.um2-empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 14px;
+  padding: 72px 20px;
+  color: var(--text-light);
+}
+.um2-empty p {
+  font-family: var(--font-body);
+  font-size: 14px;
+  font-weight: 400;
+  margin: 0;
+  color: var(--text-light);
+}
+
+/* ══════════════════════════════════════════════════════════════════════════
+   ADMIN LIST
+══════════════════════════════════════════════════════════════════════════ */
+.um2-list {
+  display: flex;
+  flex-direction: column;
+}
+
+/* ── Row ── */
+.um2-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 16px;
+  border-bottom: 1px solid var(--cream);
+  transition: background 0.12s;
+  animation: um2-row-in 0.22s var(--ease-out) both;
+}
+.um2-row:last-child { border-bottom: none; }
+.um2-row:hover      { background: var(--off-white); }
+
+/* Pending rows */
+.um2-row--pending       { background: #fffbeb; border-color: #fde68a; }
+.um2-row--pending:hover { background: #fef9e0; }
+
+/* Suspended rows */
+.um2-row--suspended { opacity: 0.65; }
+.um2-row--suspended .um2-row__name {
+  text-decoration: line-through;
+  color: var(--text-light);
+}
+
+@keyframes um2-row-in {
+  from { opacity: 0; transform: translateY(6px); }
+  to   { opacity: 1; transform: translateY(0);   }
+}
+
+/* ── Row left: avatar + info ── */
+.um2-row__left {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  flex: 1;
+  min-width: 0;
+}
+
+/* Avatar */
+.um2-avatar {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  width: 46px;
+  height: 46px;
+  border-radius: var(--radius-sm);
+  font-family: var(--font-body);
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  flex-shrink: 0;
+  gap: 2px;
+}
+
+/* Info block */
+.um2-row__info {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.um2-row__name {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-family: var(--font-body);
+  font-size: 14.5px;
+  font-weight: 600;
+  color: var(--text-dark);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  line-height: 1.3;
+}
+
+.um2-row__email {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  font-family: var(--font-body);
+  font-size: 12.5px;
+  font-weight: 300;
+  color: var(--text-light);
+  line-height: 1.4;
+}
+
+.um2-row__meta {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 4px;
+}
+
+.um2-meta-item {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-family: var(--font-body);
+  font-size: 11.5px;
+  font-weight: 400;
+  color: var(--text-light);
+}
+
+/* "you" chip */
+.um2-you {
+  display: inline-block;
+  padding: 1px 8px;
+  border-radius: var(--radius-pill);
+  background: var(--green-pale);
+  color: var(--green-deep);
+  font-family: var(--font-body);
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+/* ══════════════════════════════════════════════════════════════════════════
+   STATUS BADGES
+══════════════════════════════════════════════════════════════════════════ */
+.um2-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 3px 10px;
+  border-radius: var(--radius-pill);
+  font-family: var(--font-body);
+  font-size: 11.5px;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  white-space: nowrap;
+}
+/* Superadmin — warm amber, visually premium */
+.um2-badge--super     { background: #fef3c7; color: #92400e; border: 1px solid #fde68a; }
+/* Regular admin — on-brand green */
+.um2-badge--admin     { background: var(--green-pale); color: var(--green-deep); border: 1px solid var(--green-light); }
+/* Pending — soft yellow */
+.um2-badge--pending   { background: #fef9c3; color: #a16207; border: 1px solid #fde047; }
+/* Suspended — muted red */
+.um2-badge--suspended { background: #fee2e2; color: #b91c1c; border: 1px solid #fecaca; }
+
+/* ══════════════════════════════════════════════════════════════════════════
+   ROW ACTION BUTTONS
+══════════════════════════════════════════════════════════════════════════ */
+.um2-row__actions {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-shrink: 0;
+}
+.um2-row__busy {
+  display: flex;
+  align-items: center;
+  color: var(--text-light);
+}
+
+.um2-action-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 6px 13px;
+  border-radius: var(--radius-sm);
+  border: 1.5px solid transparent;
+  font-family: var(--font-body);
+  font-size: 12.5px;
+  font-weight: 500;
+  cursor: pointer;
+  white-space: nowrap;
+  line-height: 1;
+  transition: background 0.14s, border-color 0.14s, color 0.14s,
+              transform 0.14s, box-shadow 0.14s;
+}
+.um2-action-btn:hover  { transform: translateY(-1px); }
+.um2-action-btn:active { transform: translateY(0); }
+
+/* Ghost — edit / neutral */
+.um2-action-btn--ghost {
+  background: var(--off-white);
+  border-color: var(--green-muted);
+  color: var(--text-mid);
+}
+.um2-action-btn--ghost:hover {
+  background: var(--green-pale);
+  border-color: var(--green-light);
+  color: var(--green-deep);
+}
+
+/* Approve — green */
+.um2-action-btn--approve {
+  background: var(--green-pale);
+  border-color: var(--green-light);
+  color: var(--green-deep);
+}
+.um2-action-btn--approve:hover {
+  background: var(--green-light);
+  border-color: var(--green-mid);
+}
+
+/* Promote — creamy, goes green on hover */
+.um2-action-btn--promote {
+  background: var(--cream);
+  border-color: var(--green-muted);
+  color: var(--text-dark);
+}
+.um2-action-btn--promote:hover {
+  background: var(--green-pale);
+  border-color: var(--green-light);
+  color: var(--green-deep);
+}
+
+/* Reinstate — teal */
+.um2-action-btn--reinstate {
+  background: #f0fdfa;
+  border-color: #99f6e4;
+  color: #0f766e;
+}
+.um2-action-btn--reinstate:hover {
+  background: #ccfbf1;
+  border-color: #5eead4;
+}
+
+/* Warn — amber (demote, suspend) */
+.um2-action-btn--warn {
+  background: #fffbeb;
+  border-color: #fde68a;
+  color: #a16207;
+}
+.um2-action-btn--warn:hover {
+  background: #fef3c7;
+  border-color: #fcd34d;
+}
+
+/* Danger — red (reject, dismiss) */
+.um2-action-btn--danger {
+  background: #fef2f2;
+  border-color: #fecaca;
+  color: #b91c1c;
+}
+.um2-action-btn--danger:hover {
+  background: #fee2e2;
+  border-color: #fca5a5;
+}
+
+/* ══════════════════════════════════════════════════════════════════════════
+   MODAL OVERLAY
+══════════════════════════════════════════════════════════════════════════ */
+.um2-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(26, 26, 26, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 2000;
+  padding: 20px;
+  backdrop-filter: blur(3px);
+  -webkit-backdrop-filter: blur(3px);
+}
+
+/* ── Modal box ── */
+.um2-modal {
+  background: var(--white);
+  border-radius: var(--radius-md);
+  border: 1.5px solid var(--cream);
+  width: 440px;
+  max-width: calc(100vw - 32px);
+  box-shadow: 0 24px 64px rgba(0, 0, 0, 0.13);
+  overflow: hidden;
+  animation: um2-modal-in 0.22s var(--ease-out) both;
+}
+.um2-modal--edit { width: 480px; }
+
+@keyframes um2-modal-in {
+  from { opacity: 0; transform: scale(0.96) translateY(10px); }
+  to   { opacity: 1; transform: scale(1)    translateY(0);    }
+}
+
+/* Modal header */
+.um2-modal__head {
+  display: flex;
+  align-items: center;
+  gap: 11px;
+  padding: 22px 24px 18px;
+  border-bottom: 1px solid var(--cream);
+}
+.um2-modal__head h3 {
+  margin: 0;
+  font-family: var(--font-display); /* Cormorant Garamond */
+  font-size: 22px;
+  font-weight: 500;
+  color: var(--text-dark);
+  letter-spacing: 0.01em;
+  line-height: 1.1;
+}
+
+/* Modal body — confirm text */
+.um2-modal__body {
+  padding: 18px 24px 20px;
+  margin: 0;
+  font-family: var(--font-body);
+  font-size: 14px;
+  font-weight: 400;
+  color: var(--text-mid);
+  line-height: 1.65;
+}
+
+/* Modal footer */
+.um2-modal__foot {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 10px;
+  padding: 16px 24px 20px;
+  border-top: 1px solid var(--cream);
+}
+
+/* ── Edit form inside modal ── */
+.um2-modal__form {
+  padding: 12px 24px 8px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.um2-modal__form label {
+  margin-top: 12px;
+  font-family: var(--font-body);
+  font-size: 11px;
+  font-weight: 500;
+  color: var(--text-light);
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+.um2-modal__form label:first-of-type { margin-top: 0; }
+
+/* Input wrapper with icon */
+.um2-input-wrap {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+.um2-input-icon {
+  position: absolute;
+  left: 12px;
+  color: var(--text-light);
+  pointer-events: none;
+  flex-shrink: 0;
+}
+.um2-input-wrap input {
+  width: 100%;
+  padding: 10px 14px 10px 34px;
+  border: 1.5px solid var(--green-muted);
+  border-radius: var(--radius-sm);
+  background: var(--white);
+  font-family: var(--font-body);
+  font-size: 14px;
+  font-weight: 400;
+  color: var(--text-dark);
+  outline: none;
+  transition: border-color 0.15s, box-shadow 0.15s;
+}
+.um2-input-wrap input::placeholder {
+  color: var(--text-light);
+  font-weight: 300;
+}
+.um2-input-wrap input:focus {
+  border-color: var(--green-deep);
+  box-shadow: 0 0 0 3px rgba(90, 158, 58, 0.12);
+}
+.um2-input-wrap input:disabled {
+  background: var(--off-white);
+  color: var(--text-light);
+  cursor: not-allowed;
+}
+
+/* Form error */
+.um2-form-err {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-top: 8px;
+  padding: 8px 12px;
+  border-radius: var(--radius-sm);
+  background: #fef2f2;
+  border: 1px solid #fecaca;
+  font-family: var(--font-body);
+  font-size: 12.5px;
+  font-weight: 400;
+  color: #b91c1c;
+}
+
+/* ══════════════════════════════════════════════════════════════════════════
+   MODAL BUTTONS
+══════════════════════════════════════════════════════════════════════════ */
+.um2-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  padding: 9px 20px;
+  border-radius: var(--radius-sm);
+  border: 1.5px solid transparent;
+  font-family: var(--font-body);
+  font-size: 13.5px;
+  font-weight: 500;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: background 0.14s, border-color 0.14s, color 0.14s,
+              transform 0.14s, box-shadow 0.14s;
+}
+.um2-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  transform: none !important;
+  box-shadow: none !important;
+}
+
+/* Ghost */
+.um2-btn--ghost {
+  background: var(--off-white);
+  border-color: var(--cream);
+  color: var(--text-mid);
+}
+.um2-btn--ghost:hover:not(:disabled) {
+  background: var(--cream);
+  border-color: var(--green-muted);
+  color: var(--text-dark);
+}
+
+/* Primary — mirrors global .btn-primary hover behaviour */
+.um2-btn--primary {
+  background: var(--text-dark);
+  border-color: var(--text-dark);
+  color: var(--white);
+}
+.um2-btn--primary:hover:not(:disabled) {
+  background: var(--green-deep);
+  border-color: var(--green-deep);
+  transform: translateY(-1px);
+  box-shadow: 0 6px 18px rgba(90, 158, 58, 0.25);
+}
+
+/* Danger */
+.um2-btn--danger {
+  background: #b91c1c;
+  border-color: #b91c1c;
+  color: var(--white);
+}
+.um2-btn--danger:hover:not(:disabled) {
+  background: #991b1b;
+  border-color: #991b1b;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(185, 28, 28, 0.22);
+}
+
+/* ══════════════════════════════════════════════════════════════════════════
+   SPIN UTILITY
+══════════════════════════════════════════════════════════════════════════ */
+.um2-spin {
+  animation: um2-rotate 0.75s linear infinite;
+}
+@keyframes um2-rotate {
+  to { transform: rotate(360deg); }
+}
+
+/* ══════════════════════════════════════════════════════════════════════════
+   RESPONSIVE
+══════════════════════════════════════════════════════════════════════════ */
+@media (max-width: 768px) {
+  .um2-bar {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+  .um2-bar__right {
+    width: 100%;
+    justify-content: space-between;
+  }
+  .um2-search { flex: 1; }
+  .um2-search input { width: 100%; }
+}
+
+@media (max-width: 640px) {
+  .um2-row {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 12px;
+  }
+  .um2-row__actions {
+    flex-wrap: wrap;
+    width: 100%;
+  }
+}
+
+@media (max-width: 480px) {
+  .um2-modal__head,
+  .um2-modal__body,
+  .um2-modal__foot,
+  .um2-modal__form {
+    padding-left: 16px;
+    padding-right: 16px;
+  }
+  .um2-modal__head h3 { font-size: 19px; }
+  .um2-btn            { font-size: 13px; padding: 8px 16px; }
+  .um2-action-btn     { font-size: 12px; padding: 5px 10px; }
+  .um2-tab            { font-size: 12.5px; padding: 7px 12px; }
+}

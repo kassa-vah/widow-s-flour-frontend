@@ -10,16 +10,18 @@ import DonationCrud    from "./DonationCrud";
 import BlogCrud        from "./BlogCrud";
 import StoriesCrud     from "./StoriesCrud";
 import ActivityLog     from "./ActivityLog";
+import UserManagement  from "./UserManagement";
 
 const API = import.meta.env.VITE_API_URL ?? "http://127.0.0.1:5000";
 
 const NAV = [
-  { id: "beneficiaries", label: "Beneficiaries", icon: "bi-people",             section: "People"     },
-  { id: "campaigns",     label: "Campaigns",     icon: "bi-megaphone",           section: "Operations" },
-  { id: "donations",     label: "Donations",     icon: "bi-heart",               section: "Operations" },
-  { id: "stories",       label: "Stories",       icon: "bi-newspaper",           section: "Content"    },
-  { id: "blogs",         label: "Blog Posts",    icon: "bi-file-earmark-text",   section: "Content"    },
-  { id: "activity",      label: "Activity Log",  icon: "bi-clipboard-data",      section: "System"     },
+  { id: "beneficiaries", label: "Beneficiaries",    icon: "bi-people",           section: "People"     },
+  { id: "campaigns",     label: "Campaigns",         icon: "bi-megaphone",        section: "Operations" },
+  { id: "donations",     label: "Donations",         icon: "bi-heart",            section: "Operations" },
+  { id: "stories",       label: "Stories",           icon: "bi-newspaper",        section: "Content"    },
+  { id: "blogs",         label: "Blog Posts",        icon: "bi-file-earmark-text",section: "Content"    },
+  { id: "users",         label: "User Management",   icon: "bi-shield-person",    section: "System"     },
+  { id: "activity",      label: "Activity Log",      icon: "bi-clipboard-data",   section: "System"     },
 ];
 
 export default function AdminDashboard({ admin, token, onLogout }) {
@@ -138,9 +140,8 @@ export default function AdminDashboard({ admin, token, onLogout }) {
             {active === "donations"     && <DonationCrud    token={token} />}
             {active === "stories"       && <StoriesCrud     token={token} />}
             {active === "blogs"         && <BlogCrud        token={token} />}
-            {active === "activity"      && (
-              <ActivityLog token={token} currentAdmin={admin} />  
-            )}
+            {active === "users"         && <UserManagement  token={token} currentAdmin={admin} />}
+            {active === "activity"      && <ActivityLog     token={token} currentAdmin={admin} />}
           </div>
         </main>
       </div>
