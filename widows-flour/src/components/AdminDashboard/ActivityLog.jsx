@@ -12,7 +12,7 @@ import "./ActivityLog.css";
 const API      = import.meta.env.VITE_API_URL ?? "http://127.0.0.1:5000";
 const PER_PAGE = 20;
 
-// ── Action metadata ───────────────────────────────────────────────────────────
+// ── Action metadata ───────
 const ACTION_META = {
   LOGIN:                { color: "green",  icon: "bi-box-arrow-in-right", label: "Login"               },
   LOGOUT:               { color: "grey",   icon: "bi-box-arrow-right",    label: "Logout"              },
@@ -50,7 +50,7 @@ const COLOR_MAP = {
 
 const CHART_PALETTE = ["#22c55e", "#3b82f6", "#f59e0b", "#ef4444", "#14b8a6", "#a855f7"];
 
-// ── Small reusable components ─────────────────────────────────────────────────
+// ── Small reusable components 
 
 function ActionBadge({ action }) {
   const meta  = ACTION_META[action] ?? { color: "grey", icon: "bi-circle", label: action };
@@ -94,9 +94,7 @@ function ChartTooltip({ active, payload, label, prefix = "", suffix = "" }) {
   );
 }
 
-// ══════════════════════════════════════════════════════════════════════════════
-// Main Component
-// ══════════════════════════════════════════════════════════════════════════════
+
 export default function ActivityLog({ token, currentAdmin }) {
   const [tab,        setTab]        = useState("analytics");
   const [logs,       setLogs]       = useState([]);
@@ -115,7 +113,7 @@ export default function ActivityLog({ token, currentAdmin }) {
     [token],
   );
 
-  // ── Fetch analytics data ──────────────────────────────────────────────────
+  // ── Fetch analytics data 
   useEffect(() => {
     if (!token) return;
     setDataLoading(true);
@@ -132,7 +130,7 @@ export default function ActivityLog({ token, currentAdmin }) {
     }).finally(() => setDataLoading(false));
   }, [token]);
 
-  // ── Fetch activity log ────────────────────────────────────────────────────
+  // ── Fetch activity log 
   const loadLogs = useCallback(async () => {
     if (!token) return;
     setLogLoading(true);
@@ -148,7 +146,7 @@ export default function ActivityLog({ token, currentAdmin }) {
 
   useEffect(() => { loadLogs(); }, [loadLogs]);
 
-  // ── Derived analytics ─────────────────────────────────────────────────────
+  // ── Derived analytics ─
   const donationsByMonth = useMemo(() => {
     const map = {};
     donations.forEach(d => {
@@ -205,7 +203,7 @@ export default function ActivityLog({ token, currentAdmin }) {
   return (
     <div className="al__root">
 
-      {/* ── Tab bar ──────────────────────────────────────────────────────── */}
+      {/* ── Tab bar ──── */}
       <div className="al__tabs">
         <button
           className={`al__tab ${tab === "analytics" ? "al__tab--active" : ""}`}

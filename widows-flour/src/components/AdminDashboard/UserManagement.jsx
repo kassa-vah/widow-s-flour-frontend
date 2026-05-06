@@ -233,7 +233,7 @@ export default function UserManagement({ token, currentAdmin }) {
     showToast("Admin updated.");
   };
 
-  // ── Filtered list ───────────────────────────────────────────────────────────
+  // ── Filtered list 
 
   const display = (section === "pending" ? pending : admins).filter(a => {
     const q = search.toLowerCase();
@@ -260,7 +260,7 @@ export default function UserManagement({ token, currentAdmin }) {
     if (fn) fn(admin);
   };
 
-  // ── Render ──────────────────────────────────────────────────────────────────
+  // ── Render 
 
   return (
     <div className="um2">

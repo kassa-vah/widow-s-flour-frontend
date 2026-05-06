@@ -15,7 +15,7 @@ const EMPTY_FORM = {
   cover_image: "", read_time: "3 min read", featured: false, published: false,
 };
 
-// ─── tiny utilities ───────────────────────────────────────────────────────────
+// ─── tiny utilities 
 
 function fmtDate(iso) {
   if (!iso) return "—";
@@ -24,7 +24,7 @@ function fmtDate(iso) {
   });
 }
 
-// ─── sub-components ───────────────────────────────────────────────────────────
+// ─── sub-components 
 
 function CategoryPill({ category }) {
   return (
@@ -173,7 +173,7 @@ function StoryForm({ initial, onSave, onCancel, loading }) {
   );
 }
 
-// ─── main component ───────────────────────────────────────────────────────────
+// ─── main component 
 
 export default function StoriesCrud({ token }) {
   const [stories, setStories] = useState([]);
@@ -191,7 +191,7 @@ export default function StoriesCrud({ token }) {
     Authorization: `Bearer ${token}`,
   };
 
-  // ── fetch ──────────────────────────────────────────────────────────────────
+  // ── fetch ───────
   const fetchStories = useCallback(async () => {
     setLoading(true);
     setError(null);
@@ -209,7 +209,7 @@ export default function StoriesCrud({ token }) {
 
   useEffect(() => { fetchStories(); }, [fetchStories]);
 
-  // ── filtered view ──────────────────────────────────────────────────────────
+  // ── filtered view 
   const visible = stories.filter(s => {
     const catOk  = filter === "All" || s.category === filter;
     const termLc = search.toLowerCase();
@@ -219,11 +219,11 @@ export default function StoriesCrud({ token }) {
     return catOk && srchOk;
   });
 
-  // ── helpers ────────────────────────────────────────────────────────────────
+  // ── helpers 
   const closeModal = () => { setModal(null); setEditing(null); };
   const extractStory = (data) => data.story ?? data.data ?? data;
 
-  // ── create ─────────────────────────────────────────────────────────────────
+  // ── create 
   const handleCreate = async (form) => {
     setSaving(true);
     try {
@@ -271,7 +271,7 @@ export default function StoriesCrud({ token }) {
     finally     { setSaving(false); }
   };
 
-  // ── toggle patch ───────────────────────────────────────────────────────────
+  // ── toggle patch 
   const toggleField = async (story, endpoint) => {
     try {
       const res  = await fetch(`${API}/stories/${story.id}/${endpoint}`, {
@@ -284,11 +284,11 @@ export default function StoriesCrud({ token }) {
     } catch (e) { alert(e.message); }
   };
 
-  // ── stats ──────────────────────────────────────────────────────────────────
+  // ── stats 
   const totalPublished = stories.filter(s => s.published).length;
   const totalFeatured  = stories.filter(s => s.featured).length;
 
-  // ── render ─────────────────────────────────────────────────────────────────
+  // ── render 
   return (
     <div className="sc-root">
 

@@ -1,6 +1,4 @@
-// src/components/AdminDashboard/CampaignCrud.jsx
-// Updated: adds category, image_url, cta_label fields to create/edit modal
-// so admins can control what appears on the public Causes page.
+
 
 import { useState, useEffect, useCallback, useRef } from "react";
 import "./Crud.css";
@@ -43,7 +41,7 @@ function fmtCurrency(n) {
   return n != null ? `KES ${Number(n).toLocaleString()}` : "—";
 }
 
-// ── Beneficiary Picker ────────────────────────────────────────────────────────
+// ── Beneficiary Picker 
 function BeneficiaryPicker({ beneficiaries, value, onChange, loading }) {
   const [open, setOpen]     = useState(false);
   const [search, setSearch] = useState("");
@@ -161,7 +159,7 @@ function BeneficiaryPicker({ beneficiaries, value, onChange, loading }) {
   );
 }
 
-// ── Main Component ────────────────────────────────────────────────────────────
+// ── Main Component 
 export default function CampaignCrud({ token }) {
   const [rows, setRows]                   = useState([]);
   const [total, setTotal]                 = useState(0);

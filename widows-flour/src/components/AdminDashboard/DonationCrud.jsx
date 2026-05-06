@@ -19,7 +19,7 @@ const METHOD_ICONS = {
 
 const STATUS_COLORS = { draft: "grey", active: "green", completed: "blue", paused: "yellow" };
 
-// ── Campaign Picker ───────────────────────────────────────────────────────────
+// ── Campaign Picker 
 function CampaignPicker({ campaigns, value, onChange, loading }) {
   const [open, setOpen]     = useState(false);
   const [search, setSearch] = useState("");
@@ -162,7 +162,7 @@ function CampaignPicker({ campaigns, value, onChange, loading }) {
   );
 }
 
-// ── Main Component ────────────────────────────────────────────────────────────
+// ── Main Component ─
 export default function DonationCrud({ token }) {
   const [rows, setRows]           = useState([]);
   const [total, setTotal]         = useState(0);

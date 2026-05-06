@@ -96,9 +96,7 @@ export default function BlogCrud({ token }) {
     setSaving(false);
   };
 
-  // FIX: use the dedicated /publish and /unpublish PATCH endpoints
-  // PUT /blogs/:id does NOT handle the published field — it only updates title/content/cover_image
-  const togglePublish = async (r) => {
+   const togglePublish = async (r) => {
     const action = r.published ? "unpublish" : "publish";
     try {
       await fetch(`${API}/blogs/${r.id}/${action}`, {
