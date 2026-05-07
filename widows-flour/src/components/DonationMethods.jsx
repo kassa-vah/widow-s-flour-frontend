@@ -1,30 +1,6 @@
 import { useState, useRef, useEffect } from "react";
 import "./DonationMethods.css";
 
-/* ─────────────────────────────────────────────
-   DonationMethods.jsx
-   Styles live in DonationMethods.css
-
-   PAYSTACK INLINE FLOW (client-side init):
-   ─────────────────────────────────────────
-   1. User fills form and submits.
-   2. For M-Pesa → POST /donations (unchanged, server handles everything).
-   3. For Paystack/Card →
-        a. Open PaystackPop.setup() with key+email+amount (v1 SDK, client-side init).
-        b. On callback (success) → POST /donations/verify with the reference.
-        c. Backend verifies with Paystack API and records the donation.
-        d. Show success screen.
-
-   WHY NOT server-side init for inline?
-   ─────────────────────────────────────
-   The v1 Paystack inline SDK does not support resumeTransaction().
-   The v2 SDK does, but is still in beta and not stable.
-   Passing access_code + key together to setup() triggers a second
-   /checkout/request_inline call which Paystack rejects with 400.
-   Client-side init (key + email + amount only) is the stable, documented
-   approach for inline checkout with the v1 SDK.
-───────────────────────────────────────────── */
-
 const API                = import.meta.env.VITE_API_URL        ?? "http://127.0.0.1:5000";
 const PAYSTACK_PUBLIC_KEY = import.meta.env.VITE_PAYSTACK_PUBLIC_KEY ?? "";
 

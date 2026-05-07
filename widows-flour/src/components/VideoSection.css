@@ -207,13 +207,8 @@
   .video-section__btn--ghost:hover svg {
     transform: translateX(4px);
   }
-  
-  
-  /* ============================================
-     GET INVOLVED SECTION
-     (unchanged — kept so this file still covers
-     GetInvolvedSection which imports it)
-     ============================================ */
+
+ 
   .get-involved {
     padding: var(--section-pad) 0;
     background: var(--off-white);
