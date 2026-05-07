@@ -1,12 +1,35 @@
-import { useState } from "react";
-import { FaEnvelope, FaPhone, FaMapMarkerAlt, FaClock, FaFacebook, FaInstagram, FaTwitter } from "react-icons/fa";
+import { useState, useEffect } from "react";
+import { FaEnvelope, FaPhone, FaMapMarkerAlt, FaClock, FaFacebook, FaInstagram, FaTwitter, FaComments } from "react-icons/fa";
 import "./ContactPage.css";
 
 const ICON_COLOR = "var(--green-deep)";
+const TAWK_SRC   = "https://embed.tawk.to/69fcd783381d8a1c3101a861/1jo1qjnbu";
+const TAWK_ID    = "tawk-script";
 
 export default function ContactPage() {
   const [form, setForm] = useState({ name: "", email: "", subject: "General Enquiry", message: "" });
   const [sent, setSent] = useState(false);
+
+  // ── Load Tawk when this page mounts; hide widget on unmount ──
+  useEffect(() => {
+    if (!document.getElementById(TAWK_ID)) {
+      const s1 = document.createElement("script");
+      s1.id      = TAWK_ID;
+      s1.async   = true;
+      s1.src     = TAWK_SRC;
+      s1.charset = "UTF-8";
+      s1.setAttribute("crossorigin", "*");
+      document.head.appendChild(s1);
+    } else {
+      try { window.Tawk_API && window.Tawk_API.showWidget && window.Tawk_API.showWidget(); }
+      catch (_) {}
+    }
+
+    return () => {
+      try { window.Tawk_API && window.Tawk_API.hideWidget && window.Tawk_API.hideWidget(); }
+      catch (_) {}
+    };
+  }, []);
 
   const handleChange = e => setForm(f => ({ ...f, [e.target.name]: e.target.value }));
 
@@ -14,6 +37,14 @@ export default function ContactPage() {
     e.preventDefault();
     // Integrate with your backend here
     setSent(true);
+  };
+
+  const openChat = () => {
+    try {
+      if (window.Tawk_API && typeof window.Tawk_API.maximize === "function") {
+        window.Tawk_API.maximize();
+      }
+    } catch (_) {}
   };
 
   return (
@@ -31,6 +62,73 @@ export default function ContactPage() {
           </p>
         </div>
       </section>
+
+      {/* ── Live chat nudge banner ── */}
+      <div
+        onClick={openChat}
+        style={{
+          display:        "flex",
+          alignItems:     "center",
+          gap:            "14px",
+          background:     "linear-gradient(135deg, #eaf3df 0%, #d4e8c2 100%)",
+          border:         "1px solid #a8d080",
+          borderRadius:   "12px",
+          padding:        "16px 24px",
+          margin:         "0 auto 8px",
+          maxWidth:       "1100px",
+          cursor:         "pointer",
+          transition:     "box-shadow 0.2s ease, transform 0.2s ease",
+        }}
+        onMouseEnter={e => {
+          e.currentTarget.style.boxShadow = "0 4px 20px rgba(90,158,58,0.15)";
+          e.currentTarget.style.transform = "translateY(-1px)";
+        }}
+        onMouseLeave={e => {
+          e.currentTarget.style.boxShadow = "none";
+          e.currentTarget.style.transform = "translateY(0)";
+        }}
+        role="button"
+        aria-label="Open live chat"
+      >
+        {/* Pulsing green dot */}
+        <div style={{ position: "relative", flexShrink: 0 }}>
+          <div style={{
+            width: "10px", height: "10px",
+            borderRadius: "50%",
+            background: "#5a9e3a",
+            position: "absolute", top: 0, left: 0,
+            animation: "tawk-pulse 1.8s ease-out infinite",
+          }} />
+          <FaComments size={22} color="#5a9e3a" style={{ position: "relative", zIndex: 1, marginTop: "1px" }} />
+          <style>{`
+            @keyframes tawk-pulse {
+              0%   { transform: scale(1);   opacity: 0.8; }
+              70%  { transform: scale(2.4); opacity: 0;   }
+              100% { transform: scale(1);   opacity: 0;   }
+            }
+          `}</style>
+        </div>
+
+        <div style={{ flex: 1 }}>
+          <p style={{
+            fontFamily: "'DM Sans', Arial, sans-serif",
+            fontSize:   "14px",
+            fontWeight: "500",
+            color:      "#1a1a1a",
+            margin:     "0 0 2px",
+          }}>
+            Need a faster response? We're live right now.
+          </p>
+          <p style={{
+            fontFamily: "'DM Sans', Arial, sans-serif",
+            fontSize:   "13px",
+            color:      "#5a9e3a",
+            margin:     0,
+          }}>
+            Click here to open the live chat widget in the bottom-right corner ↘
+          </p>
+        </div>
+      </div>
 
       <div className="contact-body container">
         {/* Info cards */}
