@@ -96,6 +96,21 @@ export default function App() {
   const [session, setSession]       = useState(getStoredSession);
   const { admin, token } = session;
 
+  // ── Tawk.to live chat ──
+  useEffect(() => {
+    var Tawk_API = window.Tawk_API || {};
+    var Tawk_LoadStart = new Date();
+    (function () {
+      var s1 = document.createElement("script");
+      var s0 = document.getElementsByTagName("script")[0];
+      s1.async = true;
+      s1.src = "https://embed.tawk.to/69fcd783381d8a1c3101a861/1jo1qjnbu";
+      s1.charset = "UTF-8";
+      s1.setAttribute("crossorigin", "*");
+      s0.parentNode.insertBefore(s1, s0);
+    })();
+  }, []); // runs once on mount
+
   // ── Navigate AFTER React commits the new session state ──
   useEffect(() => {
     if (pendingNav) {
