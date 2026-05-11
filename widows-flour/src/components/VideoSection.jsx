@@ -15,7 +15,6 @@ export default function VideoSection() {
   const headerRef  = useRef(null);
   const bodyRef    = useRef(null);
 
-  /* ── Bulletproof mobile autoplay ── */
   useEffect(() => {
     const v = videoRef.current;
     if (!v) return;
