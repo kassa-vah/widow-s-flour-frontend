@@ -184,6 +184,7 @@
     background: var(--green-mid, #6db845);
     transform: translateY(-2px);
     box-shadow: 0 12px 36px rgba(90, 158, 58, 0.4);
+    color: black;
   }
   
   /* Ghost — outline white */
@@ -196,6 +197,7 @@
   .video-section__btn--ghost:hover {
     border-color: rgba(255, 255, 255, 0.9);
     transform: translateY(-2px);
+    color: var(--green-mid);
   }
   
   .video-section__btn--ghost svg {

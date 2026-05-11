@@ -3,6 +3,7 @@ import { useEffect, useRef } from "react";
 import { gsap } from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 import "./VideoSection.css";
+import {Link} from "react-router-dom";
 
 gsap.registerPlugin(ScrollTrigger);
 
@@ -158,16 +159,16 @@ export default function VideoSection() {
           </div>
 
           <div className="video-section__cta-row">
-            <a href="#donate" className="video-section__btn video-section__btn--primary">
+            <Link to="/donate" className="video-section__btn video-section__btn--primary">
               Donate Now
-            </a>
-            <a href="#get-involved" className="video-section__btn video-section__btn--ghost">
+            </Link>
+            <Link to="/causes" className="video-section__btn video-section__btn--ghost">
               Get Involved
               <svg viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
                 <path d="M3 8h10M9 4l4 4-4 4" stroke="currentColor" strokeWidth="1.5"
                       strokeLinecap="round" strokeLinejoin="round"/>
               </svg>
-            </a>
+            </Link>
           </div>
 
         </div>

@@ -3,6 +3,7 @@ import { useEffect, useRef } from "react";
 import { gsap } from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 import "./CTASection.css";
+import { Link } from "react-router-dom";
 
 // ── Image imports (Vite-compatible ES module imports) ──────────
 import imgElderly1 from "../assets/smilingelderly1.jpg";
@@ -71,9 +72,9 @@ export function CTASection() {
           </p>
 
           <div className="cta-banner__actions">
-            <a href="#causes" className="btn-primary btn-primary--light">
-              Donate Now ♥
-            </a>
+            <Link to="/donate" className="btn-primary btn-primary--light">
+                Donate Now ♥
+              </Link>
             <a href="#about" className="btn-ghost btn-ghost--light">
               Learn Our Story →
             </a>

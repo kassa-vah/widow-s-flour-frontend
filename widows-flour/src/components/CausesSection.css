@@ -241,6 +241,7 @@
 .cause-item__cta:hover {
   background: var(--green-deep, #5a9e3a);
   transform: translateY(-2px);
+  color:black;
 }
 
 .cause-item__cta .heart {

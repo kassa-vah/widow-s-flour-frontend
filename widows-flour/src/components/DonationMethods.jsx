@@ -33,7 +33,7 @@ const METHODS = [
         <path d="M8 16h6M18 16h6M8 11h16M8 21h10" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" />
       </svg>
     ),
-    color: "#a8d080",
+    color: "#8a8a8a",
   },
   {
     id: "card",

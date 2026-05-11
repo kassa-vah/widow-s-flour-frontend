@@ -4,8 +4,25 @@ import { useNavigate, useLocation } from "react-router-dom";
 import toast from "react-hot-toast";
 import "./Auth.css";
 import { getAuth, signInWithEmailAndPassword } from "firebase/auth";
+import { FiLock, FiMail, FiInfo, FiArrowLeft } from "react-icons/fi";
 
 const API = import.meta.env.VITE_API_URL ?? "http://127.0.0.1:5000";
+
+// ── Utility: mask email client-side for the sent-confirmation screen ──────────
+// Mirrors the server-side _mask() in brevo_mailer.py exactly.
+// e.g.  jane.doe@example.com  →  ja***@ex*****.com
+function maskEmail(addr) {
+  const atIdx = addr.indexOf("@");
+  if (atIdx === -1) return addr;
+  const local  = addr.slice(0, atIdx);
+  const domain = addr.slice(atIdx + 1);
+  const star   = (s) =>
+    s.length <= 2 ? s[0] + "*".repeat(s.length - 1) : s.slice(0, 2) + "*".repeat(s.length - 2);
+  const dotPos  = domain.lastIndexOf(".");
+  const domName = dotPos !== -1 ? domain.slice(0, dotPos) : domain;
+  const domTld  = dotPos !== -1 ? domain.slice(dotPos)    : "";
+  return `${star(local)}@${star(domName)}${domTld}`;
+}
 
 export default function AuthPage({ onLogin, onBack }) {
   const navigate = useNavigate();
@@ -13,9 +30,9 @@ export default function AuthPage({ onLogin, onBack }) {
 
   const initialMode = location.pathname === "/register" ? "register" : "login";
 
-  // mode: "login" | "register" | "otp"
-  const [mode, setMode]         = useState(initialMode);
-  const [loading, setLoading]   = useState(false);
+  // mode: "login" | "register" | "otp" | "forgot" | "forgot-sent"
+  const [mode, setMode]       = useState(initialMode);
+  const [loading, setLoading] = useState(false);
 
   // Login / Register fields
   const [name, setName]         = useState("");
@@ -25,16 +42,24 @@ export default function AuthPage({ onLogin, onBack }) {
   // OTP step
   const [otpAdminId, setOtpAdminId] = useState(null);
   const [otpEmail, setOtpEmail]     = useState("");
-  const [otpFbToken, setOtpFbToken] = useState("");   // ← preserve FB token across steps
+  const [otpFbToken, setOtpFbToken] = useState("");
   const [otp, setOtp]               = useState("");
+
+  // Forgot password
+  const [forgotEmail, setForgotEmail]             = useState("");
+  const [maskedForgotEmail, setMaskedForgotEmail] = useState("");
 
   // ── Helpers ────────────────────────────────────────────────────────────────
 
-  const switchTo = (nextMode) => {
+  const resetAllFields = () => {
     setName(""); setEmail(""); setPassword(""); setOtp("");
-    setOtpFbToken("");
+    setOtpFbToken(""); setForgotEmail(""); setMaskedForgotEmail("");
+  };
+
+  const switchTo = (nextMode) => {
+    resetAllFields();
     setMode(nextMode);
-    if (nextMode !== "otp") {
+    if (nextMode !== "otp" && nextMode !== "forgot" && nextMode !== "forgot-sent") {
       navigate(nextMode === "register" ? "/register" : "/login", { replace: true });
     }
   };
@@ -65,12 +90,9 @@ export default function AuthPage({ onLogin, onBack }) {
       toast.success(
         (t) => (
           <div>
-            <p style={{ margin: "0 0 4px", fontWeight: 600 }}>
-              Registration successful! 🎉
-            </p>
+            <p style={{ margin: "0 0 4px", fontWeight: 600 }}>Registration successful!</p>
             <p style={{ margin: 0, fontSize: "13px", color: "#4b5563" }}>
-              Your account is awaiting superadmin approval.
-              You'll receive an email once approved.
+              Your account is awaiting superadmin approval. You'll receive an email once approved.
             </p>
           </div>
         ),
@@ -78,7 +100,6 @@ export default function AuthPage({ onLogin, onBack }) {
       );
 
       switchTo("login");
-      setEmail("");
     } catch {
       toast.error("Network error. Please try again.", { id: toastId });
     } finally {
@@ -96,12 +117,10 @@ export default function AuthPage({ onLogin, onBack }) {
     const toastId = toast.loading("Signing you in…");
 
     try {
-      // Step 1a — Firebase client auth
       const auth       = getAuth();
       const credential = await signInWithEmailAndPassword(auth, email, password);
       const fbToken    = await credential.user.getIdToken();
 
-      // Step 1b — Backend: verify token + approval gate + send OTP
       const res  = await fetch(`${API}/auth/login`, {
         method: "POST",
         headers: {
@@ -111,21 +130,18 @@ export default function AuthPage({ onLogin, onBack }) {
       });
       const data = await res.json();
 
-      // 403 = unapproved account
       if (res.status === 403) {
         toast(
           (t) => (
             <div>
-              <p style={{ margin: "0 0 4px", fontWeight: 600 }}>
-                ⏳ Account pending approval
-              </p>
+              <p style={{ margin: "0 0 4px", fontWeight: 600 }}>Account pending approval</p>
               <p style={{ margin: 0, fontSize: "13px", color: "#4b5563" }}>
                 {data.error ||
                   "Your account hasn't been approved yet. You'll receive an email once the superadmin approves your request."}
               </p>
             </div>
           ),
-          { id: toastId, duration: 8000, icon: "🔒", style: { maxWidth: 380 } }
+          { id: toastId, duration: 8000, icon: null, style: { maxWidth: 380 } }
         );
         return;
       }
@@ -135,17 +151,13 @@ export default function AuthPage({ onLogin, onBack }) {
         return;
       }
 
-      // 202 = approved, OTP sent — preserve fbToken and move to OTP step
       if (res.status === 202) {
         toast.success(
           (t) => (
             <div>
-              <p style={{ margin: "0 0 4px", fontWeight: 600 }}>
-                Verification code sent! 📧
-              </p>
+              <p style={{ margin: "0 0 4px", fontWeight: 600 }}>Verification code sent!</p>
               <p style={{ margin: 0, fontSize: "13px", color: "#4b5563" }}>
-                A 6-digit code has been sent to{" "}
-                <strong>{email}</strong>. It expires in 10 minutes.
+                A 6-digit code has been sent to <strong>{email}</strong>. It expires in 10 minutes.
               </p>
             </div>
           ),
@@ -154,16 +166,14 @@ export default function AuthPage({ onLogin, onBack }) {
 
         setOtpAdminId(data.data?.admin_id);
         setOtpEmail(email);
-        setOtpFbToken(fbToken);   // ← store token for use after OTP verify
+        setOtpFbToken(fbToken);
         setPassword("");
         setMode("otp");
         return;
       }
 
-      // Fallback: unexpected 200
       toast.success(`Welcome back!`, { id: toastId });
       onLogin(data.data, fbToken);
-
     } catch (err) {
       const code = err?.code ?? "";
       const msg =
@@ -203,10 +213,10 @@ export default function AuthPage({ onLogin, onBack }) {
       const data = await res.json();
 
       if (res.status === 429) {
-        toast.error(
-          "Too many incorrect attempts. Please sign in again.",
-          { id: toastId, duration: 6000 }
-        );
+        toast.error("Too many incorrect attempts. Please sign in again.", {
+          id: toastId,
+          duration: 6000,
+        });
         switchTo("login");
         return;
       }
@@ -218,13 +228,11 @@ export default function AuthPage({ onLogin, onBack }) {
       }
 
       toast.success(
-        `Welcome back, ${data.data?.data?.name ?? data.data?.name ?? "Admin"}! ✅`,
+        `Welcome back, ${data.data?.data?.name ?? data.data?.name ?? "Admin"}!`,
         { id: toastId, duration: 4000 }
       );
 
-      // ← pass the preserved Firebase token so all dashboard requests are authenticated
       onLogin(data.data?.data ?? data.data, otpFbToken);
-
     } catch {
       toast.error("Network error. Please try again.", { id: toastId });
     } finally {
@@ -239,13 +247,46 @@ export default function AuthPage({ onLogin, onBack }) {
     setLoading(true);
     const toastId = toast.loading("Sending a new code…");
     try {
-      toast(
-        "For security, please sign in again to receive a new code.",
-        { id: toastId, icon: "🔒", duration: 5000 }
-      );
+      toast("For security, please sign in again to receive a new code.", {
+        id: toastId,
+        duration: 5000,
+      });
       const savedEmail = otpEmail;
       switchTo("login");
       setEmail(savedEmail);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // ── Forgot Password ────────────────────────────────────────────────────────
+
+  const handleForgotPassword = async (e) => {
+    e.preventDefault();
+    const trimmedEmail = forgotEmail.trim().toLowerCase();
+    if (!trimmedEmail) { toast.error("Please enter your email address."); return; }
+
+    setLoading(true);
+    const toastId = toast.loading("Sending reset link…");
+
+    try {
+      const res  = await fetch(`${API}/auth/forgot-password`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email: trimmedEmail }),
+      });
+      const data = await res.json();
+
+      if (!res.ok) {
+        toast.error(data.error || "Something went wrong. Please try again.", { id: toastId });
+        return;
+      }
+
+      setMaskedForgotEmail(maskEmail(trimmedEmail));
+      toast.success("Reset link sent!", { id: toastId });
+      setMode("forgot-sent");
+    } catch {
+      toast.error("Network error. Please try again.", { id: toastId });
     } finally {
       setLoading(false);
     }
@@ -301,20 +342,19 @@ export default function AuthPage({ onLogin, onBack }) {
           Manage with<br /><em>purpose &amp;</em><br />precision.
         </h2>
         <p>
-          Control beneficiaries, campaigns, donations, and blog
-          content from one secure dashboard.
+          Control beneficiaries, campaigns, donations, and blog content from one secure dashboard.
         </p>
       </div>
 
       <div className="auth-card">
 
+        {/* ── Login ── */}
         {mode === "login" && (
           <form onSubmit={handleLogin} noValidate>
             <span className="auth-form__eyebrow">Welcome back</span>
             <h2 className="auth-form__title">Sign in to your<br />account</h2>
             <p className="auth-form__sub">
-              Enter your credentials. A verification code will be sent
-              to your email after sign-in.
+              Enter your credentials. A verification code will be sent to your email after sign-in.
             </p>
 
             <div className="auth-field">
@@ -340,26 +380,36 @@ export default function AuthPage({ onLogin, onBack }) {
               />
             </div>
 
+            {/* Forgot password — styled as a plain text link, same as register toggle */}
+            <div className="auth-forgot-row">
+              <button
+                type="button"
+                className="auth-toggle__link"
+                onClick={() => { setForgotEmail(email); setMode("forgot"); }}
+                disabled={loading}
+              >
+                Forgot password?
+              </button>
+            </div>
+
             <button className="auth-submit" type="submit" disabled={loading}>
               {loading ? "Signing in…" : "Sign In"}
             </button>
 
             <div className="auth-toggle">
               Don't have an account?
-              <button type="button" onClick={() => switchTo("register")}>
-                Register
-              </button>
+              <button type="button" onClick={() => switchTo("register")}>Register</button>
             </div>
           </form>
         )}
 
+        {/* ── Register ── */}
         {mode === "register" && (
           <form onSubmit={handleRegister} noValidate>
             <span className="auth-form__eyebrow">Get started</span>
             <h2 className="auth-form__title">Create an admin<br />account</h2>
             <p className="auth-form__sub">
-              Your account will need superadmin approval before you
-              can access the dashboard.
+              Your account will need superadmin approval before you can access the dashboard.
             </p>
 
             <div className="auth-field">
@@ -402,21 +452,19 @@ export default function AuthPage({ onLogin, onBack }) {
 
             <div className="auth-toggle">
               Already have an account?
-              <button type="button" onClick={() => switchTo("login")}>
-                Sign in
-              </button>
+              <button type="button" onClick={() => switchTo("login")}>Sign in</button>
             </div>
           </form>
         )}
 
+        {/* ── OTP ── */}
         {mode === "otp" && (
           <form onSubmit={handleVerify} noValidate>
             <span className="auth-form__eyebrow">Two-step verification</span>
             <h2 className="auth-form__title">Check your<br />email</h2>
             <p className="auth-form__sub">
-              We sent a 6-digit code to{" "}
-              <strong>{otpEmail}</strong>. Enter it below —
-              it expires in 10 minutes.
+              We sent a 6-digit code to <strong>{otpEmail}</strong>. Enter it below — it expires in
+              10 minutes.
             </p>
 
             <div className="auth-field">
@@ -452,6 +500,84 @@ export default function AuthPage({ onLogin, onBack }) {
               </button>
             </div>
           </form>
+        )}
+
+        {/* ── Forgot Password — input form ── */}
+        {mode === "forgot" && (
+          <form onSubmit={handleForgotPassword} noValidate>
+            <span className="auth-form__eyebrow">Account recovery</span>
+            <h2 className="auth-form__title">Reset your<br />password</h2>
+            <p className="auth-form__sub">
+              Enter your registered email and we'll send you a secure reset link.
+            </p>
+
+            <div className="auth-field">
+              <label>Email</label>
+              <input
+                type="email"
+                placeholder="jane@example.com"
+                value={forgotEmail}
+                onChange={(e) => setForgotEmail(e.target.value)}
+                autoComplete="email"
+                disabled={loading}
+                autoFocus
+              />
+            </div>
+
+            <div className="auth-notice">
+              <FiLock className="auth-notice__icon" />
+              <span>
+                After resetting your password, your account will be locked until a
+                superadmin re-approves it. You'll receive an email once cleared.
+              </span>
+            </div>
+
+            <button
+              className="auth-submit"
+              type="submit"
+              disabled={loading || !forgotEmail.trim()}
+            >
+              {loading ? "Sending link…" : "Send Reset Link"}
+            </button>
+
+            <div className="auth-toggle">
+              <button type="button" onClick={() => switchTo("login")} disabled={loading}>
+                ← Back to sign in
+              </button>
+            </div>
+          </form>
+        )}
+
+        {/* ── Forgot Password — sent confirmation ── */}
+        {mode === "forgot-sent" && (
+          <div className="auth-sent-state">
+            <div className="auth-sent-state__icon">
+              <FiMail size={28} />
+            </div>
+            <span className="auth-form__eyebrow">Check your inbox</span>
+            <h2 className="auth-form__title">Reset link sent</h2>
+            <p className="auth-form__sub">
+              If <strong>{maskedForgotEmail}</strong> is registered, a password reset
+              link has been sent. It expires in <strong>1 hour</strong>.
+            </p>
+
+            <div className="auth-notice auth-notice--info">
+              <FiInfo className="auth-notice__icon" />
+              <span>
+                After resetting your password, your account will be locked and a superadmin
+                must re-approve it before you can sign in again.
+              </span>
+            </div>
+
+            <button
+              className="auth-submit auth-submit--outline"
+              type="button"
+              onClick={() => switchTo("login")}
+            >
+              <FiArrowLeft style={{ marginRight: "6px", verticalAlign: "middle" }} />
+              Back to sign in
+            </button>
+          </div>
         )}
 
       </div>

@@ -204,6 +204,7 @@
 }
 .vfaq-cta .btn-primary:hover {
   background: var(--green-pale);
+  color: var(--text-dark);
 }
 
 /* Responsive */

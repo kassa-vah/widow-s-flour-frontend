@@ -2,9 +2,9 @@
 import "./MarqueeSection.css";
 
 const partners = [
-  "Hope Foundation", "Bread of Life", "Grace Ministry",
-  "United Hearts", "The Widow's Mite", "Mercy Corps",
-  "Provision Trust", "Community Harvest", "Relief Alliance",
+  "Foundation Chapel Ministries", "Bread of Life", "Grace Ministry",
+  "United Hearts", "Vine Sanctuary Assemblies", "Jocala Properties",
+  "Provision Trust", "Heralds of Hope", "Relief Alliance",
 ];
 
 export default function MarqueeSection() {

@@ -18,6 +18,7 @@ import { CTASection, Footer } from "./components/CTASection";
 import GlobeSection        from "./components/GlobeSection";
 
 import AuthPage            from "./components/Auth/AuthPage";
+import ResetPasswordPage   from "./components/Auth/ResetPasswordPage";
 import AdminDashboard      from "./components/AdminDashboard/AdminDashboard";
 import DonationMethods     from "./components/DonationMethods";
 import CampaignsPage       from "./components/CampaignsPage";
@@ -266,6 +267,12 @@ export default function App() {
             </PublicOnlyRoute>
           }
         />
+
+        {/* ── Password reset — fully public, no auth guard.
+              Firebase emails link to /reset-password?mode=resetPassword&oobCode=...
+              The page verifies the oobCode, lets the user pick a new password,
+              then calls /auth/password-reset-complete to lock the account. ── */}
+        <Route path="/reset-password" element={<ResetPasswordPage />} />
 
         {/* ── Admin dashboard ── */}
         <Route

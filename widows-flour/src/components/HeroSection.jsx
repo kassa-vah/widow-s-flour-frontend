@@ -1,6 +1,7 @@
 import { useEffect, useRef } from "react";
 import gsap from "gsap";
 import "./HeroSection.css";
+import {Link} from "react-router-dom";
 
 // ── Image imports (Vite-compatible ES module imports) ──────────
 import imgPill     from "../assets/smilingchildren1.jpg";
@@ -244,9 +245,9 @@ export default function HeroSection() {
           </p>
 
           <div className="hero__actions" ref={actionsRef}>
-            <a href="#donate" className="btn-primary">
+            <Link to="/donate" className="btn-primary">
               Donate Now <span style={{ color: "#e85050" }}>♥</span>
-            </a>
+            </Link>
             <a href="#about" className="btn-ghost">Learn More →</a>
           </div>
         </div>

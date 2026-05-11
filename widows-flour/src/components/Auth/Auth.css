@@ -283,6 +283,76 @@
   text-decoration: underline;
   text-underline-offset: 3px;
 }
+/* ─────────────────────────────────────────────────────────────────────────────
+   ADD THESE RULES TO THE BOTTOM OF YOUR EXISTING Auth.css
+   They use the same design tokens as globals.css and match existing patterns.
+───────────────────────────────────────────────────────────────────────────── */
+
+/* ── Password field: wrapper that holds input + eye-toggle button ── */
+.auth-field__input-wrap {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.auth-field__input-wrap input {
+  /* inherit all the .auth-field input styles, just add right padding for the eye */
+  width: 100%;
+  padding-right: 2.75rem; /* make room for the eye icon */
+}
+
+/* Eye-toggle button inside the password field */
+.auth-field__eye {
+  position: absolute;
+  right: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 0;
+  color: var(--text-light);
+  display: flex;
+  align-items: center;
+  transition: color 0.2s;
+}
+.auth-field__eye:hover {
+  color: var(--green-deep);
+}
+
+/* ── Inline password-match hint below the confirm field ── */
+.auth-field__hint {
+  font-family: var(--font-body);
+  font-size: 12px;
+  margin-top: 6px;
+  margin-bottom: 0;
+}
+.auth-field__hint--ok  { color: var(--green-deep); }
+.auth-field__hint--err { color: #c0392b; }
+
+/* ── Error / alert variant for auth-sent-state__icon ── */
+.auth-sent-state__icon--error {
+  color: #c0392b;
+  background: rgba(192, 57, 43, 0.08);
+  border-color: rgba(192, 57, 43, 0.2);
+}
+
+
+.auth-toggle__link {
+  background: none;
+  border: none;
+  padding: 0;
+  cursor: pointer;
+  font-family: var(--font-body);
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--green-deep);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  transition: color 0.2s, opacity 0.2s;
+}
+.auth-toggle__link:hover   { opacity: 0.75; }
+.auth-toggle__link:disabled { opacity: 0.4; cursor: not-allowed; }
 
 /* ── Responsive ── */
 @media (max-width: 900px) {
