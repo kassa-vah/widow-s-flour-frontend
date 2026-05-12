@@ -31,31 +31,15 @@
   pointer-events: none;
 }
 
+/* Hide logo on desktop */
 .dash__sidebar-logo {
-  position: relative;
-  padding: 32px 28px 28px;
-  border-bottom: 1px solid rgba(255,255,255,0.06);
-}
-
-.dash__sidebar-logo img {
-  height: 36px;
-  width: auto;
-  filter: brightness(0) invert(1);
-}
-
-.dash__sidebar-logo span {
-  display: block;
-  font-size: 11px;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
-  color: rgba(255,255,255,0.35);
-  margin-top: 6px;
+  display: none;
 }
 
 .dash__nav {
   position: relative;
   flex: 1;
-  padding: 20px 0;
+  padding: 24px 0 20px;
 }
 
 .dash__nav-section {
@@ -172,6 +156,10 @@
   cursor: pointer;
   transition: background 0.18s, color 0.18s, border-color 0.18s;
   letter-spacing: 0.04em;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
 }
 
 .dash__logout:hover {
@@ -203,6 +191,9 @@
   font-size: 1.6rem;
   font-weight: 400;
   color: var(--text-dark);
+  display: flex;
+  align-items: center;
+  gap: 10px;
 }
 
 .dash__topbar-meta {
@@ -234,12 +225,12 @@
   padding: 36px 40px;
 }
 
-/* Mobile hamburger overlay */
+/* Mobile hamburger */
 .dash__mobile-header {
   display: none;
   align-items: center;
   justify-content: space-between;
-  padding: 16px 20px;
+  padding: 14px 20px;
   background: var(--text-dark);
   position: sticky;
   top: 0;
@@ -256,18 +247,11 @@
   border: none;
   cursor: pointer;
   display: flex;
-  flex-direction: column;
-  gap: 5px;
+  align-items: center;
+  justify-content: center;
   padding: 4px;
-}
-
-.dash__hamburger span {
-  display: block;
-  width: 22px;
-  height: 2px;
-  background: rgba(255,255,255,0.8);
-  transition: transform 0.25s, opacity 0.25s;
-  transform-origin: center;
+  color: rgba(255,255,255,0.8);
+  font-size: 22px;
 }
 
 .dash__overlay {
@@ -306,6 +290,28 @@
     transform: translateX(-100%);
     transition: transform 0.3s var(--ease-out);
     z-index: 100;
+  }
+
+  /* Show logo inside mobile drawer */
+  .dash__sidebar .dash__sidebar-logo {
+    display: flex;
+    flex-direction: column;
+    padding: 24px 28px 20px;
+    border-bottom: 1px solid rgba(255,255,255,0.06);
+  }
+
+  .dash__sidebar .dash__sidebar-logo img {
+    height: 32px;
+    filter: brightness(0) invert(1);
+  }
+
+  .dash__sidebar .dash__sidebar-logo span {
+    display: block;
+    font-size: 11px;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: rgba(255,255,255,0.35);
+    margin-top: 6px;
   }
 
   .dash__sidebar.open {
