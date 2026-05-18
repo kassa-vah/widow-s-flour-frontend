@@ -73,11 +73,11 @@ export function CTASection() {
 
           <div className="cta-banner__actions">
             <Link to="/donate" className="btn-primary btn-primary--light">
-                Donate Now ♥
-              </Link>
-            <a href="#about" className="btn-ghost btn-ghost--light">
+              Donate Now ♥
+            </Link>
+            <Link to="/our-story" className="btn-ghost btn-ghost--light">
               Learn Our Story →
-            </a>
+            </Link>
           </div>
         </div>
       </div>

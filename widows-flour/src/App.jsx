@@ -31,6 +31,9 @@ import ContactPage         from "./components/pages/ContactPage";
 import PrivacyPolicyPage   from "./components/pages/PrivacyPolicyPage";
 import StoryDetail         from "./components/StoryDetail";
 
+// ── Our Story modal page ──
+import OurStory            from "./components/OurStory";
+
 const API = import.meta.env.VITE_API_URL ?? "http://127.0.0.1:5000";
 
 // ── Read localStorage synchronously so initial state is correct ──
@@ -82,6 +85,18 @@ function DonatePage() {
         <DonationMethods />
       </section>
     </PageShell>
+  );
+}
+
+// ── Our Story standalone page (wraps the modal component) ──
+// Renders the OurStory modal full-page; "Close" navigates back to home.
+function OurStoryPage() {
+  const navigate = useNavigate();
+  return (
+    <>
+      <Navbar />
+      <OurStory onClose={() => navigate("/")} />
+    </>
   );
 }
 
@@ -217,6 +232,9 @@ export default function App() {
           }
         />
 
+        {/* ── Our Story page ── */}
+        <Route path="/our-story" element={<OurStoryPage />} />
+
         {/* ── All causes / campaigns ── */}
         <Route
           path="/causes"
@@ -268,10 +286,7 @@ export default function App() {
           }
         />
 
-        {/* ── Password reset — fully public, no auth guard.
-              Firebase emails link to /reset-password?mode=resetPassword&oobCode=...
-              The page verifies the oobCode, lets the user pick a new password,
-              then calls /auth/password-reset-complete to lock the account. ── */}
+        {/* ── Password reset ── */}
         <Route path="/reset-password" element={<ResetPasswordPage />} />
 
         {/* ── Admin dashboard ── */}
