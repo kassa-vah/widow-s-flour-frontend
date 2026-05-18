@@ -12,6 +12,7 @@ import {
 } from "react-icons/fa";
 import "./Navbar.css";
 import imgLogo from "../assets/logo3.jpeg";
+import DonationMethods from "./DonationMethods";
 
 const PAGES_LINKS = [
   { to: "/news",          label: "News & Blog",    icon: <FaNewspaper size={14} />,        desc: "Stories & updates" },
@@ -21,18 +22,120 @@ const PAGES_LINKS = [
   { to: "/privacy",       label: "Privacy Policy",  icon: <FaShieldAlt size={14} />,        desc: "Your data rights" },
 ];
 
-// Section IDs that exist on the home page
-const HOME_SECTIONS = ["home", "about", "causes", "impact", "contact"];
+/* ── General Donation Modal ── */
+function GeneralDonationModal({ onClose }) {
+  const overlayRef = useRef(null);
+
+  useEffect(() => {
+    const handler = (e) => { if (e.key === "Escape") onClose(); };
+    document.addEventListener("keydown", handler);
+    document.body.style.overflow = "hidden";
+    return () => {
+      document.removeEventListener("keydown", handler);
+      document.body.style.overflow = "";
+    };
+  }, [onClose]);
+
+  return (
+    <div
+      style={{
+        position:        "fixed",
+        inset:           0,
+        zIndex:          9999,
+        background:      "rgba(0,0,0,0.55)",
+        display:         "flex",
+        alignItems:      "center",
+        justifyContent:  "center",
+        padding:         "16px",
+        backdropFilter:  "blur(3px)",
+      }}
+      ref={overlayRef}
+      onClick={(e) => { if (e.target === overlayRef.current) onClose(); }}
+    >
+      <div
+        style={{
+          background:   "#fff",
+          borderRadius: "16px",
+          width:        "100%",
+          maxWidth:     "480px",
+          maxHeight:    "90vh",
+          overflowY:    "auto",
+          position:     "relative",
+          boxShadow:    "0 24px 60px rgba(0,0,0,0.18)",
+        }}
+      >
+        {/* Close button */}
+        <button
+          onClick={onClose}
+          aria-label="Close"
+          style={{
+            position:   "absolute",
+            top:        12,
+            right:      12,
+            zIndex:     1,
+            background: "rgba(0,0,0,0.06)",
+            border:     "none",
+            borderRadius: "50%",
+            width:      32,
+            height:     32,
+            cursor:     "pointer",
+            display:    "flex",
+            alignItems: "center",
+            justifyContent: "center",
+          }}
+        >
+          <svg width="16" height="16" viewBox="0 0 18 18" fill="none">
+            <path d="M3 3l12 12M15 3L3 15" stroke="#333" strokeWidth="1.8" strokeLinecap="round" />
+          </svg>
+        </button>
+
+        {/* Header */}
+        <div style={{ padding: "28px 28px 0" }}>
+          <span
+            style={{
+              display:      "inline-block",
+              background:   "rgba(90,158,58,0.1)",
+              color:        "var(--green, #5a9e3a)",
+              borderRadius: "99px",
+              fontSize:     12,
+              fontWeight:   600,
+              padding:      "3px 12px",
+              marginBottom: 10,
+              letterSpacing: "0.04em",
+            }}
+          >
+            General Donation
+          </span>
+          <h3 style={{ margin: "0 0 6px", fontSize: 20, fontWeight: 700 }}>
+            Support Our Work
+          </h3>
+          <p style={{ margin: "0 0 20px", fontSize: 14, color: "#666", lineHeight: 1.5 }}>
+            Your gift goes where it's needed most — site upkeep, urgent needs,
+            and underfunded causes.
+          </p>
+        </div>
+
+        {/* Donation form */}
+        <DonationMethods
+          campaignId={null}
+          campaignName="General Fund"
+          onSuccess={() => { setTimeout(onClose, 3500); }}
+        />
+      </div>
+    </div>
+  );
+}
 
 export default function Navbar() {
-  const navRef                              = useRef(null);
-  const dropdownRef                         = useRef(null);
-  const navigate                            = useNavigate();
-  const location                            = useLocation();
-  const [scrolled, setScrolled]             = useState(false);
-  const [drawerOpen, setDrawerOpen]         = useState(false);
-  const [pagesOpen, setPagesOpen]           = useState(false);
+  const navRef                                = useRef(null);
+  const dropdownRef                           = useRef(null);
+  const navigate                              = useNavigate();
+  const location                              = useLocation();
+  const [scrolled, setScrolled]               = useState(false);
+  const [drawerOpen, setDrawerOpen]           = useState(false);
+  const [pagesOpen, setPagesOpen]             = useState(false);
   const [mobilePagesOpen, setMobilePagesOpen] = useState(false);
+  const [donateOpen, setDonateOpen]           = useState(false);
 
   // ── Entrance animation ──
   useEffect(() => {
@@ -52,9 +155,11 @@ export default function Navbar() {
 
   // ── Lock body scroll when drawer is open ──
   useEffect(() => {
-    document.body.style.overflow = drawerOpen ? "hidden" : "";
+    if (!donateOpen) {
+      document.body.style.overflow = drawerOpen ? "hidden" : "";
+    }
     return () => { document.body.style.overflow = ""; };
-  }, [drawerOpen]);
+  }, [drawerOpen, donateOpen]);
 
   // ── Close dropdown on outside click ──
   useEffect(() => {
@@ -71,17 +176,14 @@ export default function Navbar() {
   useEffect(() => {
     if (location.pathname === "/" && location.state?.scrollTo) {
       const id = location.state.scrollTo;
-      // Wait a tick for the page to mount, then scroll
       setTimeout(() => {
         const el = document.getElementById(id);
         if (el) el.scrollIntoView({ behavior: "smooth" });
       }, 100);
-      // Clear state so refreshing doesn't re-scroll
       window.history.replaceState({}, "", "/");
     }
   }, [location]);
 
-  
   const handleAnchorClick = useCallback(
     (sectionId) => {
       setDrawerOpen(false);
@@ -100,6 +202,11 @@ export default function Navbar() {
     navigate("/login");
   };
 
+  const openDonate = () => {
+    setDrawerOpen(false);
+    setDonateOpen(true);
+  };
+
   const NAV_LINKS = [
     { label: "Home",    section: "home" },
     { label: "About",   section: "about" },
@@ -111,7 +218,7 @@ export default function Navbar() {
   return (
     <>
       <nav ref={navRef} className={`navbar ${scrolled ? "scrolled" : ""}`}>
-        {/* Logo — clicking it always goes home */}
+        {/* Logo */}
         <img
           src={imgLogo}
           alt="Widows Flour"
@@ -181,10 +288,13 @@ export default function Navbar() {
           >
             Login
           </button>
-          {/* ✅ Use React Router Link instead of bare <a href="/donate"> */}
-          <Link to="/donate" className="navbar__cta navbar__cta-desktop">
+          {/* Opens general donation modal instead of navigating to /donate */}
+          <button
+            className="navbar__cta navbar__cta-desktop"
+            onClick={openDonate}
+          >
             Donate Now <span className="navbar__heart">♥</span>
-          </Link>
+          </button>
         </div>
 
         {/* Mobile hamburger */}
@@ -227,7 +337,7 @@ export default function Navbar() {
             <FaChevronDown
               size={11}
               style={{
-                transform: mobilePagesOpen ? "rotate(180deg)" : "none",
+                transform:  mobilePagesOpen ? "rotate(180deg)" : "none",
                 transition: "transform 0.25s",
               }}
             />
@@ -256,25 +366,37 @@ export default function Navbar() {
           onClick={goToLogin}
           style={{
             background: "none",
-            border: "none",
-            textAlign: "left",
-            font: "inherit",
-            cursor: "pointer",
-            color: "inherit",
+            border:     "none",
+            textAlign:  "left",
+            font:       "inherit",
+            cursor:     "pointer",
+            color:      "inherit",
           }}
         >
           Login
         </button>
 
-        
-        <Link
-          to="/donate"
-          onClick={() => setDrawerOpen(false)}
-          style={{ color: "var(--green-deep)" }}
+        {/* General donation — opens modal, closes drawer */}
+        <button
+          onClick={openDonate}
+          style={{
+            background: "none",
+            border:     "none",
+            textAlign:  "left",
+            font:       "inherit",
+            cursor:     "pointer",
+            color:      "var(--green-deep, #3a7a1e)",
+            fontWeight: 600,
+          }}
         >
           Donate Now ♥
-        </Link>
+        </button>
       </div>
+
+      {/* General donation modal */}
+      {donateOpen && (
+        <GeneralDonationModal onClose={() => setDonateOpen(false)} />
+      )}
     </>
   );
 }

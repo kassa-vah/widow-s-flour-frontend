@@ -1,7 +1,7 @@
 import { useState, useRef, useEffect } from "react";
 import "./DonationMethods.css";
 
-const API                = import.meta.env.VITE_API_URL        ?? "http://127.0.0.1:5000";
+const API                 = import.meta.env.VITE_API_URL           ?? "http://127.0.0.1:5000";
 const PAYSTACK_PUBLIC_KEY = import.meta.env.VITE_PAYSTACK_PUBLIC_KEY ?? "";
 
 /* Prevent double popup in React StrictMode (double effect invocation) */
@@ -129,8 +129,14 @@ const Spinner = () => (
 
 /* ══════════════════════════════════════════
    Main component
+
+   Props:
+   - campaignId   : number | null | undefined
+                    Pass null/undefined for a general donation (no specific campaign).
+   - campaignName : string — display name shown in the form and success screen.
+   - onSuccess    : callback fired after a successful donation.
 ══════════════════════════════════════════ */
-export default function DonationMethods({ campaignId, campaignName = "Campaign", onSuccess }) {
+export default function DonationMethods({ campaignId = null, campaignName = "General Fund", onSuccess }) {
   const [method, setMethod]         = useState("mpesa");
   const [amount, setAmount]         = useState("");
   const [donorName, setDonorName]   = useState("");
@@ -143,6 +149,9 @@ export default function DonationMethods({ campaignId, campaignName = "Campaign",
   const [loading, setLoading]       = useState(false);
   const [submitted, setSubmitted]   = useState(false);
   const [focusedInput, setFocused]  = useState(null);
+
+  // true when no campaign is selected — donation goes to the general fund
+  const isGeneral = campaignId == null;
 
   const tabsRef = useRef(null);
   const [indicator, setIndicator] = useState({ left: 0, width: 0 });
@@ -165,29 +174,20 @@ export default function DonationMethods({ campaignId, campaignName = "Campaign",
 
   const validate = () => {
     const e = {};
-    if (validateAmount(amount))                                 e.amount     = validateAmount(amount);
-    if (method === "mpesa"    && validatePhone(phone))          e.phone      = validatePhone(phone);
-    if (method === "paystack" && validateEmail(email))          e.email      = validateEmail(email);
+    if (validateAmount(amount))                        e.amount     = validateAmount(amount);
+    if (method === "mpesa"    && validatePhone(phone)) e.phone      = validatePhone(phone);
+    if (method === "paystack" && validateEmail(email)) e.email      = validateEmail(email);
     if (method === "card") {
-      if (validateEmail(email))                                 e.email      = validateEmail(email);
-      if (validateCardNumber(cardNumber))                       e.cardNumber = validateCardNumber(cardNumber);
-      if (validateExpiry(expiry))                               e.expiry     = validateExpiry(expiry);
-      if (validateCVV(cvv))                                     e.cvv        = validateCVV(cvv);
+      if (validateEmail(email))                        e.email      = validateEmail(email);
+      if (validateCardNumber(cardNumber))              e.cardNumber = validateCardNumber(cardNumber);
+      if (validateExpiry(expiry))                      e.expiry     = validateExpiry(expiry);
+      if (validateCVV(cvv))                            e.cvv        = validateCVV(cvv);
     }
     return e;
   };
 
-  /* ── Paystack inline popup (client-side init via v1 SDK) ──
-   *
-   * We initialise the transaction entirely client-side using the public key.
-   * On success Paystack calls our callback with a `reference`. We then POST
-   * that reference to /donations/verify so the backend can verify with
-   * Paystack's API and record the donation.
-   *
-   * This avoids the 400 "Please enter a valid Key" error that occurs when
-   * you mix a server-side access_code with a client-side key in setup().
-   */
-  const openPaystackPopup = ({ campaignId, donorName, email, amount }) => {
+  /* ── Paystack inline popup ── */
+  const openPaystackPopup = ({ donorName, email, amount }) => {
     return new Promise((resolve, reject) => {
       if (_paystackPopupOpen) { reject(new Error("A payment is already in progress.")); return; }
       _paystackPopupOpen = true;
@@ -195,16 +195,17 @@ export default function DonationMethods({ campaignId, campaignName = "Campaign",
       const handler = window.PaystackPop.setup({
         key:      PAYSTACK_PUBLIC_KEY,
         email,
-        amount:   Math.round(parseFloat(amount) * 100), // KES → smallest unit
+        amount:   Math.round(parseFloat(amount) * 100), // KES → kobo/cents
         currency: "KES",
         metadata: {
-          campaign_id:  campaignId,
+          campaign_id:   isGeneral ? null : campaignId,
           campaign_name: campaignName,
-          donor_name:   donorName || "Anonymous",
+          donor_name:    donorName || "Anonymous",
+          is_general:    isGeneral,
         },
         callback: (response) => {
           _paystackPopupOpen = false;
-          resolve(response); // response.reference
+          resolve(response);
         },
         onClose: () => {
           _paystackPopupOpen = false;
@@ -218,16 +219,22 @@ export default function DonationMethods({ campaignId, campaignName = "Campaign",
 
   /* ── POST /donations/verify after Paystack confirms ── */
   const verifyPaystackDonation = async ({ reference, amount, donorName, donorEmail }) => {
-    const res = await fetch(`${API}/donations/verify`, {
+    const body = {
+      reference,
+      amount:     parseFloat(amount),
+      donor_name: donorName || "Anonymous",
+      donor_email: donorEmail,
+    };
+
+    // Only include campaign_id when this is a campaign donation
+    if (!isGeneral) {
+      body.campaign_id = campaignId;
+    }
+
+    const res  = await fetch(`${API}/donations/verify`, {
       method:  "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        reference,
-        campaign_id: campaignId || 1,
-        amount:      parseFloat(amount),
-        donor_name:  donorName || "Anonymous",
-        donor_email: donorEmail,
-      }),
+      body:    JSON.stringify(body),
     });
     const data = await res.json();
     if (!res.ok) throw new Error(data.message || "Payment verification failed.");
@@ -244,27 +251,33 @@ export default function DonationMethods({ campaignId, campaignName = "Campaign",
     setLoading(true);
 
     try {
-      /* ── M-Pesa: server-side initiation (unchanged) ── */
+      /* ── M-Pesa ── */
       if (method === "mpesa") {
+        const body = {
+          amount:         parseFloat(amount),
+          payment_method: "mpesa",
+          donor_name:     donorName.trim() || "Anonymous",
+          phone_number:   phone,
+        };
+
+        // Only attach campaign_id for campaign donations
+        if (!isGeneral) {
+          body.campaign_id = campaignId;
+        }
+
         const res  = await fetch(`${API}/donations`, {
           method:  "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            campaign_id:    campaignId || 1,
-            amount:         parseFloat(amount),
-            payment_method: "mpesa",
-            donor_name:     donorName.trim() || "Anonymous",
-            phone_number:   phone,
-          }),
+          body:    JSON.stringify(body),
         });
         const data = await res.json();
-        if (!res.ok) throw new Error(data.message || "Something went wrong.");
+        if (!res.ok) throw new Error(data.message || data.error || "Something went wrong.");
         setSubmitted(true);
         onSuccess?.(data);
         return;
       }
 
-      /* ── Paystack / Card: client-side inline popup ── */
+      /* ── Paystack / Card ── */
       if (method === "paystack" || method === "card") {
         if (!PAYSTACK_PUBLIC_KEY) {
           throw new Error("Paystack public key is not configured. Add VITE_PAYSTACK_PUBLIC_KEY to your .env.");
@@ -273,13 +286,11 @@ export default function DonationMethods({ campaignId, campaignName = "Campaign",
         await loadPaystackScript();
 
         const paystackResponse = await openPaystackPopup({
-          campaignId,
           donorName: donorName.trim(),
           email,
           amount,
         });
 
-        /* Popup succeeded — verify and record on the backend */
         const data = await verifyPaystackDonation({
           reference:  paystackResponse.reference,
           amount,
@@ -312,8 +323,11 @@ export default function DonationMethods({ campaignId, campaignName = "Campaign",
           </div>
           <h2 className="dm-success-title">Thank you.</h2>
           <p className="dm-success-sub">
-            Your donation of <strong>KES {parseFloat(amount).toLocaleString()}</strong> for{" "}
-            <em>{campaignName}</em> has been received.
+            Your donation of <strong>KES {parseFloat(amount).toLocaleString()}</strong>
+            {isGeneral
+              ? " to our General Fund has been received. We'll direct it where it's needed most."
+              : <> for <em>{campaignName}</em> has been received.</>
+            }
             {method === "mpesa" && " Check your phone for the M-Pesa prompt."}
           </p>
           <button
@@ -336,10 +350,15 @@ export default function DonationMethods({ campaignId, campaignName = "Campaign",
       <div className="dm-header">
         <span className="dm-tag-pill">
           <span className="dm-tag-dot" />
-          Give
+          {isGeneral ? "General Donation" : "Give"}
         </span>
         <h2 className="dm-title">Make a Donation</h2>
-        {campaignName && <p className="dm-sub">{campaignName}</p>}
+        <p className="dm-sub">
+          {isGeneral
+            ? "Your gift goes where it's needed most — site upkeep, urgent needs, and underfunded causes."
+            : campaignName
+          }
+        </p>
       </div>
 
       <hr className="dm-divider" />

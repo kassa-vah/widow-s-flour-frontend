@@ -20,16 +20,15 @@ function fmtKES(n) {
   return `KES ${Number(n ?? 0).toLocaleString()}`;
 }
 
-/* All category icons share this single color — change here to update everywhere */
 const ICON_COLOR = "var(--green)";
 const ICON_SIZE  = 32;
 
 const CATEGORY_ICONS = {
-  "Food Relief": <FaBreadSlice  color={ICON_COLOR} size={ICON_SIZE} />,
-  "Education":   <FaBookOpen   color={ICON_COLOR} size={ICON_SIZE} />,
-  "Livelihood":  <FaSeedling   color={ICON_COLOR} size={ICON_SIZE} />,
+  "Food Relief": <FaBreadSlice   color={ICON_COLOR} size={ICON_SIZE} />,
+  "Education":   <FaBookOpen    color={ICON_COLOR} size={ICON_SIZE} />,
+  "Livelihood":  <FaSeedling    color={ICON_COLOR} size={ICON_SIZE} />,
   "Health":      <FaHospitalAlt color={ICON_COLOR} size={ICON_SIZE} />,
-  "default":     <FaHeart      color={ICON_COLOR} size={ICON_SIZE} />,
+  "default":     <FaHeart       color={ICON_COLOR} size={ICON_SIZE} />,
 };
 
 function categoryIcon(cat) {
@@ -150,9 +149,17 @@ function ExpandableText({ text }) {
   );
 }
 
-/* ── Donation Modal ── */
+/* ── Donation Modal ──
+ *
+ * Handles both campaign donations and general donations.
+ * When campaign is null, renders a general donation form with
+ * no campaign_id sent to the backend.
+ */
 function DonationModal({ campaign, onClose }) {
   const overlayRef = useRef(null);
+
+  const isGeneral = campaign == null;
+
   useEffect(() => {
     const handler = (e) => { if (e.key === "Escape") onClose(); };
     document.addEventListener("keydown", handler);
@@ -175,16 +182,30 @@ function DonationModal({ campaign, onClose }) {
             <path d="M3 3l12 12M15 3L3 15" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" />
           </svg>
         </button>
+
         <div className="cp-modal__header">
-          <span className="cp-modal__pill">Donating to</span>
-          <h3 className="cp-modal__campaign-title">{campaign.title}</h3>
-          <p className="cp-modal__campaign-goal">
-            {fmtKES(campaign.raised_amount)} raised of {fmtKES(campaign.goal_amount)} goal
-          </p>
+          {isGeneral ? (
+            <>
+              <span className="cp-modal__pill">General Donation</span>
+              <h3 className="cp-modal__campaign-title">Support Our Work</h3>
+              <p className="cp-modal__campaign-goal">
+                Your gift goes where it's needed most — site upkeep, urgent needs, and underfunded causes.
+              </p>
+            </>
+          ) : (
+            <>
+              <span className="cp-modal__pill">Donating to</span>
+              <h3 className="cp-modal__campaign-title">{campaign.title}</h3>
+              <p className="cp-modal__campaign-goal">
+                {fmtKES(campaign.raised_amount)} raised of {fmtKES(campaign.goal_amount)} goal
+              </p>
+            </>
+          )}
         </div>
+
         <DonationMethods
-          campaignId={campaign.id}
-          campaignName={campaign.title}
+          campaignId={isGeneral ? null : campaign.id}
+          campaignName={isGeneral ? "General Fund" : campaign.title}
           onSuccess={() => { setTimeout(onClose, 3500); }}
         />
       </div>
@@ -265,17 +286,22 @@ function AutoProgressBar({ duration, running, onComplete }) {
 /* ══════════════════════════════════════════
    Main Page
 ══════════════════════════════════════════ */
-const PAGE_SIZE      = 5;
-const AUTO_INTERVAL  = 30000;
+const PAGE_SIZE     = 5;
+const AUTO_INTERVAL = 30000;
 
 export default function CampaignsPage() {
   const [campaigns, setCampaigns]   = useState([]);
   const [loading, setLoading]       = useState(true);
   const [error, setError]           = useState(null);
+
+  // null  → modal closed
+  // false → general donation modal (no campaign)
+  // obj   → campaign-specific donation modal
   const [activeCampaign, setActive] = useState(null);
-  const [filter, setFilter]         = useState("all");
-  const [page, setPage]             = useState(0);
-  const [autoKey, setAutoKey]       = useState(0);
+
+  const [filter, setFilter]   = useState("all");
+  const [page, setPage]       = useState(0);
+  const [autoKey, setAutoKey] = useState(0);
 
   /* ── fetch ── */
   useEffect(() => {
@@ -313,11 +339,12 @@ export default function CampaignsPage() {
     goTo(safePage === totalPages - 1 ? 0 : safePage + 1);
   }, [safePage, totalPages, goTo]);
 
-  const handleAutoComplete = useCallback(() => {
-    next();
-  }, [next]);
+  const handleAutoComplete = useCallback(() => { next(); }, [next]);
 
   useEffect(() => { setPage(0); setAutoKey(k => k + 1); }, [filter]);
+
+  /* ── open general donation modal ── */
+  const openGeneralDonation = () => setActive(false); // false = general, not a campaign
 
   return (
     <main className="cp-page">
@@ -373,12 +400,19 @@ export default function CampaignsPage() {
           </div>
         )}
 
+        {/* Empty state — show general donate CTA prominently */}
         {!loading && !error && visible.length === 0 && (
           <div className="cp-empty">
             <span className="cp-empty__icon">
               <FaLeaf color={ICON_COLOR} size={32} />
             </span>
-            <p>No {filter !== "all" ? filter : ""} campaigns found right now.</p>
+            <p>No {filter !== "all" ? filter : ""} campaigns right now.</p>
+            <p style={{ fontSize: 14, opacity: 0.7, marginTop: 4 }}>
+              You can still support our work with a general donation.
+            </p>
+            <button className="cp-general-donate__btn" style={{ marginTop: 16 }} onClick={openGeneralDonation}>
+              Give Now <FaHeart color="currentColor" size={13} style={{ display: "inline", verticalAlign: "middle" }} />
+            </button>
           </div>
         )}
 
@@ -432,29 +466,26 @@ export default function CampaignsPage() {
         )}
       </div>
 
-      {/* ── General donation CTA ── */}
+      {/* ── General donation CTA — always shown below campaigns ── */}
       {!loading && !error && (
         <section className="cp-general-donate">
           <div className="cp-general-donate__inner">
             <h2>Not sure which cause to support?</h2>
-            <p>Make a general donation and we'll direct your gift where it's needed most.</p>
-            <button
-              className="cp-general-donate__btn"
-              onClick={() => {
-                const general = campaigns.find(c => c.status === "active") ?? campaigns[0];
-                if (general) setActive(general);
-              }}
-            >
-              Give Now <FaHeart color="currentColor" size={14} style={{ display: "inline", verticalAlign: "middle" }} />
+            <p>
+              Make a general donation and we'll direct your gift where it's needed most —
+              site maintenance, additional causes, and emergency needs.
+            </p>
+            <button className="cp-general-donate__btn" onClick={openGeneralDonation}>
+              Give Now{" "}
+              <FaHeart color="currentColor" size={14} style={{ display: "inline", verticalAlign: "middle" }} />
             </button>
           </div>
         </section>
       )}
 
-      {/* ── Donation modal ── */}
-      {activeCampaign && (
+      {activeCampaign !== null && (
         <DonationModal
-          campaign={activeCampaign}
+          campaign={activeCampaign === false ? null : activeCampaign}
           onClose={() => setActive(null)}
         />
       )}
