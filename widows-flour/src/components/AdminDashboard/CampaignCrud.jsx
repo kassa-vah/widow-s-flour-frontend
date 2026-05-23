@@ -1,26 +1,18 @@
-
-
+// src/components/AdminDashboard/CampaignCrud.jsx
 import { useState, useEffect, useCallback, useRef } from "react";
 import "./Crud.css";
+import ImageUploader from "./ImageUploader";
 
 const API      = import.meta.env.VITE_API_URL ?? "http://127.0.0.1:5000";
 const BASE     = `${API}/campaigns`;
 const BEN_BASE = `${API}/beneficiaries`;
 const PER_PAGE = 10;
 
-const CATEGORIES = [
-  "Food Relief",
-  "Education",
-  "Livelihood",
-  "Health",
-  "Emergency",
-  "Other",
-];
+const CATEGORIES = ["Food Relief", "Education", "Livelihood", "Health", "Emergency", "Other"];
 
 const EMPTY_FORM = {
   title: "", description: "", goal_amount: "", beneficiary_id: "",
   status: "draft", start_date: "", end_date: "",
-  // New display fields for the public causes page
   category: "Food Relief",
   image_url: "",
   cta_label: "",
@@ -41,7 +33,7 @@ function fmtCurrency(n) {
   return n != null ? `KES ${Number(n).toLocaleString()}` : "—";
 }
 
-// ── Beneficiary Picker 
+// ── Beneficiary Picker ────────────────────────────────────────────────────
 function BeneficiaryPicker({ beneficiaries, value, onChange, loading }) {
   const [open, setOpen]     = useState(false);
   const [search, setSearch] = useState("");
@@ -49,7 +41,6 @@ function BeneficiaryPicker({ beneficiaries, value, onChange, loading }) {
   const searchRef           = useRef(null);
 
   const selected = beneficiaries.find(b => String(b.id) === String(value));
-
   const filtered = beneficiaries.filter(b =>
     b.name.toLowerCase().includes(search.toLowerCase()) ||
     (b.location || "").toLowerCase().includes(search.toLowerCase())
@@ -59,8 +50,7 @@ function BeneficiaryPicker({ beneficiaries, value, onChange, loading }) {
     if (!open) return;
     const handler = (e) => {
       if (containerRef.current && !containerRef.current.contains(e.target)) {
-        setOpen(false);
-        setSearch("");
+        setOpen(false); setSearch("");
       }
     };
     document.addEventListener("mousedown", handler);
@@ -68,9 +58,7 @@ function BeneficiaryPicker({ beneficiaries, value, onChange, loading }) {
   }, [open]);
 
   useEffect(() => {
-    if (open && searchRef.current) {
-      setTimeout(() => searchRef.current?.focus(), 50);
-    }
+    if (open && searchRef.current) setTimeout(() => searchRef.current?.focus(), 50);
   }, [open]);
 
   const handleSelect = (b) => { onChange(String(b.id)); setOpen(false); setSearch(""); };
@@ -159,7 +147,7 @@ function BeneficiaryPicker({ beneficiaries, value, onChange, loading }) {
   );
 }
 
-// ── Main Component 
+// ── Main Component ────────────────────────────────────────────────────────
 export default function CampaignCrud({ token }) {
   const [rows, setRows]                   = useState([]);
   const [total, setTotal]                 = useState(0);
@@ -216,7 +204,6 @@ export default function CampaignCrud({ token }) {
       status:         r.status         ?? "draft",
       start_date:     r.start_date     ? r.start_date.slice(0, 10) : "",
       end_date:       r.end_date       ? r.end_date.slice(0, 10)   : "",
-      // Public-facing display fields
       category:       r.category  ?? "Food Relief",
       image_url:      r.image_url ?? "",
       cta_label:      r.cta_label ?? "",
@@ -243,30 +230,19 @@ export default function CampaignCrud({ token }) {
       status:         form.status,
       start_date:     form.start_date || null,
       end_date:       form.end_date   || null,
-      // Public-facing display fields
-      category:  form.category  || "Cause",
-      image_url: form.image_url.trim() || null,
-      cta_label: form.cta_label.trim() || null,
+      category:       form.category  || "Cause",
+      image_url:      form.image_url.trim() || null,
+      cta_label:      form.cta_label.trim() || null,
     };
-
-    console.log("[CampaignCrud] Saving body:", JSON.stringify(body));
 
     try {
       const url    = modal === "edit" ? `${BASE}/${selected.id}` : BASE;
       const method = modal === "edit" ? "PUT" : "POST";
       const res    = await fetch(url, { method, headers: headers(), body: JSON.stringify(body) });
       const data   = await res.json();
-
-      console.log("[CampaignCrud] Response:", res.status, JSON.stringify(data));
-
       if (!res.ok) { setModalErr(data.error || data.message || "Save failed."); setSaving(false); return; }
-
-      closeModal();
-      load();
-    } catch (err) {
-      console.error("[CampaignCrud] Network error:", err);
-      setModalErr("Network error. Please try again.");
-    }
+      closeModal(); load();
+    } catch { setModalErr("Network error. Please try again."); }
 
     setSaving(false);
   };
@@ -276,10 +252,7 @@ export default function CampaignCrud({ token }) {
     try {
       const res = await fetch(`${BASE}/${selected.id}`, { method: "DELETE", headers: headers() });
       if (res.ok) { closeModal(); load(); }
-      else { const d = await res.json(); console.error("[CampaignCrud] Delete failed:", d); }
-    } catch (err) {
-      console.error("[CampaignCrud] Delete network error:", err);
-    }
+    } catch {}
     setSaving(false);
   };
 
@@ -289,11 +262,7 @@ export default function CampaignCrud({ token }) {
     <div>
       <div className="crud__toolbar">
         <div className="crud__toolbar-left">
-          <select
-            className="crud__filter"
-            value={filter}
-            onChange={(e) => { setFilter(e.target.value); setPage(1); }}
-          >
+          <select className="crud__filter" value={filter} onChange={(e) => { setFilter(e.target.value); setPage(1); }}>
             <option value="">All statuses</option>
             <option value="draft">Draft</option>
             <option value="active">Active</option>
@@ -327,11 +296,7 @@ export default function CampaignCrud({ token }) {
                 {rows.map((r) => (
                   <tr key={r.id}>
                     <td><strong>{r.title}</strong></td>
-                    <td>
-                      <span style={{ fontSize: 12, color: "var(--text-light)", fontWeight: 500 }}>
-                        {r.category || "—"}
-                      </span>
-                    </td>
+                    <td><span style={{ fontSize: 12, color: "var(--text-light)", fontWeight: 500 }}>{r.category || "—"}</span></td>
                     <td>{fmtCurrency(r.goal_amount)}</td>
                     <td>{fmtCurrency(r.raised_amount)}</td>
                     <td>
@@ -386,7 +351,6 @@ export default function CampaignCrud({ token }) {
             <div className="crud__modal-body">
               {modalErr && <div className="crud__modal-error">{modalErr}</div>}
 
-              {/* ── Core fields ── */}
               <div className="crud__field">
                 <label>Title *</label>
                 <input
@@ -418,13 +382,7 @@ export default function CampaignCrud({ token }) {
                 </div>
                 <div className="crud__field">
                   <label>Status</label>
-                  <select
-                    value={form.status}
-                    onChange={(e) => {
-                      console.log("[CampaignCrud] Status changed to:", e.target.value);
-                      setForm({ ...form, status: e.target.value });
-                    }}
-                  >
+                  <select value={form.status} onChange={(e) => setForm({ ...form, status: e.target.value })}>
                     <option value="draft">Draft</option>
                     <option value="active">Active</option>
                     <option value="paused">Paused</option>
@@ -446,26 +404,16 @@ export default function CampaignCrud({ token }) {
               <div className="crud__fields-row">
                 <div className="crud__field">
                   <label>Start Date</label>
-                  <input
-                    type="date"
-                    value={form.start_date}
-                    onChange={(e) => setForm({ ...form, start_date: e.target.value })}
-                  />
+                  <input type="date" value={form.start_date} onChange={(e) => setForm({ ...form, start_date: e.target.value })} />
                 </div>
                 <div className="crud__field">
                   <label>End Date</label>
-                  <input
-                    type="date"
-                    value={form.end_date}
-                    onChange={(e) => setForm({ ...form, end_date: e.target.value })}
-                  />
+                  <input type="date" value={form.end_date} onChange={(e) => setForm({ ...form, end_date: e.target.value })} />
                 </div>
               </div>
 
               {/* ── Public causes-page display fields ── */}
-              <div className="crud__section-divider">
-                <span>Public Causes Page</span>
-              </div>
+              <div className="crud__section-divider"><span>Public Causes Page</span></div>
               <p className="crud__section-hint">
                 These fields control how this campaign appears on the public <em>/causes</em> page.
               </p>
@@ -473,13 +421,8 @@ export default function CampaignCrud({ token }) {
               <div className="crud__fields-row">
                 <div className="crud__field">
                   <label>Category</label>
-                  <select
-                    value={form.category}
-                    onChange={(e) => setForm({ ...form, category: e.target.value })}
-                  >
-                    {CATEGORIES.map(c => (
-                      <option key={c} value={c}>{c}</option>
-                    ))}
+                  <select value={form.category} onChange={(e) => setForm({ ...form, category: e.target.value })}>
+                    {CATEGORIES.map(c => <option key={c} value={c}>{c}</option>)}
                   </select>
                 </div>
                 <div className="crud__field">
@@ -487,29 +430,19 @@ export default function CampaignCrud({ token }) {
                   <input
                     value={form.cta_label}
                     onChange={(e) => setForm({ ...form, cta_label: e.target.value })}
-                    placeholder='e.g. "Give a Meal" — defaults to "Donate Now"'
+                    placeholder='e.g. "Give a Meal"'
                   />
                 </div>
               </div>
 
+              {/* ── Cloudinary image uploader ── */}
               <div className="crud__field">
-                <label>Hero Image URL <span style={{ color: "var(--text-light)", fontWeight: 400 }}>(optional)</span></label>
-                <input
-                  type="url"
+                <ImageUploader
+                  label={<>Hero Image <span style={{ color: "var(--text-light)", fontWeight: 400 }}>(optional — defaults to beneficiary photo)</span></>}
                   value={form.image_url}
-                  onChange={(e) => setForm({ ...form, image_url: e.target.value })}
-                  placeholder="https://… (leave blank to use beneficiary's photo)"
+                  onChange={(url) => setForm({ ...form, image_url: url })}
+                  folder="campaign-covers"
                 />
-                {form.image_url && (
-                  <div style={{ marginTop: 8 }}>
-                    <img
-                      src={form.image_url}
-                      alt="Preview"
-                      style={{ width: "100%", maxHeight: 140, objectFit: "cover", borderRadius: 10, border: "1px solid rgba(0,0,0,0.1)" }}
-                      onError={(e) => { e.target.style.display = "none"; }}
-                    />
-                  </div>
-                )}
               </div>
             </div>
 

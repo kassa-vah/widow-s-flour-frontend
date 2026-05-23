@@ -1,0 +1,320 @@
+/* src/components/AdminDashboard/ImageUploader.css */
+/* Aligned with globals.css design tokens */
+
+/* ── Root ── */
+.iu-root {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.iu-label {
+  font-family: var(--font-body);
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--text-dark);
+  margin: 0;
+}
+
+/* ── Dropzone ── */
+.iu-dropzone {
+  position: relative;
+  border: 2px dashed rgba(90, 158, 58, 0.25);
+  border-radius: var(--radius-md);
+  padding: 32px 20px 24px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  cursor: pointer;
+  background: var(--green-pale);
+  transition: border-color 0.25s var(--ease-out),
+              background   0.25s var(--ease-out),
+              transform    0.2s  var(--ease-out);
+  text-align: center;
+}
+
+.iu-dropzone:hover {
+  border-color: var(--green-deep);
+  background: var(--green-muted);
+  background: rgba(90, 158, 58, 0.06);
+}
+
+.iu-dropzone--drag {
+  border-color: var(--green-deep);
+  background: rgba(90, 158, 58, 0.08);
+  transform: scale(1.01);
+}
+
+.iu-dropzone--uploading {
+  cursor: wait;
+  border-style: solid;
+  border-color: var(--green-deep);
+}
+
+.iu-dropzone__icon {
+  font-size: 30px;
+  color: var(--green-deep);
+  opacity: 0.7;
+  line-height: 1;
+  margin-bottom: 4px;
+}
+
+.iu-dropzone__primary {
+  font-family: var(--font-body);
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--text-dark);
+  margin: 0;
+}
+
+.iu-dropzone__secondary {
+  font-family: var(--font-body);
+  font-size: 12px;
+  color: var(--text-light);
+  margin: 0 0 8px;
+}
+
+.iu-dropzone__actions {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  justify-content: center;
+  margin-top: 4px;
+}
+
+/* ── Progress ── */
+.iu-progress {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 0;
+  position: relative;
+}
+
+.iu-progress::before {
+  content: "";
+  position: absolute;
+  top: 8px;
+  left: 0;
+  right: 0;
+  height: 6px;
+  background: var(--green-light);
+  border-radius: var(--radius-pill);
+}
+
+.iu-progress__bar {
+  position: relative;
+  z-index: 1;
+  height: 6px;
+  min-width: 4px;
+  background: var(--green-deep);
+  border-radius: var(--radius-pill);
+  transition: width 0.3s ease;
+  align-self: flex-start;
+}
+
+.iu-progress__label {
+  font-family: var(--font-body);
+  font-size: 13px;
+  color: var(--text-light);
+  margin-top: 12px;
+}
+
+/* ── Preview ── */
+.iu-preview {
+  position: relative;
+  border-radius: var(--radius-md);
+  overflow: hidden;
+  border: 1px solid rgba(0, 0, 0, 0.08);
+  max-height: 180px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--text-dark);
+}
+
+.iu-preview__img {
+  width: 100%;
+  height: 180px;
+  object-fit: cover;
+  display: block;
+  opacity: 0.85;
+  transition: opacity 0.25s var(--ease-out);
+}
+
+.iu-preview:hover .iu-preview__img {
+  opacity: 0.5;
+}
+
+.iu-preview__overlay {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  opacity: 0;
+  transition: opacity 0.25s var(--ease-out);
+}
+
+.iu-preview:hover .iu-preview__overlay {
+  opacity: 1;
+}
+
+.iu-preview__btn {
+  background: var(--white);
+  border: none;
+  border-radius: var(--radius-pill);
+  padding: 8px 16px;
+  font-family: var(--font-body);
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--text-dark);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  backdrop-filter: blur(8px);
+  transition: background 0.2s, transform 0.2s var(--ease-out), box-shadow 0.2s;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.15);
+}
+
+.iu-preview__btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.2);
+}
+
+.iu-preview__btn--danger {
+  color: #c0392b;
+}
+
+.iu-preview__btn--danger:hover {
+  background: #fff0ef;
+}
+
+/* ── URL paste mode ── */
+.iu-url-mode {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.iu-url-mode__row {
+  display: flex;
+  gap: 6px;
+  align-items: center;
+}
+
+.iu-url-mode__input {
+  flex: 1;
+  border: 1.5px solid rgba(0, 0, 0, 0.12);
+  border-radius: var(--radius-sm);
+  padding: 9px 12px;
+  font-family: var(--font-body);
+  font-size: 13px;
+  color: var(--text-dark);
+  background: var(--white);
+  outline: none;
+  transition: border-color 0.2s;
+}
+
+.iu-url-mode__input:focus {
+  border-color: var(--green-deep);
+}
+
+.iu-url-mode__input::placeholder {
+  color: var(--text-light);
+}
+
+.iu-url-mode__preview {
+  width: 100%;
+  max-height: 140px;
+  object-fit: cover;
+  border-radius: var(--radius-sm);
+  border: 1px solid rgba(0, 0, 0, 0.08);
+}
+
+/* ── Buttons ── */
+.iu-btn {
+  border: none;
+  border-radius: var(--radius-pill);
+  padding: 8px 16px;
+  font-family: var(--font-body);
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  transition: background 0.2s, transform 0.2s var(--ease-out),
+              box-shadow 0.2s, color 0.2s;
+  white-space: nowrap;
+}
+
+.iu-btn:active {
+  transform: scale(0.97);
+}
+
+.iu-btn--primary {
+  background: var(--green-deep);
+  color: var(--white);
+}
+
+.iu-btn--primary:hover {
+  background: #4a8a2e;
+  transform: translateY(-1px);
+  box-shadow: 0 6px 20px rgba(90, 158, 58, 0.3);
+}
+
+.iu-btn--secondary {
+  background: var(--cream);
+  color: var(--text-dark);
+  border: 1px solid rgba(0, 0, 0, 0.08);
+}
+
+.iu-btn--secondary:hover {
+  background: var(--green-light);
+  transform: translateY(-1px);
+}
+
+.iu-btn--ghost {
+  background: transparent;
+  color: var(--text-mid);
+  border: 1px solid rgba(0, 0, 0, 0.12);
+}
+
+.iu-btn--ghost:hover {
+  border-color: var(--green-deep);
+  color: var(--green-deep);
+  transform: translateY(-1px);
+}
+
+/* ── Error ── */
+.iu-error {
+  font-family: var(--font-body);
+  font-size: 12px;
+  color: #c0392b;
+  margin: 0;
+  display: flex;
+  align-items: flex-start;
+  gap: 5px;
+  line-height: 1.5;
+}
+
+/* ── Responsive ── */
+@media (max-width: 480px) {
+  .iu-dropzone__actions {
+    flex-direction: column;
+    width: 100%;
+  }
+  .iu-btn {
+    justify-content: center;
+    width: 100%;
+  }
+  .iu-dropzone {
+    padding: 24px 16px 20px;
+  }
+}

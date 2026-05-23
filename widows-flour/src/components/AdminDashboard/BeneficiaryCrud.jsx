@@ -1,6 +1,7 @@
 // src/components/AdminDashboard/BeneficiaryCrud.jsx
 import { useState, useEffect, useCallback } from "react";
 import "./Crud.css";
+import ImageUploader from "./ImageUploader";
 
 const API      = import.meta.env.VITE_API_URL ?? "http://127.0.0.1:5000";
 const BASE     = `${API}/beneficiaries`;
@@ -35,7 +36,6 @@ export default function BeneficiaryCrud({ token }) {
 
   const headers = { Authorization: `Bearer ${token}`, "Content-Type": "application/json" };
 
-  // GET /beneficiaries?page=&per_page=&search=&status=
   const load = useCallback(async () => {
     setLoading(true);
     const params = new URLSearchParams({ page, per_page: PER_PAGE });
@@ -68,7 +68,6 @@ export default function BeneficiaryCrud({ token }) {
   const openDelete = (r) => { setSelected(r); setModal("delete"); };
   const closeModal = ()  => { setModal(null); setSelected(null); };
 
-  // POST /beneficiaries/add-beneficiary  |  PUT /beneficiaries/<id>
   const handleSave = async () => {
     if (!form.name.trim()) { setModalErr("Name is required."); return; }
     setSaving(true); setModalErr("");
@@ -86,7 +85,6 @@ export default function BeneficiaryCrud({ token }) {
     setSaving(false);
   };
 
-  // DELETE /beneficiaries/<id>
   const handleDelete = async () => {
     setSaving(true);
     try {
@@ -138,6 +136,7 @@ export default function BeneficiaryCrud({ token }) {
             <table className="crud__table">
               <thead>
                 <tr>
+                  <th>Photo</th>
                   <th>Name</th>
                   <th>Age</th>
                   <th>Location</th>
@@ -149,6 +148,12 @@ export default function BeneficiaryCrud({ token }) {
               <tbody>
                 {rows.map((r) => (
                   <tr key={r.id}>
+                    <td>
+                      {r.profile_image
+                        ? <img src={r.profile_image} alt={r.name} style={{ width: 36, height: 36, borderRadius: "50%", objectFit: "cover", border: "2px solid rgba(0,0,0,0.08)" }} />
+                        : <div style={{ width: 36, height: 36, borderRadius: "50%", background: "rgba(0,0,0,0.07)", display: "flex", alignItems: "center", justifyContent: "center" }}><i className="bi bi-person" style={{ opacity: 0.4 }} /></div>
+                      }
+                    </td>
                     <td><strong>{r.name}</strong></td>
                     <td>{r.age ?? "—"}</td>
                     <td>
@@ -244,14 +249,17 @@ export default function BeneficiaryCrud({ token }) {
                   placeholder="Brief background…"
                 />
               </div>
+
+              {/* ── Cloudinary image uploader ── */}
               <div className="crud__field">
-                <label>Profile Image URL</label>
-                <input
+                <ImageUploader
+                  label="Profile Photo"
                   value={form.profile_image}
-                  onChange={(e) => setForm({ ...form, profile_image: e.target.value })}
-                  placeholder="https://…"
+                  onChange={(url) => setForm({ ...form, profile_image: url })}
+                  folder="beneficiaries"
                 />
               </div>
+
               <div className="crud__field">
                 <label>Status</label>
                 <select value={form.status} onChange={(e) => setForm({ ...form, status: e.target.value })}>

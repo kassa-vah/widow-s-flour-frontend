@@ -2,6 +2,7 @@
 import { useState, useEffect, useCallback } from "react";
 import "./Crud.css";
 import "./BlogCrud.css";
+import ImageUploader from "./ImageUploader";
 
 const API      = import.meta.env.VITE_API_URL ?? "http://127.0.0.1:5000";
 const PER_PAGE = 10;
@@ -63,18 +64,16 @@ export default function BlogCrud({ token }) {
     try {
       const url    = modal === "edit" ? `${API}/blogs/${selected.id}` : `${API}/blogs`;
       const method = modal === "edit" ? "PUT" : "POST";
-
-      // PUT only sends the fields the backend accepts: title, content, cover_image
-      // published is handled separately via /publish and /unpublish
-      const body = modal === "edit"
-        ? { title: form.title, content: form.content, cover_image: form.cover_image || null }
-        : { title: form.title, content: form.content, cover_image: form.cover_image || null };
+      const body   = {
+        title:       form.title,
+        content:     form.content,
+        cover_image: form.cover_image || null,
+      };
 
       const res  = await fetch(url, { method, headers: headers(), body: JSON.stringify(body) });
       const data = await res.json();
       if (!res.ok) { setModalErr(data.error || "Save failed."); setSaving(false); return; }
 
-      // If published state changed on an existing post, fire the correct PATCH endpoint
       if (modal === "edit" && form.published !== selected.published) {
         const action = form.published ? "publish" : "unpublish";
         await fetch(`${API}/blogs/${selected.id}/${action}`, {
@@ -96,13 +95,10 @@ export default function BlogCrud({ token }) {
     setSaving(false);
   };
 
-   const togglePublish = async (r) => {
+  const togglePublish = async (r) => {
     const action = r.published ? "unpublish" : "publish";
     try {
-      await fetch(`${API}/blogs/${r.id}/${action}`, {
-        method: "PATCH",
-        headers: headers(),
-      });
+      await fetch(`${API}/blogs/${r.id}/${action}`, { method: "PATCH", headers: headers() });
       load();
     } catch {}
   };
@@ -158,7 +154,6 @@ export default function BlogCrud({ token }) {
                     <td style={{ maxWidth: 200, fontWeight: 600 }}>{r.title}</td>
                     <td style={{ color: "var(--text-light)", maxWidth: 240 }}>{excerpt(r.content)}</td>
                     <td>
-                      {/* Clicking the badge calls the correct PATCH /publish or /unpublish */}
                       <button
                         className={`crud__badge crud__badge--${r.published ? "green" : "grey"}`}
                         style={{ cursor: "pointer", border: "none", background: "none", padding: 0 }}
@@ -213,14 +208,17 @@ export default function BlogCrud({ token }) {
                   placeholder="Post title…"
                 />
               </div>
+
+              {/* ── Cloudinary image uploader ── */}
               <div className="crud__field">
-                <label>Cover Image URL</label>
-                <input
+                <ImageUploader
+                  label="Cover Image"
                   value={form.cover_image}
-                  onChange={(e) => setForm({ ...form, cover_image: e.target.value })}
-                  placeholder="https://…"
+                  onChange={(url) => setForm({ ...form, cover_image: url })}
+                  folder="blog-covers"
                 />
               </div>
+
               <div className="crud__field">
                 <label>Content *</label>
                 <textarea
