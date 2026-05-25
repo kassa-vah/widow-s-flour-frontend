@@ -5,6 +5,7 @@ import { MdVolunteerActivism }                   from "react-icons/md";
 import { IoClose }                               from "react-icons/io5";
 import { BsArrowDown, BsArrowRight }             from "react-icons/bs";
 import "./OurStory.css";
+import {Link} from "react-router-dom";
 
 /* ── Scripture verses ── */
 const VERSES = [
@@ -333,9 +334,9 @@ export default function OurStory({ onClose }) {
                   Whether you support a specific cause or give to our general fund, your gift
                   goes directly to a family that needs it.
                 </p>
-                <button className="os-cta__btn" onClick={onClose}>
+                <Link to ="/causes" className="os-cta__btn" onClick={onClose}>
                   Support a Cause <BsArrowRight size={16} />
-                </button>
+                </Link>
               </div>
             </Reveal>
           </section>
