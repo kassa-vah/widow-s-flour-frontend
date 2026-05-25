@@ -29,7 +29,6 @@ export function CTASection() {
         }
       );
 
-      // Scroll-linked subtle rotation on bg text
       gsap.to(sectionRef.current.querySelector(".cta-banner__bg-text span"), {
         x: "-10%",
         ease: "none",
@@ -46,7 +45,6 @@ export function CTASection() {
 
   return (
     <section id="donate" className="cta-banner" ref={sectionRef}>
-      {/* Ghost background text */}
       <div className="cta-banner__bg-text">
         <span>Widows Flour</span>
       </div>
@@ -89,15 +87,21 @@ export function Footer() {
   const cols = [
     {
       title: "Platform",
-      links: ["About Us", "Our Causes", "Impact Reports", "News & Blog"],
+      links: [
+        { label: "About Us",        to: "/our-story"          },
+        { label: "Our Causes",      to: "/causes"         },
+        { label: "Impact Reports",  to: "/impact"         },
+        { label: "News & Blog",     to: "/news"           },
+      ],
     },
     {
       title: "Help",
-      links: ["How to Donate", "Volunteer FAQ", "Contact Us", "Privacy Policy"],
-    },
-    {
-      title: "Connect",
-      links: ["Instagram", "Twitter / X", "Facebook", "YouTube"],
+      links: [
+        { label: "How to Donate",   to: "/how-to-donate"         },
+        { label: "Volunteer FAQ",   to: "/volunteer"  },
+        { label: "Contact Us",      to: "/contact"        },
+        { label: "Privacy Policy",  to: "/privacy" },
+      ],
     },
   ];
 
@@ -117,6 +121,7 @@ export function Footer() {
               and their families one sack of flour at a time.
             </p>
 
+            {/* Socials — left for you to wire up */}
             <div className="footer__socials" style={{ marginTop: 24 }}>
               {["𝕏", "f", "▶", "in"].map((s, i) => (
                 <a key={i} href="#" className="footer__social">{s}</a>
@@ -129,12 +134,24 @@ export function Footer() {
             <div key={col.title}>
               <p className="footer__col-title">{col.title}</p>
               <ul className="footer__links">
-                {col.links.map((l) => (
-                  <li key={l}><a href="#">{l}</a></li>
+                {col.links.map(({ label, to }) => (
+                  <li key={label}>
+                    <Link to={to}>{label}</Link>
+                  </li>
                 ))}
               </ul>
             </div>
           ))}
+
+          {/* Connect col — left for you to wire up */}
+          <div>
+            <p className="footer__col-title">Connect</p>
+            <ul className="footer__links">
+              {["Instagram", "Twitter / X", "Facebook", "YouTube"].map((l) => (
+                <li key={l}><a href="#">{l}</a></li>
+              ))}
+            </ul>
+          </div>
         </div>
 
         <div className="footer__bottom">

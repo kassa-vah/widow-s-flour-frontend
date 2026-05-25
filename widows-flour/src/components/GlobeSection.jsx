@@ -2,6 +2,7 @@ import { useEffect, useRef } from 'react';
 import './GlobeSection.css';
 
 import globeVideo from "../assets/globe.mp4";
+import {Link} from "react-router-dom";
 
 export default function GlobeSection() {
   const sectionRef  = useRef(null);
@@ -143,13 +144,13 @@ export default function GlobeSection() {
           and further than we can fully measure.
         </p>
 
-        <a href="#donate" className="btn-primary globe-cta" ref={ctaRef}>
+        <Link to="/donate" className="btn-primary globe-cta" ref={ctaRef}>
           Keep the ripple going
           <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
             <path d="M3 8h10M9 4l4 4-4 4" stroke="currentColor"
               strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round"/>
           </svg>
-        </a>
+        </Link>
       </div>
 
     </section>

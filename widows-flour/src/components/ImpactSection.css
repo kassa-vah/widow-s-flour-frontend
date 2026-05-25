@@ -129,7 +129,7 @@
   
   /* Dark */
   .impact__card--dark {
-    background: var(--text-dark, #1a1a1a);
+    background: black;
     grid-column: 1;
     grid-row: 1;
   }
