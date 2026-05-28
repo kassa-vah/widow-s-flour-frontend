@@ -140,9 +140,7 @@ function TimelineItem({ item, index }) {
   );
 }
 
-/* ══════════════════════════════════════════
-   Main Component
-══════════════════════════════════════════ */
+
 export default function OurStory({ onClose }) {
   const modalRef   = useRef(null);
   const overlayRef = useRef(null);
@@ -165,7 +163,7 @@ export default function OurStory({ onClose }) {
     >
       <div className="os-modal" ref={modalRef}>
 
-        <button className="os-close" onClick={onClose} aria-label="Close story">
+        <button className="os-close" onClick={onClose} aria-label="X">
           <IoClose size={20} />
         </button>
 

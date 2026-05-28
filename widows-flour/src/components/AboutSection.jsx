@@ -3,8 +3,6 @@ import { useEffect, useRef } from "react";
 import { gsap } from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 import "./AboutSection.css";
-
-// ── Image imports (Vite-compatible ES module imports) ──────────
 import imgMain   from "../assets/childrensmiling2.jpg";
 import imgAccent from "../assets/smilingelderly1.jpg";
 import imgAv1    from "../assets/smilingelderly2.jpg";
@@ -13,7 +11,7 @@ import imgAv3    from "../assets/elderly1.jpg";
 
 gsap.registerPlugin(ScrollTrigger);
 
-/* ─── Custom SVG Icons (outline only) ──────────────────────── */
+
 
 const STROKE = "currentColor";
 const SW = { strokeWidth: "1.8" };

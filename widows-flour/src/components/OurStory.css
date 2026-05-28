@@ -59,10 +59,12 @@
   background: rgba(255,255,255,0.3);
   transform: rotate(90deg);
 }
+.os-close svg {
+  display: block;
+  flex-shrink: 0;
+  stroke: #fff;
+}
 
-/* ════════════════════════════════
-   HERO
-════════════════════════════════ */
 .os-hero {
   position: relative;
   background: var(--green-deep);

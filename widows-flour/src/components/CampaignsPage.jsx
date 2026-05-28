@@ -172,11 +172,11 @@ function DonationModal({ campaign, onClose }) {
       onClick={(e) => { if (e.target === overlayRef.current) onClose(); }}
     >
       <div className="cp-modal">
-        <button className="cp-modal__close" onClick={onClose} aria-label="Close">
-          <svg width="18" height="18" viewBox="0 0 18 18" fill="none">
-            <path d="M3 3l12 12M15 3L3 15" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" />
-          </svg>
-        </button>
+      <button className="cp-modal__close" onClick={onClose} aria-label="X">
+        <svg width="18" height="18" viewBox="0 0 18 18" fill="none">
+          <path d="M3 3l12 12M15 3L3 15" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" />
+        </svg>
+      </button>
 
         <div className="cp-modal__header">
           {isGeneral ? (
