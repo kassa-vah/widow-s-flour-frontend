@@ -127,15 +127,7 @@ const Spinner = () => (
   </svg>
 );
 
-/* ══════════════════════════════════════════
-   Main component
 
-   Props:
-   - campaignId   : number | null | undefined
-                    Pass null/undefined for a general donation (no specific campaign).
-   - campaignName : string — display name shown in the form and success screen.
-   - onSuccess    : callback fired after a successful donation.
-══════════════════════════════════════════ */
 export default function DonationMethods({ campaignId = null, campaignName = "General Fund", onSuccess }) {
   const [method, setMethod]         = useState("mpesa");
   const [amount, setAmount]         = useState("");

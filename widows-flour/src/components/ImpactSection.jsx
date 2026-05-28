@@ -173,7 +173,7 @@ export default function ImpactSection() {
             <span className="impact__number" data-count="38">38</span>
             <span className="impact__card-label">Communities Reached</span>
             <span className="impact__card-desc">
-              From rural outposts to urban centers — no widow left behind.
+              From rural outposts to urban centers — no elder is left behind.
             </span>
           </div>
 

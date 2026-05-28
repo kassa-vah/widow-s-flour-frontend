@@ -66,7 +66,7 @@ export function CTASection() {
 
           <p className="cta-banner__sub">
             Every sack of flour is a promise. Every donation is an act of love.
-            Stand with widows and their children today.
+            Stand with underprivileged seniors and their children today.
           </p>
 
           <div className="cta-banner__actions">
@@ -117,7 +117,7 @@ export function Footer() {
 
             <p>
               <strong className="hs-reveal">Widows Flour</strong><br />
-              A movement of grace, provision, and community — nourishing widows
+              A movement of grace, provision, and community — nourishing elderly
               and their families one sack of flour at a time.
             </p>
 

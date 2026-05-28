@@ -1,25 +1,3 @@
-// src/components/AdminDashboard/ImageUploader.jsx
-//
-// Drop-in Cloudinary uploader with:
-//   • Click-to-browse file picker
-//   • Camera capture (mobile)
-//   • Drag-and-drop
-//   • Live preview + remove
-//   • Upload progress bar
-//   • Falls back to URL paste if Cloudinary is not configured
-//
-// Env vars needed in .env:
-//   VITE_CLOUDINARY_CLOUD_NAME=your_cloud_name
-//   VITE_CLOUDINARY_UPLOAD_PRESET=your_unsigned_preset
-//
-// Usage:
-//   <ImageUploader
-//     value={form.profile_image}          // current URL (string | "")
-//     onChange={(url) => setForm({ ...form, profile_image: url })}
-//     label="Profile Image"               // optional
-//     accept="image/*"                    // optional
-//     folder="beneficiaries"              // optional Cloudinary folder
-//   />
 
 import { useState, useRef, useCallback } from "react";
 import "./ImageUploader.css";
@@ -39,7 +17,7 @@ export default function ImageUploader({
   folder   = "uploads",
 }) {
   const [dragging,   setDragging]   = useState(false);
-  const [progress,   setProgress]   = useState(null);   // 0-100 | null
+  const [progress,   setProgress]   = useState(null);   
   const [error,      setError]      = useState("");
   const [urlMode,    setUrlMode]    = useState(false);
   const [urlInput,   setUrlInput]   = useState(value || "");
@@ -47,10 +25,10 @@ export default function ImageUploader({
   const fileRef   = useRef(null);
   const cameraRef = useRef(null);
 
-  // ── upload a File object to Cloudinary ───────────────────────────────────
+  // upload a File object to Cloudinary 
   const uploadFile = useCallback(async (file) => {
     if (!UPLOAD_URL) {
-      setError("Cloudinary is not configured. Add VITE_CLOUDINARY_CLOUD_NAME and VITE_CLOUDINARY_UPLOAD_PRESET to your .env file, or paste a URL below.");
+      setError("Cloudinary is not configured. ");
       setUrlMode(true);
       return;
     }
@@ -72,13 +50,13 @@ export default function ImageUploader({
     fd.append("upload_preset",  UPLOAD_PRESET);
     fd.append("folder",         folder);
 
-    // XMLHttpRequest gives us progress events
+    
     const xhr = new XMLHttpRequest();
     xhr.open("POST", UPLOAD_URL, true);
 
     xhr.upload.onprogress = (e) => {
       if (e.lengthComputable) {
-        setProgress(Math.round((e.loaded / e.total) * 90)); // cap at 90 until response
+        setProgress(Math.round((e.loaded / e.total) * 90)); 
       }
     };
 
@@ -105,7 +83,7 @@ export default function ImageUploader({
     xhr.send(fd);
   }, [folder, onChange]);
 
-  // ── drag handlers ────────────────────────────────────────────────────────
+  // ── drag handlers 
   const onDragOver  = (e) => { e.preventDefault(); setDragging(true);  };
   const onDragLeave = ()  => setDragging(false);
   const onDrop      = (e) => {
@@ -134,7 +112,7 @@ export default function ImageUploader({
     setUrlMode(false);
   };
 
-  // ── render ───────────────────────────────────────────────────────────────
+  // ── render 
   return (
     <div className="iu-root">
       {label && <p className="iu-label">{label}</p>}

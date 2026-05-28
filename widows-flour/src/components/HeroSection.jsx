@@ -201,7 +201,7 @@ export default function HeroSection() {
           <p className="hero__overlay-eyebrow hs-reveal">It's not just about smiles</p>
           <h2 className="hero__overlay-headline">
             <span className="hs-reveal">Behind every smile</span>
-            <span className="hs-reveal">is a mother who <em>fought</em></span>
+            <span className="hs-reveal">is a parent who <em>fought</em></span>
             <span className="hs-reveal">to provide  for their families.</span>
           </h2>
           <p className="hero__overlay-sub hs-reveal">
@@ -240,7 +240,7 @@ export default function HeroSection() {
           </div>
 
           <p className="hero__sub" ref={subRef}>
-            We believe every widow deserves dignity, warmth, and provision.
+            We believe every elderly deserves dignity, warmth, and provision.
             Join us as we fill homes with meals, Hope, and Love.
           </p>
 

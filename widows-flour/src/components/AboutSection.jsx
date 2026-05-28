@@ -5,7 +5,7 @@ import { ScrollTrigger } from "gsap/ScrollTrigger";
 import "./AboutSection.css";
 
 // ── Image imports (Vite-compatible ES module imports) ──────────
-import imgMain   from "../assets/smilingchildren1.jpg";
+import imgMain   from "../assets/childrensmiling2.jpg";
 import imgAccent from "../assets/smilingelderly1.jpg";
 import imgAv1    from "../assets/smilingelderly2.jpg";
 import imgAv2    from "../assets/smilingchild1.jpg";
@@ -183,9 +183,9 @@ export default function AboutSection() {
               Who We Are &amp;<br />What Drives Us
             </h2>
             <p className="about__body">
-              Widows Flour was born from a simple conviction — that no widow should
+              Widows Flour was born from a simple conviction — that no elderly should
               face an empty table alone. We mobilize communities, donors, and
-              volunteers to deliver flour, food, and fellowship to women who've lost
+              volunteers to deliver flour, food, and fellowship to vulnerable elderly who've lost
               their provider. Every sack of flour is a message: you are seen,
               you are loved, you are not forgotten.
             </p>

@@ -15,7 +15,7 @@ const cards = [
   {
     category: "Serve",
     title: "Volunteer",
-    desc: "Make a difference by giving your time and skills to widows in need. Join distribution drives, mentorship programs, and cooking events.",
+    desc: "Make a difference by giving your time and skills to vulnerable elderly in need. Join distribution drives, mentorship programs, and cooking events.",
     cta: "Be a Volunteer",
     tags: ["Food Drives", "Mentorship"],
     img: imgVolunteer,
@@ -23,7 +23,7 @@ const cards = [
   {
     category: "Give",
     title: "Donate",
-    desc: "A financial gift — no matter the size — provides flour, food, and dignity to a widow's home. 100% goes to the cause.",
+    desc: "A financial gift — no matter the size — provides flour, food, and dignity to a strickened home. 100% goes to the cause.",
     cta: "Donate Today",
     tags: ["Transparent", "Verified"],
     img: imgDonate,

@@ -149,12 +149,7 @@ function ExpandableText({ text }) {
   );
 }
 
-/* ── Donation Modal ──
- *
- * Handles both campaign donations and general donations.
- * When campaign is null, renders a general donation form with
- * no campaign_id sent to the backend.
- */
+
 function DonationModal({ campaign, onClose }) {
   const overlayRef = useRef(null);
 
@@ -189,7 +184,7 @@ function DonationModal({ campaign, onClose }) {
               <span className="cp-modal__pill">General Donation</span>
               <h3 className="cp-modal__campaign-title">Support Our Work</h3>
               <p className="cp-modal__campaign-goal">
-                Your gift goes where it's needed most — site upkeep, urgent needs, and underfunded causes.
+                Your gift goes where it's needed most — urgent needs, and underfunded causes.
               </p>
             </>
           ) : (
@@ -283,9 +278,7 @@ function AutoProgressBar({ duration, running, onComplete }) {
   );
 }
 
-/* ══════════════════════════════════════════
-   Main Page
-══════════════════════════════════════════ */
+
 const PAGE_SIZE     = 5;
 const AUTO_INTERVAL = 30000;
 
@@ -294,9 +287,7 @@ export default function CampaignsPage() {
   const [loading, setLoading]       = useState(true);
   const [error, setError]           = useState(null);
 
-  // null  → modal closed
-  // false → general donation modal (no campaign)
-  // obj   → campaign-specific donation modal
+
   const [activeCampaign, setActive] = useState(null);
 
   const [filter, setFilter]   = useState("all");
@@ -343,8 +334,7 @@ export default function CampaignsPage() {
 
   useEffect(() => { setPage(0); setAutoKey(k => k + 1); }, [filter]);
 
-  /* ── open general donation modal ── */
-  const openGeneralDonation = () => setActive(false); // false = general, not a campaign
+  const openGeneralDonation = () => setActive(false); 
 
   return (
     <main className="cp-page">

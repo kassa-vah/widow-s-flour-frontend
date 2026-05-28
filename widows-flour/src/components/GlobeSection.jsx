@@ -17,8 +17,7 @@ export default function GlobeSection() {
     const v = videoRef.current;
     if (!v) return;
 
-    // These attributes must also be set in JS for iOS Safari —
-    // having them only in JSX is sometimes not enough.
+
     v.muted       = true;
     v.loop        = true;
     v.playsInline = true;
@@ -47,7 +46,6 @@ export default function GlobeSection() {
       v.addEventListener('canplay', tryPlay, { once: true });
     }
 
-    // Also retry when page becomes visible again (tab switch / app switch)
     const onVisible = () => {
       if (!document.hidden) v.play().catch(() => {});
     };
@@ -110,11 +108,6 @@ export default function GlobeSection() {
     <section className="globe-section" ref={sectionRef}>
 
       <div className="globe-video-wrap">
-        {/*
-          All four attributes must be present as both JSX props AND
-          set imperatively in useEffect — iOS Safari requires both.
-          autoPlay (camelCase) is the React prop for the autoplay attribute.
-        */}
         <video
           ref={videoRef}
           className="globe-video"

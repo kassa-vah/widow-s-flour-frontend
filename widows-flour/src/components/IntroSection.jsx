@@ -53,13 +53,13 @@ export default function IntroSection() {
 
             <div className="intro__content">
               <h1 className="intro__headline">
-                <span className="intro__line">Every widow</span>
+                <span className="intro__line">Every  vulnerable Elderly</span>
                 <span className="intro__line">deserves a</span>
                 <span className="intro__line intro__line--italic">full table.</span>
               </h1>
 
               <p className="intro__sub">
-                A platform of grace, flour, and community — feeding widows
+                A platform of grace, flour, and community — feeding the vulnerable
                 and their families one gift at a time.
               </p>
             </div>
