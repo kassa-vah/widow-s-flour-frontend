@@ -9,7 +9,7 @@ import { Link } from "react-router-dom";
 import imgElderly1 from "../assets/smilingelderly1.jpg";
 import imgChild1   from "../assets/smilingchild1.jpg";
 import imgElderly2 from "../assets/smilingelderly2.jpg";
-import imgLogo     from "../assets/logo2.jpeg";
+import imgLogo     from "../assets/blacklogo.jpeg";
 
 gsap.registerPlugin(ScrollTrigger);
 

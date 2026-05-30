@@ -2,7 +2,7 @@
 import { useState } from "react";
 import "bootstrap-icons/font/bootstrap-icons.css";
 import "./AdminDashboard.css";
-import imgLogo from "../../assets/logo2.jpeg";
+import imgLogo from "../../assets/blacklogo.jpeg";
 
 import BeneficiaryCrud from "./BeneficiaryCrud";
 import CampaignCrud    from "./CampaignCrud";

@@ -11,7 +11,7 @@ import {
   FaChevronDown,
 } from "react-icons/fa";
 import "./Navbar.css";
-import imgLogo from "../assets/logo3.jpeg";
+import imgLogo from "../assets/whitelogo.jpeg";
 import DonationMethods from "./DonationMethods";
 
 const PAGES_LINKS = [

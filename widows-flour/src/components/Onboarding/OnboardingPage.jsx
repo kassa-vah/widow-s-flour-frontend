@@ -1,6 +1,7 @@
 // src/components/Onboarding/OnboardingPage.jsx
 import { useState, useEffect } from "react";
 import "./Onboarding.css";
+import imgLogo from "../../assets/whitelogo.jpeg";
 import WelcomeStep from "./steps/WelcomeStep";
 import DashboardOverviewStep from "./steps/DashboardOverviewStep";
 import AdminGuidanceStep from "./steps/AdminGuidanceStep";
@@ -11,20 +12,20 @@ import ResponsibilityStep from "./steps/ResponsibilityStep";
 import OnboardingSuccess from "./OnboardingSuccess";
 
 const STEPS = [
-  { id: "welcome",    label: "Welcome",          icon: "bi-house-heart" },
-  { id: "overview",   label: "Dashboard Guide",  icon: "bi-grid-1x2" },
-  { id: "guidance",   label: "How-To Guide",     icon: "bi-journal-text" },
-  { id: "integrity",  label: "Data Integrity",   icon: "bi-shield-check" },
+  { id: "welcome",    label: "Welcome",            icon: "bi-house-heart" },
+  { id: "overview",   label: "Dashboard Guide",    icon: "bi-grid-1x2" },
+  { id: "guidance",   label: "How-To Guide",       icon: "bi-journal-text" },
+  { id: "integrity",  label: "Data Integrity",     icon: "bi-shield-check" },
   { id: "biodata",    label: "Biodata Collection", icon: "bi-person-lines-fill" },
-  { id: "profile",    label: "Profile System",   icon: "bi-bar-chart-steps" },
-  { id: "pledge",     label: "My Pledge",        icon: "bi-patch-check" },
+  { id: "profile",    label: "Profile System",     icon: "bi-bar-chart-steps" },
+  { id: "pledge",     label: "My Pledge",          icon: "bi-patch-check" },
 ];
 
 const STORAGE_KEY = "wf_onboarding_state";
 
 export default function OnboardingPage({ adminName = "Administrator", onComplete }) {
-  const [currentStep, setCurrentStep] = useState(0);
-  const [completed,   setCompleted]   = useState(false);
+  const [currentStep, setCurrentStep]   = useState(0);
+  const [completed,   setCompleted]     = useState(false);
   const [visitedSteps, setVisitedSteps] = useState(new Set([0]));
 
   // Restore progress from localStorage
@@ -52,14 +53,8 @@ export default function OnboardingPage({ adminName = "Administrator", onComplete
     setVisitedSteps(prev => new Set([...prev, idx]));
   };
 
-  const next = () => {
-    if (currentStep < STEPS.length - 1) goTo(currentStep + 1);
-  };
-
-  const prev = () => {
-    if (currentStep > 0) goTo(currentStep - 1);
-  };
-
+  const next      = () => { if (currentStep < STEPS.length - 1) goTo(currentStep + 1); };
+  const prev      = () => { if (currentStep > 0) goTo(currentStep - 1); };
   const skipToEnd = () => goTo(STEPS.length - 1);
 
   const handleFinish = () => {
@@ -72,11 +67,14 @@ export default function OnboardingPage({ adminName = "Administrator", onComplete
 
   const progress = ((currentStep + 1) / STEPS.length) * 100;
 
-  const stepProps = { next, prev, skipToEnd, adminName, currentStep, totalSteps: STEPS.length };
+  const stepProps = {
+    next, prev, skipToEnd, adminName,
+    currentStep, totalSteps: STEPS.length,
+  };
 
   const renderStep = () => {
     switch (STEPS[currentStep].id) {
-      case "welcome":   return <WelcomeStep     {...stepProps} />;
+      case "welcome":   return <WelcomeStep           {...stepProps} />;
       case "overview":  return <DashboardOverviewStep {...stepProps} />;
       case "guidance":  return <AdminGuidanceStep     {...stepProps} />;
       case "integrity": return <DataIntegrityStep     {...stepProps} />;
@@ -89,53 +87,55 @@ export default function OnboardingPage({ adminName = "Administrator", onComplete
 
   return (
     <div className="ob__shell">
-      {/* ── Sidebar ── */}
-      <aside className="ob__sidebar">
-        <div className="ob__sidebar-brand">
-          <div className="ob__brand-icon">🌾</div>
+
+      {/* ── Top header bar (replaces sidebar) ── */}
+      <header className="ob__topbar">
+        {/* Brand */}
+        <div className="ob__topbar-brand">
+          <img
+            src={imgLogo}
+            alt="Widows Flour logo"
+            className="ob__brand-logo"
+          />
           <div>
             <div className="ob__brand-name">Widows Flour</div>
             <div className="ob__brand-sub">Admin Onboarding</div>
           </div>
         </div>
 
-        <div className="ob__sidebar-progress-label">
-          Your progress <span className="ob__progress-pct">{Math.round(progress)}%</span>
-        </div>
-        <div className="ob__progress-track">
-          <div className="ob__progress-fill" style={{ width: `${progress}%` }} />
+        {/* Progress bar */}
+        <div className="ob__topbar-progress">
+          <span className="ob__topbar-progress-label">
+            Progress <span className="ob__topbar-progress-pct">{Math.round(progress)}%</span>
+          </span>
+          <div className="ob__progress-track">
+            <div className="ob__progress-fill" style={{ width: `${progress}%` }} />
+          </div>
         </div>
 
-        <nav className="ob__sidebar-nav">
-          {STEPS.map((s, i) => {
-            const isActive   = i === currentStep;
-            const isVisited  = visitedSteps.has(i) && i !== currentStep;
-            const isDone     = i < currentStep;
-            return (
-              <button
-                key={s.id}
-                className={`ob__nav-item ${isActive ? "ob__nav-item--active" : ""} ${isDone || isVisited ? "ob__nav-item--visited" : ""}`}
-                onClick={() => goTo(i)}
-              >
-                <span className="ob__nav-dot">
-                  {isDone
-                    ? <i className="bi bi-check-lg" />
-                    : <span className="ob__nav-num">{i + 1}</span>
-                  }
-                </span>
-                <span className="ob__nav-label">{s.label}</span>
-                {isActive && <span className="ob__nav-arrow">›</span>}
-              </button>
-            );
-          })}
-        </nav>
+        {/* Skip button */}
+        <button className="ob__topbar-skip" onClick={skipToEnd}>
+          <i className="bi bi-skip-end" /> Skip to pledge
+        </button>
+      </header>
 
-        <div className="ob__sidebar-footer">
-          <button className="ob__skip-btn" onClick={skipToEnd}>
-            <i className="bi bi-skip-end" /> Skip to pledge
-          </button>
-        </div>
-      </aside>
+      {/* ── Step indicator dots ── */}
+      <div className="ob__step-dots">
+        {STEPS.map((_, i) => (
+          <button
+            key={i}
+            className={`ob__dot ${
+              i === currentStep
+                ? "ob__dot--active"
+                : i < currentStep
+                ? "ob__dot--done"
+                : ""
+            }`}
+            onClick={() => goTo(i)}
+            aria-label={`Go to step ${i + 1}`}
+          />
+        ))}
+      </div>
 
       {/* ── Main content ── */}
       <main className="ob__main">
@@ -148,6 +148,7 @@ export default function OnboardingPage({ adminName = "Administrator", onComplete
           Step {currentStep + 1} of {STEPS.length} — {STEPS[currentStep].label}
         </div>
       </main>
+
     </div>
   );
 }
