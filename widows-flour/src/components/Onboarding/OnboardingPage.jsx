@@ -48,6 +48,11 @@ export default function OnboardingPage({ adminName = "Administrator", onComplete
     );
   }, [currentStep, visitedSteps]);
 
+  // Scroll to top on every step change
+  useEffect(() => {
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  }, [currentStep]);
+
   const goTo = (idx) => {
     setCurrentStep(idx);
     setVisitedSteps(prev => new Set([...prev, idx]));
