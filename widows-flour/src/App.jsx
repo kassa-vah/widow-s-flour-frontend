@@ -30,13 +30,14 @@ import VolunteerFAQPage    from "./components/pages/VolunteerFAQPage";
 import ContactPage         from "./components/pages/ContactPage";
 import PrivacyPolicyPage   from "./components/pages/PrivacyPolicyPage";
 import StoryDetail         from "./components/StoryDetail";
-
-// ── Our Story modal page ──
 import OurStory            from "./components/OurStory";
+
+// ── Onboarding ──
+import OnboardingPage      from "./components/Onboarding/OnboardingPage";
+import { useOnboarding }   from "./hooks/useOnboarding";
 
 const API = import.meta.env.VITE_API_URL ?? "http://127.0.0.1:5000";
 
-// ── Read localStorage synchronously so initial state is correct ──
 function getStoredSession() {
   try {
     const token = localStorage.getItem("fb_token");
@@ -56,7 +57,6 @@ function PublicOnlyRoute({ admin, token, children }) {
   return children;
 }
 
-// ── Reusable shell: Navbar + page content + Footer ──
 function PageShell({ children }) {
   return (
     <>
@@ -67,19 +67,14 @@ function PageShell({ children }) {
   );
 }
 
-// ── Standalone /donate shell ──
 function DonatePage() {
   return (
     <PageShell>
       <section
         style={{
-          minHeight:      "100vh",
-          display:        "flex",
-          flexDirection:  "column",
-          alignItems:     "center",
-          justifyContent: "center",
-          padding:        "120px 24px 80px",
-          background:     "var(--off-white)",
+          minHeight: "100vh", display: "flex", flexDirection: "column",
+          alignItems: "center", justifyContent: "center",
+          padding: "120px 24px 80px", background: "var(--off-white)",
         }}
       >
         <DonationMethods />
@@ -88,8 +83,6 @@ function DonatePage() {
   );
 }
 
-// ── Our Story standalone page (wraps the modal component) ──
-// Renders the OurStory modal full-page; "Close" navigates back to home.
 function OurStoryPage() {
   const navigate = useNavigate();
   return (
@@ -97,6 +90,32 @@ function OurStoryPage() {
       <Navbar />
       <OurStory onClose={() => navigate("/")} />
     </>
+  );
+}
+
+// ── Admin area with onboarding gate ──────────────────────────────────────────
+// First-time admins (or those who haven't completed onboarding) see the
+// 7-step onboarding wizard before the dashboard renders.
+// Completion is persisted in localStorage via the useOnboarding hook.
+function AdminArea({ admin, token, onLogout }) {
+  const { needsOnboarding, completeOnboarding } = useOnboarding();
+  const adminName = admin?.name || "Administrator";
+
+  if (needsOnboarding) {
+    return (
+      <OnboardingPage
+        adminName={adminName}
+        onComplete={completeOnboarding}
+      />
+    );
+  }
+
+  return (
+    <AdminDashboard
+      admin={admin}
+      token={token}
+      onLogout={onLogout}
+    />
   );
 }
 
@@ -112,7 +131,6 @@ export default function App() {
   const [session, setSession]       = useState(getStoredSession);
   const { admin, token } = session;
 
-  // ── Navigate AFTER React commits the new session state ──
   useEffect(() => {
     if (pendingNav) {
       navigate(pendingNav, { replace: true });
@@ -120,7 +138,6 @@ export default function App() {
     }
   }, [session, pendingNav, navigate]);
 
-  // ── Inactivity logout ──
   const resetInactivityTimer = () => {
     if (inactivityRef.current) clearTimeout(inactivityRef.current);
     inactivityRef.current = setTimeout(() => handleLogout(true), INACTIVITY_MS);
@@ -138,7 +155,6 @@ export default function App() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [admin, token]);
 
-  // ── Login ──
   const handleLogin = (adminData, fbToken) => {
     localStorage.setItem("fb_token", fbToken);
     localStorage.setItem("admin",    JSON.stringify(adminData));
@@ -146,25 +162,22 @@ export default function App() {
     setPendingNav("/admin-dashboard");
   };
 
-  // ── Logout ──
   const handleLogout = async (silent = false) => {
     const currentToken = localStorage.getItem("fb_token");
     localStorage.removeItem("fb_token");
     localStorage.removeItem("admin");
     setSession({ admin: null, token: null });
     setPendingNav("/");
-
     if (currentToken) {
       try {
         await fetch(`${API}/auth/logout`, {
-          method:  "POST",
+          method: "POST",
           headers: { Authorization: `Bearer ${currentToken}` },
         });
-      } catch { /* swallow — client is already logged out */ }
+      } catch { /* swallow */ }
     }
   };
 
-  // ── Custom cursor (home page only) ──
   useEffect(() => {
     const cursor   = cursorRef.current;
     const follower = followerRef.current;
@@ -173,8 +186,7 @@ export default function App() {
     let mouseX = 0, mouseY = 0, fX = 0, fY = 0, rafId;
 
     const onMove = (e) => {
-      mouseX = e.clientX;
-      mouseY = e.clientY;
+      mouseX = e.clientX; mouseY = e.clientY;
       gsap.to(cursor, { x: mouseX - 6, y: mouseY - 6, duration: 0.06, ease: "none" });
     };
 
@@ -206,7 +218,6 @@ export default function App() {
       <Toaster position="top-right" />
       <Routes>
 
-        {/* ── Public home ── */}
         <Route
           path="/"
           element={
@@ -232,41 +243,21 @@ export default function App() {
           }
         />
 
-        {/* ── Our Story page ── */}
         <Route path="/our-story" element={<OurStoryPage />} />
 
-        {/* ── All causes / campaigns ── */}
-        <Route
-          path="/causes"
-          element={
-            <PageShell>
-              <CampaignsPage />
-            </PageShell>
-          }
-        />
+        <Route path="/causes" element={<PageShell><CampaignsPage /></PageShell>} />
 
-        {/* ── Standalone donate (no campaign) ── */}
         <Route path="/donate"             element={<DonatePage />} />
-
-        {/* ── Donate with a pre-selected campaign ── */}
         <Route path="/donate/:campaignId" element={<DonatePage />} />
 
-        {/* ── News & stories listing (public) ── */}
-        <Route path="/news" element={<PageShell><NewsPage /></PageShell>} />
+        <Route path="/news"        element={<PageShell><NewsPage /></PageShell>} />
+        <Route path="/stories/:id" element={<PageShell><StoryDetail /></PageShell>} />
 
-        {/* ── Single story detail page ── */}
-        <Route
-          path="/stories/:id"
-          element={<PageShell><StoryDetail /></PageShell>}
-        />
-
-        {/* ── Other pages ── */}
         <Route path="/how-to-donate" element={<PageShell><HowToDonatePage /></PageShell>} />
         <Route path="/volunteer"     element={<PageShell><VolunteerFAQPage /></PageShell>} />
         <Route path="/contact"       element={<PageShell><ContactPage /></PageShell>} />
         <Route path="/privacy"       element={<PageShell><PrivacyPolicyPage /></PageShell>} />
 
-        {/* ── Login ── */}
         <Route
           path="/login"
           element={
@@ -276,7 +267,6 @@ export default function App() {
           }
         />
 
-        {/* ── Register ── */}
         <Route
           path="/register"
           element={
@@ -286,15 +276,13 @@ export default function App() {
           }
         />
 
-        {/* ── Password reset ── */}
         <Route path="/reset-password" element={<ResetPasswordPage />} />
 
-        {/* ── Admin dashboard ── */}
         <Route
           path="/admin-dashboard"
           element={
             <PrivateRoute admin={admin} token={token}>
-              <AdminDashboard
+              <AdminArea
                 admin={admin}
                 token={token}
                 onLogout={() => handleLogout(false)}
@@ -303,7 +291,6 @@ export default function App() {
           }
         />
 
-        {/* ── Catch-all → home ── */}
         <Route path="*" element={<Navigate to="/" replace />} />
 
       </Routes>

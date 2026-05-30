@@ -41,10 +41,17 @@ function BeneficiaryPicker({ beneficiaries, value, onChange, loading }) {
   const searchRef           = useRef(null);
 
   const selected = beneficiaries.find(b => String(b.id) === String(value));
-  const filtered = beneficiaries.filter(b =>
-    b.name.toLowerCase().includes(search.toLowerCase()) ||
-    (b.location || "").toLowerCase().includes(search.toLowerCase())
-  );
+
+  // API now returns full_name; fall back to name for safety
+  const displayName = (b) => b.full_name || b.name || "Unknown";
+  const displayLocation = (b) => b.location?.county || b.location || "";
+
+  const filtered = beneficiaries.filter(b => {
+    const name = displayName(b).toLowerCase();
+    const loc  = displayLocation(b).toLowerCase();
+    const q    = search.toLowerCase();
+    return name.includes(q) || loc.includes(q);
+  });
 
   useEffect(() => {
     if (!open) return;
@@ -73,7 +80,7 @@ function BeneficiaryPicker({ beneficiaries, value, onChange, loading }) {
       >
         <i className="bi bi-person-heart ben-picker__trigger-icon" />
         <span className="ben-picker__trigger-label">
-          {loading ? "Loading beneficiaries…" : selected ? selected.name : "Select a beneficiary…"}
+          {loading ? "Loading beneficiaries…" : selected ? displayName(selected) : "Select a beneficiary…"}
         </span>
         <div className="ben-picker__trigger-right">
           {selected && (
@@ -120,14 +127,14 @@ function BeneficiaryPicker({ beneficiaries, value, onChange, loading }) {
                 >
                   <div className="ben-picker__item-avatar">
                     {b.profile_image
-                      ? <img src={b.profile_image} alt={b.name} />
+                      ? <img src={b.profile_image} alt={displayName(b)} />
                       : <i className="bi bi-person-fill" />}
                   </div>
                   <div className="ben-picker__item-info">
-                    <span className="ben-picker__item-name">{b.name}</span>
-                    {b.location && (
+                    <span className="ben-picker__item-name">{displayName(b)}</span>
+                    {displayLocation(b) && (
                       <span className="ben-picker__item-meta">
-                        <i className="bi bi-geo-alt" /> {b.location}
+                        <i className="bi bi-geo-alt" /> {displayLocation(b)}
                       </span>
                     )}
                   </div>
@@ -412,7 +419,6 @@ export default function CampaignCrud({ token }) {
                 </div>
               </div>
 
-              {/* ── Public causes-page display fields ── */}
               <div className="crud__section-divider"><span>Public Causes Page</span></div>
               <p className="crud__section-hint">
                 These fields control how this campaign appears on the public <em>/causes</em> page.
@@ -435,7 +441,6 @@ export default function CampaignCrud({ token }) {
                 </div>
               </div>
 
-              {/* ── Cloudinary image uploader ── */}
               <div className="crud__field">
                 <ImageUploader
                   label={<>Hero Image <span style={{ color: "var(--text-light)", fontWeight: 400 }}>(optional — defaults to beneficiary photo)</span></>}
