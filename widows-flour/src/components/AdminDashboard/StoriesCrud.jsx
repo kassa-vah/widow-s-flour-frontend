@@ -4,7 +4,7 @@ import {
   FiPlus, FiEdit2, FiTrash2, FiSearch, FiX,
   FiEye, FiEyeOff, FiStar, FiLoader,
 } from "react-icons/fi";
-import "./StoriesCrud.css";
+import "./Crud.css";
 import ImageUploader from "./ImageUploader";
 
 const API = import.meta.env.VITE_API_URL ?? "http://127.0.0.1:5000";
@@ -23,9 +23,20 @@ function fmtDate(iso) {
   });
 }
 
-function CategoryPill({ category }) {
+// Maps category to a crud__badge colour modifier
+function categoryBadgeClass(category) {
+  const map = {
+    stories:   "green",
+    updates:   "green",
+    education: "yellow",
+    events:    "blue",
+  };
+  return map[category?.toLowerCase()] ?? "grey";
+}
+
+function CategoryBadge({ category }) {
   return (
-    <span className={`sc-cat-pill sc-cat-pill--${category?.toLowerCase()}`}>
+    <span className={`crud__badge crud__badge--${categoryBadgeClass(category)}`}>
       {category}
     </span>
   );
@@ -33,15 +44,18 @@ function CategoryPill({ category }) {
 
 function Modal({ title, onClose, children }) {
   return (
-    <div className="sc-modal-backdrop" onClick={(e) => e.target === e.currentTarget && onClose()}>
-      <div className="sc-modal">
-        <div className="sc-modal__header">
-          <h2 className="sc-modal__title">{title}</h2>
-          <button className="sc-modal__close" onClick={onClose} aria-label="Close">
+    <div
+      className="crud__modal-backdrop"
+      onClick={(e) => e.target === e.currentTarget && onClose()}
+    >
+      <div className="crud__modal">
+        <div className="crud__modal-header">
+          <h2 className="crud__modal-title">{title}</h2>
+          <button className="crud__modal-close" onClick={onClose} aria-label="Close">
             <FiX size={18} />
           </button>
         </div>
-        <div className="sc-modal__body">{children}</div>
+        <div className="crud__modal-body">{children}</div>
       </div>
     </div>
   );
@@ -52,11 +66,14 @@ function StoryForm({ initial, onSave, onCancel, loading }) {
   const set = (k, v) => setForm(f => ({ ...f, [k]: v }));
 
   return (
-    <div className="sc-form">
-      <div className="sc-form__field">
-        <label className="sc-form__label">Title <span className="sc-form__required">*</span></label>
+    <div style={{ display: "flex", flexDirection: "column", gap: 0 }}>
+
+      {/* Title */}
+      <div className="crud__field">
+        <label>
+          Title <span style={{ color: "#e74c3c" }}>*</span>
+        </label>
         <input
-          className="sc-form__input"
           type="text"
           value={form.title}
           onChange={e => set("title", e.target.value)}
@@ -64,21 +81,22 @@ function StoryForm({ initial, onSave, onCancel, loading }) {
         />
       </div>
 
-      <div className="sc-form__row">
-        <div className="sc-form__field">
-          <label className="sc-form__label">Category <span className="sc-form__required">*</span></label>
+      {/* Category + Read Time */}
+      <div className="crud__fields-row">
+        <div className="crud__field">
+          <label>
+            Category <span style={{ color: "#e74c3c" }}>*</span>
+          </label>
           <select
-            className="sc-form__input sc-form__select"
             value={form.category}
             onChange={e => set("category", e.target.value)}
           >
             {CATEGORIES.map(c => <option key={c}>{c}</option>)}
           </select>
         </div>
-        <div className="sc-form__field">
-          <label className="sc-form__label">Read Time</label>
+        <div className="crud__field">
+          <label>Read Time</label>
           <input
-            className="sc-form__input"
             type="text"
             value={form.read_time}
             onChange={e => set("read_time", e.target.value)}
@@ -87,13 +105,15 @@ function StoryForm({ initial, onSave, onCancel, loading }) {
         </div>
       </div>
 
-      <div className="sc-form__field">
-        <label className="sc-form__label">
-          Excerpt <span className="sc-form__required">*</span>
-          <span className="sc-form__hint"> — shown on the news card</span>
+      {/* Excerpt */}
+      <div className="crud__field">
+        <label>
+          Excerpt <span style={{ color: "#e74c3c" }}>*</span>{" "}
+          <span style={{ fontWeight: 400, textTransform: "none", color: "#9aab8a" }}>
+            — shown on the news card
+          </span>
         </label>
         <textarea
-          className="sc-form__input sc-form__textarea"
           rows={3}
           value={form.excerpt}
           onChange={e => set("excerpt", e.target.value)}
@@ -101,22 +121,25 @@ function StoryForm({ initial, onSave, onCancel, loading }) {
         />
       </div>
 
-      <div className="sc-form__field">
-        <label className="sc-form__label">
-          Full Content
-          <span className="sc-form__hint"> — optional, for a detail page</span>
+      {/* Full Content */}
+      <div className="crud__field">
+        <label>
+          Full Content{" "}
+          <span style={{ fontWeight: 400, textTransform: "none", color: "#9aab8a" }}>
+            — optional, for a detail page
+          </span>
         </label>
         <textarea
-          className="sc-form__input sc-form__textarea sc-form__textarea--tall"
           rows={7}
+          style={{ minHeight: 140 }}
           value={form.content}
           onChange={e => set("content", e.target.value)}
           placeholder="Full story body. Markdown is supported…"
         />
       </div>
 
-      {/* ── Cloudinary image uploader ── */}
-      <div className="sc-form__field">
+      {/* Cover Image */}
+      <div className="crud__field">
         <ImageUploader
           label="Cover Image"
           value={form.cover_image}
@@ -125,37 +148,65 @@ function StoryForm({ initial, onSave, onCancel, loading }) {
         />
       </div>
 
-      <div className="sc-form__toggles">
+      {/* Featured / Published toggles */}
+      <div style={{ display: "flex", gap: 12, flexWrap: "wrap", marginBottom: 24 }}>
         {[
-          ["featured", FiStar, "Featured",  "Shown as the hero card on the news page"],
-          ["published", FiEye, "Published", "Visible to the public"],
+          ["featured",  FiStar, "Featured",  "Shown as the hero card on the news page"],
+          ["published", FiEye,  "Published", "Visible to the public"],
         ].map(([key, Icon, label, hint]) => (
-          <label key={key} className={`sc-toggle ${form[key] ? "sc-toggle--on" : ""}`}>
+          <label
+            key={key}
+            style={{
+              display: "flex",
+              alignItems: "center",
+              gap: 10,
+              padding: "10px 16px",
+              borderRadius: 10,
+              border: `1.5px solid ${form[key] ? "var(--green-deep, #5a9e3a)" : "#dde8d4"}`,
+              background: form[key] ? "rgba(90,158,58,0.06)" : "#f9fdf5",
+              cursor: "pointer",
+              flex: 1,
+              minWidth: 180,
+              transition: "border-color 0.18s, background 0.18s",
+            }}
+          >
             <input
               type="checkbox"
               checked={form[key]}
               onChange={e => set(key, e.target.checked)}
-              className="sc-toggle__input"
+              style={{ display: "none" }}
             />
-            <span className="sc-toggle__icon"><Icon size={16} /></span>
-            <span className="sc-toggle__text">
-              <span className="sc-toggle__label">{label}</span>
-              <span className="sc-toggle__hint">{hint}</span>
+            <span style={{ fontSize: 18, lineHeight: 1, flexShrink: 0 }}>
+              <Icon size={16} />
+            </span>
+            <span style={{ display: "flex", flexDirection: "column" }}>
+              <span style={{ fontSize: 13, fontWeight: 700, color: "#1a3a10" }}>{label}</span>
+              <span style={{ fontSize: 11, color: "#9aab8a", marginTop: 1 }}>{hint}</span>
             </span>
           </label>
         ))}
       </div>
 
-      <div className="sc-form__actions">
-        <button className="sc-btn sc-btn--ghost" onClick={onCancel} disabled={loading}>
+      {/* Actions */}
+      <div className="crud__modal-footer" style={{ padding: "20px 0 0", margin: 0 }}>
+        <button className="crud__btn-cancel" onClick={onCancel} disabled={loading}>
           Cancel
         </button>
         <button
-          className="sc-btn sc-btn--primary"
+          className="crud__btn-save"
           onClick={() => onSave(form)}
           disabled={loading}
         >
-          {loading ? <FiLoader size={14} className="sc-spin" /> : null}
+          {loading && (
+            <FiLoader
+              size={14}
+              style={{
+                marginRight: 6,
+                animation: "spin 0.65s linear infinite",
+                display: "inline-block",
+              }}
+            />
+          )}
           {loading ? "Saving…" : "Save Story"}
         </button>
       </div>
@@ -255,129 +306,279 @@ export default function StoriesCrud({ token }) {
   const totalFeatured  = stories.filter(s => s.featured).length;
 
   return (
-    <div className="sc-root">
-      <div className="sc-header">
-        <div className="sc-header__left">
-          <h2 className="sc-header__title">Stories &amp; News</h2>
-          <div className="sc-header__stats">
-            <span className="sc-stat">{stories.length} total</span>
-            <span className="sc-stat sc-stat--green">{totalPublished} published</span>
-            <span className="sc-stat sc-stat--gold">{totalFeatured} featured</span>
+    <div>
+      {/* ── Header ── */}
+      <div className="crud__toolbar">
+        <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
+          <h2 style={{ margin: 0, fontSize: 22, fontWeight: 800, color: "#1a3a10", letterSpacing: "-0.3px" }}>
+            Stories &amp; News
+          </h2>
+          <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
+            <span className="crud__badge crud__badge--grey">{stories.length} total</span>
+            <span className="crud__badge crud__badge--green">{totalPublished} published</span>
+            <span className="crud__badge crud__badge--yellow">{totalFeatured} featured</span>
           </div>
         </div>
-        <button className="sc-btn sc-btn--primary" onClick={() => setModal("create")}>
+        <button className="crud__btn-add" onClick={() => setModal("create")}>
           <FiPlus size={16} /> New Story
         </button>
       </div>
 
-      <div className="sc-toolbar">
-        <div className="sc-filters">
+      {/* ── Filters + Search toolbar ── */}
+      <div className="crud__toolbar" style={{ marginBottom: 20 }}>
+        <div className="crud__toolbar-left" style={{ flexWrap: "wrap" }}>
           {["All", ...CATEGORIES].map(cat => (
             <button
               key={cat}
-              className={`sc-filter-btn ${filter === cat ? "sc-filter-btn--active" : ""}`}
               onClick={() => setFilter(cat)}
+              style={{
+                padding: "6px 16px",
+                borderRadius: 20,
+                border: `1.5px solid ${filter === cat ? "var(--green-deep, #5a9e3a)" : "#dde8d4"}`,
+                fontSize: 13,
+                fontWeight: filter === cat ? 700 : 500,
+                cursor: "pointer",
+                background: filter === cat ? "var(--green-deep, #5a9e3a)" : "#fff",
+                color: filter === cat ? "#fff" : "#555",
+                transition: "background 0.15s, color 0.15s, border-color 0.15s",
+                fontFamily: "inherit",
+              }}
             >
               {cat}
             </button>
           ))}
         </div>
-        <div className="sc-search-wrap">
-          <FiSearch size={14} className="sc-search-icon" />
+        <div style={{ position: "relative", display: "flex", alignItems: "center" }}>
+          <FiSearch
+            size={14}
+            style={{ position: "absolute", left: 12, color: "#9aab8a", pointerEvents: "none" }}
+          />
           <input
-            className="sc-search"
+            className="crud__search"
             type="text"
             value={search}
             onChange={e => setSearch(e.target.value)}
             placeholder="Search stories…"
+            style={{ paddingLeft: 32 }}
           />
         </div>
       </div>
 
-      {loading && <div className="sc-empty">Loading stories…</div>}
-      {error && !loading && <div className="sc-error">⚠ {error}</div>}
+      {/* ── Feedback states ── */}
+      {loading && (
+        <div className="crud__loading">Loading stories…</div>
+      )}
+      {error && !loading && (
+        <div className="crud__modal-error">⚠ {error}</div>
+      )}
 
+      {/* ── Table ── */}
       {!loading && !error && (
-        <div className="sc-table-wrap">
-          <div className="sc-table">
-            <div className="sc-table__head">
-              <span>Title</span>
-              <span>Category</span>
-              <span>Date</span>
-              <span>Featured</span>
-              <span>Published</span>
-              <span>Actions</span>
-            </div>
+        <div className="crud__card">
+          <div className="crud__table-wrap">
+            <table className="crud__table">
+              <thead>
+                <tr>
+                  <th>Title</th>
+                  <th>Category</th>
+                  <th>Date</th>
+                  <th>Featured</th>
+                  <th>Published</th>
+                  <th>Actions</th>
+                </tr>
+              </thead>
+              <tbody>
+                {visible.length === 0 ? (
+                  <tr>
+                    <td colSpan={6}>
+                      <div className="crud__empty">
+                        <div className="crud__empty-icon">📭</div>
+                        <p>No stories match your filters.</p>
+                      </div>
+                    </td>
+                  </tr>
+                ) : (
+                  visible.map(s => (
+                    <tr key={s.id}>
+                      {/* Title + excerpt */}
+                      <td style={{ maxWidth: 280 }}>
+                        <div style={{ display: "flex", flexDirection: "column", gap: 3, minWidth: 0 }}>
+                          <span style={{
+                            fontSize: 13.5,
+                            fontWeight: 600,
+                            color: "#1a3a10",
+                            whiteSpace: "nowrap",
+                            overflow: "hidden",
+                            textOverflow: "ellipsis",
+                            display: "flex",
+                            alignItems: "center",
+                            gap: 4,
+                          }}>
+                            {s.featured && (
+                              <FiStar size={13} style={{ color: "#f0a500", flexShrink: 0 }} />
+                            )}
+                            {s.title}
+                          </span>
+                          <span style={{
+                            fontSize: 11.5,
+                            color: "#9aab8a",
+                            whiteSpace: "nowrap",
+                            overflow: "hidden",
+                            textOverflow: "ellipsis",
+                          }}>
+                            {s.excerpt}
+                          </span>
+                        </div>
+                      </td>
 
-            {visible.length === 0 && (
-              <div className="sc-empty sc-empty--inline">No stories match your filters.</div>
-            )}
+                      {/* Category */}
+                      <td>
+                        <CategoryBadge category={s.category} />
+                      </td>
 
-            {visible.map(s => (
-              <div key={s.id} className="sc-table__row">
-                <div className="sc-table__title-cell">
-                  <span className="sc-table__title">
-                    {s.featured && <FiStar size={13} className="sc-star-icon" />}
-                    {s.title}
-                  </span>
-                  <span className="sc-table__excerpt">{s.excerpt}</span>
-                </div>
-                <div><CategoryPill category={s.category} /></div>
-                <span className="sc-table__date">{s.date_display ?? fmtDate(s.date)}</span>
-                <button
-                  className={`sc-icon-btn ${s.featured ? "sc-icon-btn--active" : ""}`}
-                  title={s.featured ? "Remove featured" : "Set as featured"}
-                  onClick={() => toggleField(s, "feature")}
-                >
-                  <FiStar size={15} />
-                </button>
-                <button
-                  className={`sc-icon-btn ${s.published ? "sc-icon-btn--green" : "sc-icon-btn--muted"}`}
-                  title={s.published ? "Unpublish" : "Publish"}
-                  onClick={() => toggleField(s, "publish")}
-                >
-                  {s.published ? <FiEye size={15} /> : <FiEyeOff size={15} />}
-                </button>
-                <div className="sc-table__actions">
-                  <button className="sc-btn sc-btn--sm sc-btn--ghost" onClick={() => { setEditing(s); setModal("edit"); }}>
-                    <FiEdit2 size={13} /> Edit
-                  </button>
-                  <button className="sc-btn sc-btn--sm sc-btn--danger" onClick={() => setConfirm(s)}>
-                    <FiTrash2 size={13} /> Delete
-                  </button>
-                </div>
-              </div>
-            ))}
+                      {/* Date */}
+                      <td style={{ fontSize: 12, color: "#8a9e7a", whiteSpace: "nowrap" }}>
+                        {s.date_display ?? fmtDate(s.date)}
+                      </td>
+
+                      {/* Featured toggle */}
+                      <td>
+                        <button
+                          onClick={() => toggleField(s, "feature")}
+                          title={s.featured ? "Remove featured" : "Set as featured"}
+                          style={{
+                            background: "none",
+                            border: "none",
+                            cursor: "pointer",
+                            fontSize: 18,
+                            padding: "2px 4px",
+                            borderRadius: 6,
+                            opacity: s.featured ? 1 : 0.25,
+                            color: s.featured ? "#f0a500" : "inherit",
+                            transition: "opacity 0.18s, transform 0.15s",
+                            lineHeight: 1,
+                          }}
+                          onMouseEnter={e => { e.currentTarget.style.opacity = "0.8"; e.currentTarget.style.transform = "scale(1.15)"; }}
+                          onMouseLeave={e => { e.currentTarget.style.opacity = s.featured ? "1" : "0.25"; e.currentTarget.style.transform = "scale(1)"; }}
+                        >
+                          <FiStar size={15} />
+                        </button>
+                      </td>
+
+                      {/* Published toggle */}
+                      <td>
+                        <button
+                          onClick={() => toggleField(s, "publish")}
+                          title={s.published ? "Unpublish" : "Publish"}
+                          style={{
+                            background: "none",
+                            border: "none",
+                            cursor: "pointer",
+                            fontSize: 18,
+                            padding: "2px 4px",
+                            borderRadius: 6,
+                            opacity: s.published ? 1 : 0.25,
+                            color: s.published ? "#27ae60" : "inherit",
+                            transition: "opacity 0.18s, transform 0.15s",
+                            lineHeight: 1,
+                          }}
+                          onMouseEnter={e => { e.currentTarget.style.opacity = "0.8"; e.currentTarget.style.transform = "scale(1.15)"; }}
+                          onMouseLeave={e => { e.currentTarget.style.opacity = s.published ? "1" : "0.25"; e.currentTarget.style.transform = "scale(1)"; }}
+                        >
+                          {s.published ? <FiEye size={15} /> : <FiEyeOff size={15} />}
+                        </button>
+                      </td>
+
+                      {/* Actions */}
+                      <td>
+                        <div className="crud__actions">
+                          <button
+                            className="crud__btn-edit"
+                            onClick={() => { setEditing(s); setModal("edit"); }}
+                          >
+                            <FiEdit2 size={12} style={{ marginRight: 4 }} /> Edit
+                          </button>
+                          <button
+                            className="crud__btn-delete"
+                            onClick={() => setConfirm(s)}
+                          >
+                            <FiTrash2 size={12} style={{ marginRight: 4 }} /> Delete
+                          </button>
+                        </div>
+                      </td>
+                    </tr>
+                  ))
+                )}
+              </tbody>
+            </table>
           </div>
         </div>
       )}
 
+      {/* ── Create modal ── */}
       {modal === "create" && (
         <Modal title="New Story" onClose={closeModal}>
-          <StoryForm initial={EMPTY_FORM} onSave={handleCreate} onCancel={closeModal} loading={saving} />
+          <StoryForm
+            initial={EMPTY_FORM}
+            onSave={handleCreate}
+            onCancel={closeModal}
+            loading={saving}
+          />
         </Modal>
       )}
 
+      {/* ── Edit modal ── */}
       {modal === "edit" && editing && (
         <Modal title="Edit Story" onClose={closeModal}>
-          <StoryForm initial={editing} onSave={handleUpdate} onCancel={closeModal} loading={saving} />
+          <StoryForm
+            initial={editing}
+            onSave={handleUpdate}
+            onCancel={closeModal}
+            loading={saving}
+          />
         </Modal>
       )}
 
+      {/* ── Delete confirm modal ── */}
       {confirm && (
         <Modal title="Delete Story" onClose={() => setConfirm(null)}>
-          <p className="sc-confirm__msg">
-            Are you sure you want to permanently delete <strong>"{confirm.title}"</strong>? This cannot be undone.
-          </p>
-          <div className="sc-confirm__actions">
-            <button className="sc-btn sc-btn--ghost" onClick={() => setConfirm(null)}>Cancel</button>
-            <button className="sc-btn sc-btn--delete" onClick={() => handleDelete(confirm)} disabled={saving}>
-              {saving ? <FiLoader size={14} className="sc-spin" /> : <FiTrash2 size={14} />}
-              {saving ? "Deleting…" : "Yes, Delete"}
-            </button>
+          <div className="crud__delete-confirm">
+            <p>
+              Are you sure you want to permanently delete{" "}
+              <strong>"{confirm.title}"</strong>? This cannot be undone.
+            </p>
+            <div className="crud__modal-footer" style={{ justifyContent: "flex-end", padding: "16px 0 0", border: "none" }}>
+              <button className="crud__btn-cancel" onClick={() => setConfirm(null)}>
+                Cancel
+              </button>
+              <button
+                className="crud__btn-delete-confirm"
+                onClick={() => handleDelete(confirm)}
+                disabled={saving}
+              >
+                {saving ? (
+                  <FiLoader
+                    size={14}
+                    style={{
+                      marginRight: 6,
+                      animation: "spin 0.65s linear infinite",
+                      display: "inline-block",
+                    }}
+                  />
+                ) : (
+                  <FiTrash2 size={14} style={{ marginRight: 6 }} />
+                )}
+                {saving ? "Deleting…" : "Yes, Delete"}
+              </button>
+            </div>
           </div>
         </Modal>
       )}
+
+      
+      <style>{`
+        @keyframes spin { to { transform: rotate(360deg); } }
+      `}</style>
     </div>
   );
 }
