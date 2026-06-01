@@ -11,6 +11,7 @@ import {
   FaMapMarkerAlt,
   FaExclamationTriangle,
   FaLeaf,
+  FaArrowLeft,
 } from "react-icons/fa";
 
 const API = import.meta.env.VITE_API_URL ?? "http://127.0.0.1:5000";
@@ -58,7 +59,23 @@ function ProgressRing({ pct }) {
   );
 }
 
-/* ── Campaign Card ── */
+/* ── Expandable description ── */
+function ExpandableText({ text }) {
+  const [expanded, setExpanded] = useState(false);
+  const SHORT = 160;
+  if (text.length <= SHORT) return <p className="cp-card__desc">{text}</p>;
+  return (
+    <p className="cp-card__desc">
+      {expanded ? text : text.slice(0, SHORT) + "…"}
+      {" "}
+      <button className="cp-card__read-more" onClick={() => setExpanded(e => !e)}>
+        {expanded ? "Show less" : "Read more"}
+      </button>
+    </p>
+  );
+}
+
+/* ── Campaign Card (desktop) ── */
 function CampaignCard({ campaign, onDonate, featured }) {
   const pct      = campaign.progress_percent ?? Math.round((campaign.raised_amount / campaign.goal_amount) * 100);
   const ben      = campaign.beneficiary ?? {};
@@ -133,27 +150,168 @@ function CampaignCard({ campaign, onDonate, featured }) {
   );
 }
 
-/* ── Expandable description ── */
-function ExpandableText({ text }) {
-  const [expanded, setExpanded] = useState(false);
-  const SHORT = 160;
-  if (text.length <= SHORT) return <p className="cp-card__desc">{text}</p>;
+/* ── Mobile list row (GoFundMe style) ── */
+function MobileCampaignRow({ campaign, onTap }) {
+  const pct      = campaign.progress_percent ?? Math.round(((campaign.raised_amount ?? 0) / (campaign.goal_amount ?? 1)) * 100);
+  const ben      = campaign.beneficiary ?? {};
+  const imgSrc   = campaign.image_url || ben.profile_image || null;
+  const category = campaign.category || ben.category || "Cause";
+
   return (
-    <p className="cp-card__desc">
-      {expanded ? text : text.slice(0, SHORT) + "…"}
-      {" "}
-      <button className="cp-card__read-more" onClick={() => setExpanded(e => !e)}>
-        {expanded ? "Show less" : "Read more"}
-      </button>
-    </p>
+    <button className="cp-mobile-row" onClick={() => onTap(campaign)}>
+      {/* Thumbnail */}
+      <div className="cp-mobile-row__thumb">
+        {imgSrc
+          ? <img src={imgSrc} alt={campaign.title} />
+          : <div className="cp-mobile-row__thumb-placeholder">
+              {categoryIcon(category)}
+            </div>
+        }
+      </div>
+
+      {/* Info */}
+      <div className="cp-mobile-row__info">
+        <span className="cp-mobile-row__category">{category}</span>
+        <h3 className="cp-mobile-row__title">{campaign.title}</h3>
+
+        {/* Progress bar */}
+        <div className="cp-mobile-row__bar">
+          <div className="cp-mobile-row__bar-fill" style={{ width: `${Math.min(pct, 100)}%` }} />
+        </div>
+
+        <div className="cp-mobile-row__meta">
+          <span className="cp-mobile-row__pct">{pct}% raised</span>
+          <span className="cp-mobile-row__goal">Goal: {fmtKES(campaign.goal_amount)}</span>
+        </div>
+      </div>
+
+      {/* Chevron */}
+      <div className="cp-mobile-row__chevron">›</div>
+    </button>
   );
 }
 
+/* ── Mobile detail overlay ── */
+function MobileCampaignDetail({ campaign, onBack, onDonate }) {
+  const overlayRef = useRef(null);
+  const pct        = campaign.progress_percent ?? Math.round(((campaign.raised_amount ?? 0) / (campaign.goal_amount ?? 1)) * 100);
+  const ben        = campaign.beneficiary ?? {};
+  const imgSrc     = campaign.image_url || ben.profile_image || null;
+  const category   = campaign.category || ben.category || "Cause";
+  const circ       = 2 * Math.PI * 28;
+  const dash       = circ * Math.min(pct, 100) / 100;
 
+  /* Slide in on mount */
+  useEffect(() => {
+    const el = overlayRef.current;
+    if (!el) return;
+    // Start off-screen right, animate to 0
+    el.style.transform = "translateX(100%)";
+    requestAnimationFrame(() => {
+      el.style.transition = "transform 0.38s cubic-bezier(0.16,1,0.3,1)";
+      el.style.transform  = "translateX(0)";
+    });
+    document.body.style.overflow = "hidden";
+    return () => { document.body.style.overflow = ""; };
+  }, []);
+
+  const handleBack = () => {
+    const el = overlayRef.current;
+    if (!el) { onBack(); return; }
+    el.style.transition = "transform 0.3s cubic-bezier(0.4,0,1,1)";
+    el.style.transform  = "translateX(100%)";
+    setTimeout(onBack, 300);
+  };
+
+  return (
+    <div className="cp-detail-overlay" ref={overlayRef}>
+      {/* Hero */}
+      <div className="cp-detail__hero">
+        {imgSrc
+          ? <img src={imgSrc} alt={campaign.title} />
+          : <div className="cp-detail__hero-placeholder">{categoryIcon(category)}</div>
+        }
+        <button className="cp-detail__back" onClick={handleBack} aria-label="Go back">
+          <FaArrowLeft size={13} />
+          <span>Back</span>
+        </button>
+        <div className="cp-detail__hero-badge">{category}</div>
+      </div>
+
+      {/* Scrollable body */}
+      <div className="cp-detail__body">
+        <h2 className="cp-detail__title">{campaign.title}</h2>
+
+        {/* Beneficiary strip */}
+        {ben.name && (
+          <div className="cp-detail__beneficiary">
+            {ben.profile_image && (
+              <img src={ben.profile_image} alt={ben.name} className="cp-detail__ben-avatar" />
+            )}
+            <div>
+              <span className="cp-detail__ben-label">Beneficiary</span>
+              <span className="cp-detail__ben-name">{ben.name}</span>
+              {ben.location && (
+                <span className="cp-detail__ben-loc">
+                  <FaMapMarkerAlt color={ICON_COLOR} size={11} style={{ marginRight: 3 }} />
+                  {ben.location}
+                </span>
+              )}
+            </div>
+          </div>
+        )}
+
+        {/* Progress card */}
+        <div className="cp-detail__progress-card">
+          {/* Ring */}
+          <svg width="72" height="72" viewBox="0 0 72 72" className="cp-ring" style={{ flexShrink: 0 }}>
+            <circle cx="36" cy="36" r={28} stroke="rgba(90,158,58,0.13)" strokeWidth="5" fill="none" />
+            <circle
+              cx="36" cy="36" r={28}
+              stroke="var(--green)" strokeWidth="5" fill="none"
+              strokeDasharray={`${dash} ${circ}`}
+              strokeLinecap="round"
+              transform="rotate(-90 36 36)"
+            />
+            <text x="36" y="40" textAnchor="middle" className="cp-ring__label">{pct}%</text>
+          </svg>
+
+          <div className="cp-detail__progress-text">
+            <div className="cp-detail__raised">
+              {fmtKES(campaign.raised_amount)} <span>raised</span>
+            </div>
+            <div className="cp-detail__goal-txt">Goal: <strong>{fmtKES(campaign.goal_amount)}</strong></div>
+            <div className="cp-detail__bar">
+              <div className="cp-detail__bar-fill" style={{ width: `${Math.min(pct, 100)}%` }} />
+            </div>
+          </div>
+        </div>
+
+        {/* Description — full, not truncated */}
+        <div className="cp-detail__desc">
+          {(campaign.description || "Your support makes a real difference.")
+            .split("\n\n").map((para, i) => <p key={i}>{para}</p>)}
+        </div>
+
+        {/* Donate button */}
+        <button className="cp-detail__donate-btn" onClick={() => onDonate(campaign)}>
+          Donate to This Cause
+          <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+            <path d="M3 8h10M9 4l4 4-4 4" stroke="currentColor" strokeWidth="1.6"
+              strokeLinecap="round" strokeLinejoin="round" />
+          </svg>
+        </button>
+
+        <div style={{ height: 40 }} />
+      </div>
+    </div>
+  );
+}
+
+/* ── Donation Modal ── */
 function DonationModal({ campaign, onClose }) {
   const overlayRef = useRef(null);
-
-  const isGeneral = campaign == null;
+  const isGeneral  = campaign == null;
 
   useEffect(() => {
     const handler = (e) => { if (e.key === "Escape") onClose(); };
@@ -172,11 +330,11 @@ function DonationModal({ campaign, onClose }) {
       onClick={(e) => { if (e.target === overlayRef.current) onClose(); }}
     >
       <div className="cp-modal">
-      <button className="cp-modal__close" onClick={onClose} aria-label="X">
-        <svg width="18" height="18" viewBox="0 0 18 18" fill="none">
-          <path d="M3 3l12 12M15 3L3 15" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" />
-        </svg>
-      </button>
+        <button className="cp-modal__close" onClick={onClose} aria-label="Close">
+          <svg width="18" height="18" viewBox="0 0 18 18" fill="none">
+            <path d="M3 3l12 12M15 3L3 15" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" />
+          </svg>
+        </button>
 
         <div className="cp-modal__header">
           {isGeneral ? (
@@ -219,6 +377,21 @@ function SkeletonCard() {
         <div className="cp-skeleton__line cp-skeleton__line--short" />
         <div className="cp-skeleton__stats" />
         <div className="cp-skeleton__btn" />
+      </div>
+    </div>
+  );
+}
+
+/* ── Skeleton row (mobile) ── */
+function SkeletonRow() {
+  return (
+    <div className="cp-skeleton-row">
+      <div className="cp-skeleton-row__thumb" />
+      <div className="cp-skeleton-row__lines">
+        <div className="cp-skeleton-row__line cp-skeleton-row__line--short" />
+        <div className="cp-skeleton-row__line cp-skeleton-row__line--title" />
+        <div className="cp-skeleton-row__line cp-skeleton-row__line--bar" />
+        <div className="cp-skeleton-row__line cp-skeleton-row__line--meta" />
       </div>
     </div>
   );
@@ -278,23 +451,34 @@ function AutoProgressBar({ duration, running, onComplete }) {
   );
 }
 
-
 const PAGE_SIZE     = 5;
 const AUTO_INTERVAL = 30000;
 
+/* ══════════════════════════════════════════
+   Main page component
+   ══════════════════════════════════════════ */
 export default function CampaignsPage() {
-  const [campaigns, setCampaigns]   = useState([]);
-  const [loading, setLoading]       = useState(true);
-  const [error, setError]           = useState(null);
+  const [campaigns, setCampaigns] = useState([]);
+  const [loading, setLoading]     = useState(true);
+  const [error, setError]         = useState(null);
 
-
-  const [activeCampaign, setActive] = useState(null);
+  const [activeCampaign, setActive]         = useState(null);
+  const [mobileDetail, setMobileDetail]     = useState(null); // campaign shown in detail overlay
 
   const [filter, setFilter]   = useState("all");
   const [page, setPage]       = useState(0);
   const [autoKey, setAutoKey] = useState(0);
+  const [isMobile, setIsMobile] = useState(false);
 
-  /* ── fetch ── */
+  /* Detect mobile */
+  useEffect(() => {
+    const check = () => setIsMobile(window.innerWidth <= 640);
+    check();
+    window.addEventListener("resize", check);
+    return () => window.removeEventListener("resize", check);
+  }, []);
+
+  /* Fetch */
   useEffect(() => {
     setLoading(true);
     fetch(`${API}/campaigns/public`)
@@ -319,7 +503,7 @@ export default function CampaignsPage() {
   const safePage   = Math.min(page, Math.max(totalPages - 1, 0));
   const pageItems  = visible.slice(safePage * PAGE_SIZE, safePage * PAGE_SIZE + PAGE_SIZE);
 
-  /* ── navigation ── */
+  /* Navigation */
   const goTo = useCallback((p) => {
     setPage(p);
     setAutoKey(k => k + 1);
@@ -334,7 +518,13 @@ export default function CampaignsPage() {
 
   useEffect(() => { setPage(0); setAutoKey(k => k + 1); }, [filter]);
 
-  const openGeneralDonation = () => setActive(false); 
+  const openGeneralDonation = () => setActive(false);
+
+  /* When "Donate" is tapped inside mobile detail */
+  const handleMobileDetailDonate = (campaign) => {
+    setMobileDetail(null);
+    setTimeout(() => setActive(campaign), 320); // wait for detail to slide out
+  };
 
   return (
     <main className="cp-page">
@@ -347,7 +537,7 @@ export default function CampaignsPage() {
             <em>Someone's Story</em>
           </h1>
           <p className="cp-hero__sub">
-            Browse our active campaigns. Choose a cause close to your heart and donate directly — 
+            Browse our active campaigns. Choose a cause close to your heart and donate directly —
             every shilling goes straight to the family in need.
           </p>
         </div>
@@ -374,12 +564,15 @@ export default function CampaignsPage() {
 
       {/* ── Content ── */}
       <div className="cp-content">
+
+        {/* Loading */}
         {loading && (
-          <div className="cp-grid">
-            {[1, 2, 3, 4].map((i) => <SkeletonCard key={i} />)}
-          </div>
+          isMobile
+            ? <div className="cp-mobile-list">{[1,2,3,4].map(i => <SkeletonRow key={i} />)}</div>
+            : <div className="cp-grid">{[1,2,3,4].map(i => <SkeletonCard key={i} />)}</div>
         )}
 
+        {/* Error */}
         {!loading && error && (
           <div className="cp-error">
             <span className="cp-error__icon">
@@ -390,7 +583,7 @@ export default function CampaignsPage() {
           </div>
         )}
 
-        {/* Empty state — show general donate CTA prominently */}
+        {/* Empty */}
         {!loading && !error && visible.length === 0 && (
           <div className="cp-empty">
             <span className="cp-empty__icon">
@@ -408,55 +601,72 @@ export default function CampaignsPage() {
 
         {!loading && !error && visible.length > 0 && (
           <>
-            <div className="cp-carousel-header">
-              <div className="cp-carousel-header__left">
-                <h2 className="cp-carousel-title">Fundraisers inspired by what you care about</h2>
-                {totalPages > 1 && (
-                  <AutoProgressBar
-                    key={autoKey}
-                    duration={AUTO_INTERVAL}
-                    running={totalPages > 1}
-                    onComplete={handleAutoComplete}
+            {/* ── MOBILE: GoFundMe-style list ── */}
+            {isMobile ? (
+              <div className="cp-mobile-list">
+                <h2 className="cp-mobile-list__title">Fundraisers inspired by what you care about</h2>
+                {visible.map((c) => (
+                  <MobileCampaignRow
+                    key={c.id}
+                    campaign={c}
+                    onTap={setMobileDetail}
                   />
-                )}
+                ))}
               </div>
+            ) : (
+              /* ── DESKTOP: original carousel grid ── */
+              <>
+                <div className="cp-carousel-header">
+                  <div className="cp-carousel-header__left">
+                    <h2 className="cp-carousel-title">Fundraisers inspired by what you care about</h2>
+                    {totalPages > 1 && (
+                      <AutoProgressBar
+                        key={autoKey}
+                        duration={AUTO_INTERVAL}
+                        running={totalPages > 1}
+                        onComplete={handleAutoComplete}
+                      />
+                    )}
+                  </div>
 
-              {totalPages > 1 && (
-                <div className="cp-carousel-nav">
-                  <button className="cp-nav-btn" onClick={prev} aria-label="Previous">
-                    <svg width="18" height="18" viewBox="0 0 18 18" fill="none">
-                      <path d="M11 4L6 9l5 5" stroke="currentColor" strokeWidth="1.8"
-                        strokeLinecap="round" strokeLinejoin="round" />
-                    </svg>
-                  </button>
-                  <button className="cp-nav-btn" onClick={next} aria-label="Next">
-                    <svg width="18" height="18" viewBox="0 0 18 18" fill="none">
-                      <path d="M7 4l5 5-5 5" stroke="currentColor" strokeWidth="1.8"
-                        strokeLinecap="round" strokeLinejoin="round" />
-                    </svg>
-                  </button>
+                  {totalPages > 1 && (
+                    <div className="cp-carousel-nav">
+                      <button className="cp-nav-btn" onClick={prev} aria-label="Previous">
+                        <svg width="18" height="18" viewBox="0 0 18 18" fill="none">
+                          <path d="M11 4L6 9l5 5" stroke="currentColor" strokeWidth="1.8"
+                            strokeLinecap="round" strokeLinejoin="round" />
+                        </svg>
+                      </button>
+                      <button className="cp-nav-btn" onClick={next} aria-label="Next">
+                        <svg width="18" height="18" viewBox="0 0 18 18" fill="none">
+                          <path d="M7 4l5 5-5 5" stroke="currentColor" strokeWidth="1.8"
+                            strokeLinecap="round" strokeLinejoin="round" />
+                        </svg>
+                      </button>
+                    </div>
+                  )}
                 </div>
-              )}
-            </div>
 
-            <div className="cp-grid cp-grid--animated" key={`${safePage}-${filter}`}>
-              {pageItems.map((c) => (
-                <CampaignCard
-                  key={c.id}
-                  campaign={c}
-                  onDonate={(campaign) => setActive(campaign)}
-                />
-              ))}
-            </div>
+                <div className="cp-grid cp-grid--animated" key={`${safePage}-${filter}`}>
+                  {pageItems.map((c) => (
+                    <CampaignCard
+                      key={c.id}
+                      campaign={c}
+                      onDonate={(campaign) => setActive(campaign)}
+                    />
+                  ))}
+                </div>
 
-            {totalPages > 1 && (
-              <ProgressDots total={totalPages} current={safePage} onDotClick={goTo} />
+                {totalPages > 1 && (
+                  <ProgressDots total={totalPages} current={safePage} onDotClick={goTo} />
+                )}
+              </>
             )}
           </>
         )}
       </div>
 
-      {/* ── General donation CTA — always shown below campaigns ── */}
+      {/* ── General donation CTA ── */}
       {!loading && !error && (
         <section className="cp-general-donate">
           <div className="cp-general-donate__inner">
@@ -473,10 +683,20 @@ export default function CampaignsPage() {
         </section>
       )}
 
+      {/* ── Donation modal ── */}
       {activeCampaign !== null && (
         <DonationModal
           campaign={activeCampaign === false ? null : activeCampaign}
           onClose={() => setActive(null)}
+        />
+      )}
+
+      {/* ── Mobile detail overlay ── */}
+      {mobileDetail && (
+        <MobileCampaignDetail
+          campaign={mobileDetail}
+          onBack={() => setMobileDetail(null)}
+          onDonate={handleMobileDetailDonate}
         />
       )}
     </main>
