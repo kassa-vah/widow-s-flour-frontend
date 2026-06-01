@@ -212,15 +212,34 @@
   width: 40px;
   height: 40px;
   border-radius: 50%;
-  border: 1.5px solid rgba(0,0,0,0.15);
+  border: 1.5px solid rgba(0,0,0,0.2);
   background: #fff;
+  /* Force a visible colour on the button itself */
   color: var(--text-mid);
   display: flex;
   align-items: center;
   justify-content: center;
   cursor: pointer;
-  transition: border-color 0.18s, color 0.18s, background 0.18s, transform 0.15s, box-shadow 0.18s;
-  box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+  transition: border-color 0.18s, color 0.18s, background 0.18s,
+              transform 0.15s, box-shadow 0.18s;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+  /* Prevent any global reset from hiding the SVG */
+  line-height: 0;
+  padding: 0;
+}
+
+/* Make the inner SVG inherit the button's colour */
+.cp-nav-btn svg {
+  display: block;
+  flex-shrink: 0;
+  /* stroke is set inline on the path, but add a currentColor fallback */
+  stroke: currentColor;
+  fill: none;
+  overflow: visible;
+}
+
+.cp-nav-btn path {
+  stroke: currentColor;
 }
 
 .cp-nav-btn:hover {
@@ -739,7 +758,6 @@
   background: var(--off-white);
   overflow-y: auto;
   -webkit-overflow-scrolling: touch;
-  /* JS drives the slide-in transform */
   display: flex;
   flex-direction: column;
 }
@@ -791,6 +809,14 @@
   z-index: 10;
   transition: background 0.2s;
   -webkit-tap-highlight-color: transparent;
+}
+
+/* Ensure the FaArrowLeft icon inside back button is visible */
+.cp-detail__back svg {
+  display: block;
+  flex-shrink: 0;
+  fill: #fff;
+  color: #fff;
 }
 
 .cp-detail__back:hover,
@@ -1032,7 +1058,7 @@
   cursor: pointer;
   color: #111;
   z-index: 10;
-  transition: background 0.15s ease;
+  transition: background 0.15s ease, transform 0.2s ease;
 }
 
 .cp-modal__close svg { display: block; flex-shrink: 0; stroke: #111; }

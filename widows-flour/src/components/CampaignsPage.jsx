@@ -21,6 +21,11 @@ function fmtKES(n) {
   return `KES ${Number(n ?? 0).toLocaleString()}`;
 }
 
+/* Scroll to top helper */
+function scrollToTop() {
+  window.scrollTo({ top: 0, behavior: "smooth" });
+}
+
 const ICON_COLOR = "var(--green)";
 const ICON_SIZE  = 32;
 
@@ -205,7 +210,6 @@ function MobileCampaignDetail({ campaign, onBack, onDonate }) {
   useEffect(() => {
     const el = overlayRef.current;
     if (!el) return;
-    // Start off-screen right, animate to 0
     el.style.transform = "translateX(100%)";
     requestAnimationFrame(() => {
       el.style.transition = "transform 0.38s cubic-bezier(0.16,1,0.3,1)";
@@ -216,6 +220,7 @@ function MobileCampaignDetail({ campaign, onBack, onDonate }) {
   }, []);
 
   const handleBack = () => {
+    scrollToTop();
     const el = overlayRef.current;
     if (!el) { onBack(); return; }
     el.style.transition = "transform 0.3s cubic-bezier(0.4,0,1,1)";
@@ -463,12 +468,17 @@ export default function CampaignsPage() {
   const [error, setError]         = useState(null);
 
   const [activeCampaign, setActive]         = useState(null);
-  const [mobileDetail, setMobileDetail]     = useState(null); // campaign shown in detail overlay
+  const [mobileDetail, setMobileDetail]     = useState(null);
 
   const [filter, setFilter]   = useState("all");
   const [page, setPage]       = useState(0);
   const [autoKey, setAutoKey] = useState(0);
   const [isMobile, setIsMobile] = useState(false);
+
+  /* Scroll to top on initial page load */
+  useEffect(() => {
+    scrollToTop();
+  }, []);
 
   /* Detect mobile */
   useEffect(() => {
@@ -518,12 +528,30 @@ export default function CampaignsPage() {
 
   useEffect(() => { setPage(0); setAutoKey(k => k + 1); }, [filter]);
 
-  const openGeneralDonation = () => setActive(false);
+  /* Open donation modal — scroll to top first */
+  const openDonation = useCallback((campaign) => {
+    scrollToTop();
+    setActive(campaign);
+  }, []);
+
+  /* Close donation modal — scroll to top */
+  const closeDonation = useCallback(() => {
+    setActive(null);
+    scrollToTop();
+  }, []);
+
+  const openGeneralDonation = () => {
+    scrollToTop();
+    setActive(false);
+  };
 
   /* When "Donate" is tapped inside mobile detail */
   const handleMobileDetailDonate = (campaign) => {
     setMobileDetail(null);
-    setTimeout(() => setActive(campaign), 320); // wait for detail to slide out
+    setTimeout(() => {
+      scrollToTop();
+      setActive(campaign);
+    }, 320);
   };
 
   return (
@@ -652,7 +680,7 @@ export default function CampaignsPage() {
                     <CampaignCard
                       key={c.id}
                       campaign={c}
-                      onDonate={(campaign) => setActive(campaign)}
+                      onDonate={openDonation}
                     />
                   ))}
                 </div>
@@ -687,7 +715,7 @@ export default function CampaignsPage() {
       {activeCampaign !== null && (
         <DonationModal
           campaign={activeCampaign === false ? null : activeCampaign}
-          onClose={() => setActive(null)}
+          onClose={closeDonation}
         />
       )}
 

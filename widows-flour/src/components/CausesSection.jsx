@@ -1,6 +1,6 @@
 // src/components/CausesSection/CausesSection.jsx
 import { useEffect, useRef, useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { gsap } from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 import { FaSeedling, FaBookOpen, FaHandsHelping } from "react-icons/fa";
@@ -65,9 +65,14 @@ function normalise(c) {
     goal: `KES ${Number(goal).toLocaleString()}`,
     raised: pct,
     cta: c.cta_label ?? "Donate Now",
-    icon: CATEGORY_ICONS[category] ?? <FaHandsHelping />, // fallback icon
+    icon: CATEGORY_ICONS[category] ?? <FaHandsHelping />,
     img: c.image_url ?? c.beneficiary?.profile_image ?? null,
   };
+}
+
+/* Scroll to top helper */
+function scrollToTop() {
+  window.scrollTo({ top: 0, behavior: "smooth" });
 }
 
 export default function CausesSection() {
@@ -75,6 +80,7 @@ export default function CausesSection() {
   const itemsRef = useRef([]);
   const fillsRef = useRef([]);
   const counterRefs = useRef([]);
+  const navigate = useNavigate();
 
   const [causes, setCauses] = useState(FALLBACK_CAUSES);
 
@@ -147,6 +153,22 @@ export default function CausesSection() {
     return () => ctx.revert();
   }, [causes]);
 
+  /* Navigate to /causes and scroll to top */
+  const handleViewAll = (e) => {
+    e.preventDefault();
+    scrollToTop();
+    // Small delay so the scroll fires before navigation
+    setTimeout(() => navigate("/causes"), 100);
+  };
+
+  /* Navigate to specific campaign and scroll to top */
+  const handleCauseCta = (e, cause) => {
+    e.preventDefault();
+    scrollToTop();
+    const target = cause.id ? `/causes#campaign-${cause.id}` : "/causes";
+    setTimeout(() => navigate(target), 100);
+  };
+
   return (
     <section id="causes" className="causes-section" ref={sectionRef}>
       <div className="causes-container">
@@ -164,9 +186,9 @@ export default function CausesSection() {
               Every donation is directed toward verified, transparent causes
               that change real lives.
             </p>
-            <Link to="/causes" className="btn-primary">
+            <a href="/causes" className="btn-primary" onClick={handleViewAll}>
               See All Causes →
-            </Link>
+            </a>
           </div>
         </div>
 
@@ -224,21 +246,22 @@ export default function CausesSection() {
                 <div className="cause-item__goal">
                   Goal: <span>{cause.goal}</span>
                 </div>
-                <Link
-                  to={cause.id ? `/causes#campaign-${cause.id}` : "/causes"}
+                <a
+                  href={cause.id ? `/causes#campaign-${cause.id}` : "/causes"}
                   className="cause-item__cta"
+                  onClick={(e) => handleCauseCta(e, cause)}
                 >
                   {cause.cta} <span className="heart">♥</span>
-                </Link>
+                </a>
               </div>
             </div>
           ))}
         </div>
 
         <div className="causes__view-all">
-          <Link to="/causes" className="btn-primary">
+          <a href="/causes" className="btn-primary" onClick={handleViewAll}>
             View All Causes →
-          </Link>
+          </a>
         </div>
       </div>
     </section>
