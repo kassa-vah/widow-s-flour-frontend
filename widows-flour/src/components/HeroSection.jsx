@@ -28,6 +28,12 @@ const STATS = [
   { num: "KSH 820K", label: "Raised in Aid" },
 ];
 
+// Cards 0–2 are LEFT side, cards 3–5 are RIGHT side
+const CARD_SIDES = ["left", "left", "left", "right", "right", "right"];
+
+// Base rotations matching the CSS arc — preserved during scroll drift
+const CARD_ROTATIONS = [8, 0, -8, -8, 0, 8];
+
 const clamp = (v, lo = 0, hi = 1) => Math.max(lo, Math.min(hi, v));
 const lerp  = (a, b, t) => a + (b - a) * t;
 const ease  = (t) => t; // linear — immediate response
@@ -158,11 +164,17 @@ export default function HeroSection() {
         actionsRef.current.style.opacity  = `${1 - fp}`;
         statsRef.current.style.opacity    = `${1 - fp}`;
 
-        // ── CARDS drift away ──
+        // ── CARDS drift away symmetrically, preserving arc rotations ──
         cardsRef.current.forEach((c, i) => {
           if (!c) return;
-          const dir = i % 2 === 0 ? -1 : 1;
-          c.style.transform = `translate(${dir * lerp(0, vw * 0.15, wp)}px, ${lerp(0, -vh * 0.2, wp)}px)`;
+          const side   = CARD_SIDES[i];
+          const rot    = CARD_ROTATIONS[i];
+          const dirX   = side === "left" ? -1 : 1;
+          const driftX = dirX * lerp(0, vw * 0.18, wp);
+          const driftY = lerp(0, -vh * 0.15, wp);
+          // translateX offset for arc (top/bottom cards are shifted inward slightly)
+          const arcX   = side === "left" ? (rot !== 0 ? 20 : 0) : (rot !== 0 ? -20 : 0);
+          c.style.transform = `translate(${driftX + lerp(arcX, arcX + dirX * 60, wp)}px, ${driftY}px) rotate(${rot}deg)`;
           c.style.opacity   = `${1 - clamp(p * 3)}`;
         });
 
@@ -229,7 +241,7 @@ export default function HeroSection() {
             </p>
             <p className="hero__line hero__line--middle" ref={line2Ref}>
               <span ref={everyRef} className="hero__word">Tables</span>
-              <span className="hero__pill" ref={pillRef}>
+              <span className="hero__pill" ref={pillRef} style={{ width: '190px', height: '88px' }}>
                 <img src={PILL_IMG} alt="widow's table" />
               </span>
               <span ref={withRef} className="hero__word">with</span>
