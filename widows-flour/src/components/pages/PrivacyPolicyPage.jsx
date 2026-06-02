@@ -9,11 +9,11 @@ const SECTIONS = [
   },
   {
     title: "2. Information We Collect",
-    content: `We collect information you provide directly, such as your name, email address, phone number, and payment details when you make a donation, register to volunteer, or contact us. We also collect information automatically through our website, including your IP address, browser type, pages visited, and referral source, via cookies and similar technologies. We do not collect sensitive personal data (such as health or political information) without your explicit consent.`,
+    content: `We collect information you provide directly, such as your name, email address, phone number, payment details, volunteer information, beneficiary information, and information relating to assistance requests or programme participation. This may include information about household members, dependants, assistance received, and supporting documentation where necessary for programme administration.\n\nWe also collect information automatically through our website, including your IP address, browser type, pages visited, and referral source, via cookies and similar technologies.\n\nWe generally avoid collecting sensitive personal data unless it is necessary for programme delivery, safeguarding, legal compliance, or support services. Where such information is collected, we do so with appropriate consent or another lawful basis under applicable law.`,
   },
   {
     title: "3. How We Use Your Information",
-    content: `We use your information to process donations and issue receipts, send you updates about campaigns and impact reports (with your consent), respond to your enquiries, improve our website and services, comply with legal obligations including anti-money laundering checks on significant donations, and send you our newsletter if you have subscribed. We will never sell your data to third parties. We will never share your data with commercial advertisers.`,
+    content: `We use your information to process donations and issue receipts, send you updates about campaigns and impact reports (with your consent), respond to your enquiries, improve our website and services, comply with legal obligations including anti-money laundering checks on significant donations, and send you our newsletter if you have subscribed.\n\nWe may also use information relating to beneficiaries and households to assess needs, administer assistance programmes, monitor impact, prevent fraud, maintain programme records, and meet reporting obligations.\n\nWe will never sell your data to third parties. We will never share your data with commercial advertisers.`,
   },
   {
     title: "4. Legal Basis for Processing",
@@ -28,27 +28,35 @@ const SECTIONS = [
     content: `We share your data only with trusted service providers who help us operate — including our payment processor (Flutterwave/M-Pesa), email service provider, and cloud hosting provider. Each provider is bound by data processing agreements and is prohibited from using your data for their own purposes. We may disclose data if required by law, court order, or regulatory authority.`,
   },
   {
-    title: "7. Data Retention",
+    title: "7. Photographs, Stories and Testimonials",
+    content: `We may collect photographs, videos, testimonials, case studies, and personal stories relating to our beneficiaries, volunteers, donors, and programmes. Such information may be used for reporting, awareness campaigns, fundraising, impact communication, and programme documentation. Where required, we obtain appropriate consent before publishing identifiable content.`,
+  },
+  {
+    title: "8. International Data Transfers",
+    content: `Some of our service providers may process or store information outside Kenya. Where this occurs, we take reasonable steps to ensure appropriate safeguards are in place to protect personal data.`,
+  },
+  {
+    title: "9. Data Retention",
     content: `We retain donation records for 7 years to comply with Kenyan financial regulations. Contact and volunteer records are retained for 3 years after your last interaction with us, or until you request deletion. Analytics data is retained for 26 months. You may request deletion of your personal data at any time (subject to legal retention requirements).`,
   },
   {
-    title: "8. Your Rights",
+    title: "10. Your Rights",
     content: `Under applicable data protection law you have the right to: access the personal data we hold about you; request correction of inaccurate data; request deletion of your data; object to or restrict certain processing; withdraw consent for marketing at any time; lodge a complaint with the Office of the Data Protection Commissioner of Kenya. To exercise any of these rights, please contact us at privacy@widowsflour.org.`,
   },
   {
-    title: "9. Security",
-    content: `We take the security of your data seriously. All payment transactions are encrypted using TLS. We limit access to personal data to staff and volunteers who need it to perform their duties, and we conduct regular security reviews of our systems. However, no internet transmission is completely secure and we cannot guarantee absolute security.`,
+    title: "11. Security",
+    content: `We take the security of your data seriously. All payment transactions are encrypted using TLS. We limit access to personal data through role-based permissions and administrative controls, ensuring that staff, volunteers, and authorised users can access only the information necessary for their responsibilities. We conduct regular security reviews of our systems.\n\nAdministrative actions affecting programme and beneficiary records may be logged for security, accountability, fraud prevention, and auditing purposes.\n\nIn the event of a personal data breach, we will take reasonable steps to investigate, contain, and respond to the incident and, where required by law, notify affected individuals and relevant authorities. However, no internet transmission is completely secure and we cannot guarantee absolute security.`,
   },
   {
-    title: "10. Children's Privacy",
-    content: `Our website is not directed at children under 13. We do not knowingly collect personal data from children. If you believe a child has provided us with personal data, please contact us and we will delete it promptly.`,
+    title: "12. Children's Privacy",
+    content: `While our website is not intended for independent use by children, information relating to children may be processed as part of household, family, or beneficiary records where necessary for programme delivery and with appropriate consent from a parent, guardian, or lawful representative.`,
   },
   {
-    title: "11. Changes to This Policy",
+    title: "13. Changes to This Policy",
     content: `We may update this Privacy Policy from time to time. When we do, we will update the "Last Updated" date at the top of this page and, for material changes, notify you by email or a prominent notice on our website. We encourage you to review this page periodically.`,
   },
   {
-    title: "12. Contact Us",
+    title: "14. Contact Us",
     content: `For any privacy-related questions or to exercise your rights, please contact our Data Protection Officer at:\n\nEmail: privacy@widowsflour.org\nPost: Widows Flour Initiative, Pioneer House, Uganda Road, Eldoret, Kenya`,
   },
 ];

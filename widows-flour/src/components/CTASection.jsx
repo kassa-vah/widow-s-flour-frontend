@@ -15,6 +15,8 @@ gsap.registerPlugin(ScrollTrigger);
 
 const AVATARS = [imgElderly1, imgChild1, imgElderly2];
 
+const scrollToTop = () => window.scrollTo({ top: 0, behavior: "smooth" });
+
 export function CTASection() {
   const sectionRef = useRef(null);
   const contentRef = useRef(null);
@@ -88,19 +90,19 @@ export function Footer() {
     {
       title: "Platform",
       links: [
-        { label: "About Us",        to: "/our-story"          },
-        { label: "Our Causes",      to: "/causes"         },
-        { label: "Impact Reports",  to: "/impact"         },
-        { label: "News & Blog",     to: "/news"           },
+        { label: "About Us",        to: "/our-story"     },
+        { label: "Our Causes",      to: "/causes"        },
+        { label: "Impact Reports",  to: "/impact"        },
+        { label: "News & Blog",     to: "/news"          },
       ],
     },
     {
       title: "Help",
       links: [
-        { label: "How to Donate",   to: "/how-to-donate"         },
-        { label: "Volunteer FAQ",   to: "/volunteer"  },
-        { label: "Contact Us",      to: "/contact"        },
-        { label: "Privacy Policy",  to: "/privacy" },
+        { label: "How to Donate",   to: "/how-to-donate" },
+        { label: "Volunteer FAQ",   to: "/volunteer"     },
+        { label: "Contact Us",      to: "/contact"       },
+        { label: "Privacy Policy",  to: "/privacy"       },
       ],
     },
   ];
@@ -136,7 +138,7 @@ export function Footer() {
               <ul className="footer__links">
                 {col.links.map(({ label, to }) => (
                   <li key={label}>
-                    <Link to={to}>{label}</Link>
+                    <Link to={to} onClick={scrollToTop}>{label}</Link>
                   </li>
                 ))}
               </ul>
