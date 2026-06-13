@@ -87,6 +87,10 @@ export default function AuthPage({ onLogin, onBack }) {
   // FIX: store the fb token specifically for the totp/confirm call
   const [totpSetupToken, setTotpSetupToken] = useState("");
 
+  // FIX: hold the verified admin data while TOTP setup is pending, so we only
+  // call onLogin() once setup is actually confirmed (mandatory MFA on first login)
+  const [pendingAdmin, setPendingAdmin] = useState(null);
+
   // Forgot password
   const [forgotEmail, setForgotEmail]             = useState("");
   const [maskedForgotEmail, setMaskedForgotEmail] = useState("");
@@ -97,7 +101,7 @@ export default function AuthPage({ onLogin, onBack }) {
     setName(""); setEmail(""); setPassword("");
     setOtp(""); setTotpCode(""); setTotpConfirm("");
     setOtpFbToken(""); setTotpSetupToken(""); setForgotEmail(""); setMaskedForgotEmail("");
-    setTotpQr(""); setTotpSecret("");
+    setTotpQr(""); setTotpSecret(""); setPendingAdmin(null);
   };
 
   const switchTo = (nextMode) => {
@@ -217,14 +221,17 @@ export default function AuthPage({ onLogin, onBack }) {
       }
 
       // 200 — login complete; check if TOTP setup is still needed
-      toast.success("Welcome back!", { id: toastId });
       const adminData  = data.data?.data ?? data.data;
       const needsSetup = data.data?.needs_totp_setup ?? !adminData?.totp_enabled;
 
+      // FIX: don't call onLogin yet if TOTP setup is still required — show the
+      // QR screen first and only authenticate once setup is confirmed.
       if (needsSetup) {
-        onLogin(adminData, fbToken);
+        toast.success("Almost there — let's set up your authenticator.", { id: toastId });
+        setPendingAdmin(adminData);
         await _loadTotpSetup(fbToken);
       } else {
+        toast.success("Welcome back!", { id: toastId });
         onLogin(adminData, fbToken);
       }
     } catch (err) {
@@ -282,15 +289,22 @@ export default function AuthPage({ onLogin, onBack }) {
       const adminData  = data.data?.data ?? data.data;
       const needsSetup = data.data?.needs_totp_setup ?? !adminData?.totp_enabled;
 
-      toast.success(
-        `Welcome back, ${adminData?.name ?? "Admin"}!`,
-        { id: toastId, duration: 4000 }
-      );
-
-      onLogin(adminData, otpFbToken);
-
+      // FIX: hold off on onLogin() until TOTP setup is confirmed when it's
+      // required — otherwise the dashboard mounts and replaces this screen
+      // before the QR code ever has a chance to render.
       if (needsSetup) {
+        toast.success(
+          `Welcome, ${adminData?.name ?? "Admin"} — let's set up your authenticator.`,
+          { id: toastId, duration: 4000 }
+        );
+        setPendingAdmin(adminData);
         await _loadTotpSetup(otpFbToken);
+      } else {
+        toast.success(
+          `Welcome back, ${adminData?.name ?? "Admin"}!`,
+          { id: toastId, duration: 4000 }
+        );
+        onLogin(adminData, otpFbToken);
       }
     } catch {
       toast.error("Network error. Please try again.", { id: toastId });
@@ -439,9 +453,27 @@ export default function AuthPage({ onLogin, onBack }) {
         setTotpSecret(data.data?.secret ?? "");
         setTotpSetupToken(fbToken); // FIX: stash token for the confirm call
         setMode("totp-setup");
+      } else {
+        // FIX: if QR generation fails, don't strand the user mid-login —
+        // fall back to completing the login so they aren't stuck.
+        toast.error(
+          data.error || "Could not start authenticator setup. You can set it up later from your profile.",
+          { duration: 6000 }
+        );
+        if (pendingAdmin) {
+          onLogin(pendingAdmin, fbToken);
+        }
       }
     } catch {
-      // Non-fatal — user can set up TOTP later from their profile
+      // Non-fatal — don't strand the user; let them in and they can set up
+      // TOTP later from their profile.
+      toast.error(
+        "Could not reach the server to start authenticator setup. You can set it up later from your profile.",
+        { duration: 6000 }
+      );
+      if (pendingAdmin) {
+        onLogin(pendingAdmin, fbToken);
+      }
     }
   };
 
@@ -476,10 +508,19 @@ export default function AuthPage({ onLogin, onBack }) {
         return;
       }
 
-      toast.success("Authenticator app linked! You can now use Google sign-in.", {
-        id: toastId, duration: 5000,
-      });
-      setMode("login");
+      // FIX: TOTP is now active — this is the moment the login actually
+      // completes, since onLogin was deferred until setup was confirmed.
+      toast.success(
+        `Authenticator linked! Welcome, ${pendingAdmin?.name ?? "Admin"}.`,
+        { id: toastId, duration: 5000 }
+      );
+
+      if (pendingAdmin) {
+        onLogin(pendingAdmin, totpSetupToken);
+      } else {
+        // Shouldn't normally happen, but don't leave the user stuck.
+        setMode("login");
+      }
     } catch {
       toast.error("Network error. Please try again.", { id: toastId });
     } finally {
@@ -784,8 +825,9 @@ export default function AuthPage({ onLogin, onBack }) {
             <span className="auth-form__eyebrow">Secure your account</span>
             <h2 className="auth-form__title">Set up<br />authenticator</h2>
             <p className="auth-form__sub">
-              Scan this QR code with <strong>Google Authenticator</strong> or any TOTP app,
-              then enter the 6-digit code it shows to confirm.
+              This is required before you can access the dashboard. Scan this QR code
+              with <strong>Google Authenticator</strong> or any TOTP app, then enter the
+              6-digit code it shows to confirm.
             </p>
 
             {totpQr && (
@@ -831,16 +873,22 @@ export default function AuthPage({ onLogin, onBack }) {
               type="submit"
               disabled={loading || totpConfirm.length !== 6}
             >
-              {loading ? "Activating…" : "Activate Authenticator"}
+              {loading ? "Activating…" : "Activate & Continue"}
             </button>
 
+            {/*
+              FIX: "Skip for now" removed — setup is mandatory on first login.
+              Signing the user back out (rather than letting onLogin fire)
+              ensures they're prompted again next time, since totp_enabled
+              is still false on the backend until /auth/totp/confirm succeeds.
+            */}
             <div className="auth-toggle" style={{ marginTop: "6px" }}>
               <button
                 type="button"
-                onClick={() => setMode("login")}
+                onClick={() => switchTo("login")}
                 disabled={loading}
               >
-                Skip for now
+                ← Cancel and sign in again later
               </button>
             </div>
           </form>
