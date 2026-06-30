@@ -1056,100 +1056,86 @@
   }
 }
 
-/* ── Action buttons (Verify / Resend / Continue) — matched to globals.css ──
-   globals.css defines .btn-primary (dark pill, white text) and .btn-ghost
-   (outlined pill, muted text). These mirror that exact look so the MFA
-   step buttons stop rendering as unstyled black boxes with black text.   */
-.ob__mfa-actions {
+/* ── Action buttons used by MFAStep.jsx ───────────────────────────────────
+   The component renders <button className="ob__btn ob__btn--primary"> and
+   <button className="ob__btn ob__btn--ghost">, but those classes never had
+   matching rules — so the browser fell back to its default button styling
+   (the squared, dark-on-dark box). These mirror globals.css .btn-primary
+   and .btn-ghost exactly, and match .ob__btn-next/.ob__btn-prev used
+   elsewhere in onboarding so every step looks consistent.                */
+.ob__step-actions {
   display: flex;
   gap: 12px;
   align-items: center;
-  justify-content: center;
-  margin-top: 24px;
   flex-wrap: wrap;
+  margin-top: 32px;
 }
 
-.ob__mfa-btn-primary {
+.ob__btn {
   display: inline-flex;
   align-items: center;
-  gap: 10px;
-  background: var(--text-dark, #1a1a1a);
-  color: #ffffff !important;
+  gap: 8px;
   font-family: var(--font-body, 'DM Sans', sans-serif);
   font-size: 14px;
-  font-weight: 500;
-  padding: 14px 32px;
   border-radius: 999px;
-  border: none;
   cursor: pointer;
-  transition: background 0.25s, transform 0.2s cubic-bezier(0.16,1,0.3,1), box-shadow 0.25s;
+  transition: background 0.25s, border-color 0.2s, color 0.2s, transform 0.2s cubic-bezier(0.16,1,0.3,1), box-shadow 0.25s;
 }
 
-.ob__mfa-btn-primary:hover:not(:disabled) {
+.ob__btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  transform: none !important;
+  box-shadow: none !important;
+}
+
+.ob__btn--primary {
+  background: var(--text-dark, #1a1a1a);
+  color: #ffffff !important;
+  font-weight: 500;
+  padding: 14px 32px;
+  border: none;
+}
+
+.ob__btn--primary:hover:not(:disabled) {
   background: var(--green-deep, #5a9e3a);
   transform: translateY(-2px);
   box-shadow: 0 10px 40px rgba(90,158,58,0.3);
 }
 
-.ob__mfa-btn-primary:disabled {
-  opacity: 0.5;
-  cursor: not-allowed;
-  transform: none;
-  box-shadow: none;
-}
-
-.ob__mfa-btn-secondary {
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
+.ob__btn--ghost {
   background: transparent;
   color: var(--text-mid, #4a4a4a) !important;
-  font-family: var(--font-body, 'DM Sans', sans-serif);
-  font-size: 14px;
   font-weight: 400;
-  padding: 14px 24px;
-  border-radius: 999px;
+  padding: 13px 24px;
   border: 1px solid rgba(0,0,0,0.12);
-  cursor: pointer;
-  transition: border-color 0.2s, color 0.2s, transform 0.2s;
 }
 
-.ob__mfa-btn-secondary:hover:not(:disabled) {
+.ob__btn--ghost:hover:not(:disabled) {
   border-color: var(--green-deep, #5a9e3a);
   color: var(--green-deep, #5a9e3a) !important;
   transform: translateY(-2px);
 }
 
-.ob__mfa-btn-secondary:disabled {
-  opacity: 0.5;
-  cursor: not-allowed;
-}
-
-/* Safety net: catches any unclassed <button> left inside the MFA step
-   (e.g. a raw <button> in the code-confirm form) so it can never fall
-   back to the browser's default black/grey button styling. */
-.ob__mfa-code-form button:not([class*="ob__mfa-btn"]):not(.ob__mfa-copy-btn):not(.ob__mfa-secret-toggle),
-.ob__mfa-done button:not([class*="ob__mfa-btn"]) {
+/* Other MFAStep wrapper/eyebrow elements not yet covered elsewhere */
+.ob__step-eyebrow {
   display: inline-flex;
   align-items: center;
-  gap: 10px;
-  background: var(--text-dark, #1a1a1a);
-  color: #ffffff !important;
-  font-family: var(--font-body, 'DM Sans', sans-serif);
-  font-size: 14px;
-  font-weight: 500;
-  padding: 14px 32px;
-  border-radius: 999px;
-  border: none;
-  cursor: pointer;
-  transition: background 0.25s, transform 0.2s, box-shadow 0.25s;
+  gap: 6px;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: #5a9e3a;
+  background: #eaf3df;
+  padding: 5px 12px;
+  border-radius: 99px;
+  margin-bottom: 20px;
 }
 
-.ob__mfa-code-form button:not([class*="ob__mfa-btn"]):not(.ob__mfa-copy-btn):not(.ob__mfa-secret-toggle):hover:not(:disabled),
-.ob__mfa-done button:not([class*="ob__mfa-btn"]):hover:not(:disabled) {
-  background: var(--green-deep, #5a9e3a);
-  transform: translateY(-2px);
-  box-shadow: 0 10px 40px rgba(90,158,58,0.3);
+.ob__step-content {
+  display: flex;
+  flex-direction: column;
 }
 
 /* ─────────────────────────── QUOTE BLOCK ─────────────────────────── */
