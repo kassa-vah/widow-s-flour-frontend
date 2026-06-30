@@ -1,5 +1,6 @@
 // src/components/Onboarding/OnboardingPage.jsx
 import { useState, useEffect } from "react";
+import toast from "react-hot-toast";
 import "./Onboarding.css";
 import imgLogo from "../../assets/whitelogo.jpeg";
 import WelcomeStep from "./steps/WelcomeStep";
@@ -8,6 +9,7 @@ import AdminGuidanceStep from "./steps/AdminGuidanceStep";
 import DataIntegrityStep from "./steps/DataIntegrityStep";
 import BioDataGuideStep from "./steps/BioDataGuideStep";
 import ProfileSystemStep from "./steps/ProfileSystemStep";
+import MFAStep from "./steps/MFAStep";
 import ResponsibilityStep from "./steps/ResponsibilityStep";
 import OnboardingSuccess from "./OnboardingSuccess";
 
@@ -18,15 +20,32 @@ const STEPS = [
   { id: "integrity",  label: "Data Integrity",     icon: "bi-shield-check" },
   { id: "biodata",    label: "Biodata Collection", icon: "bi-person-lines-fill" },
   { id: "profile",    label: "Profile System",     icon: "bi-bar-chart-steps" },
+  { id: "mfa",        label: "Secure Account",     icon: "bi-shield-lock" },
   { id: "pledge",     label: "My Pledge",          icon: "bi-patch-check" },
 ];
 
+const MFA_STEP_INDEX = STEPS.findIndex((s) => s.id === "mfa");
+
 const STORAGE_KEY = "wf_onboarding_state";
 
-export default function OnboardingPage({ adminName = "Administrator", onComplete }) {
+export default function OnboardingPage({
+  adminName = "Administrator",
+  adminData,      // full admin object — used to seed totpEnabled
+  fbToken,        // current Firebase ID token — required by MFAStep's API calls
+  onComplete,
+}) {
   const [currentStep, setCurrentStep]   = useState(0);
   const [completed,   setCompleted]     = useState(false);
   const [visitedSteps, setVisitedSteps] = useState(new Set([0]));
+
+  // Single source of truth for whether MFA has been completed. Seeded from
+  // adminData so a returning admin who already has TOTP doesn't get blocked,
+  // then flipped true the instant MFAStep confirms a fresh setup.
+  const [totpEnabled, setTotpEnabled] = useState(!!adminData?.totp_enabled);
+
+  useEffect(() => {
+    if (adminData?.totp_enabled) setTotpEnabled(true);
+  }, [adminData?.totp_enabled]);
 
   // Restore progress from localStorage
   useEffect(() => {
@@ -34,10 +53,14 @@ export default function OnboardingPage({ adminName = "Administrator", onComplete
     if (saved) {
       try {
         const { step, visited } = JSON.parse(saved);
-        setCurrentStep(step ?? 0);
+        // Never restore onto or past a step beyond MFA if MFA wasn't done —
+        // a stale localStorage entry shouldn't be a bypass.
+        const safeStep = (!totpEnabled && (step ?? 0) > MFA_STEP_INDEX) ? MFA_STEP_INDEX : (step ?? 0);
+        setCurrentStep(safeStep);
         setVisitedSteps(new Set(visited ?? [0]));
       } catch {}
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   // Persist progress
@@ -53,14 +76,30 @@ export default function OnboardingPage({ adminName = "Administrator", onComplete
     window.scrollTo({ top: 0, behavior: "smooth" });
   }, [currentStep]);
 
+  // The only gate that matters: you cannot land on any step AFTER mfa
+  // unless totpEnabled is true. You can always go TO the mfa step itself,
+  // and you can always go backward to earlier informational steps.
+  const isLocked = (idx) => idx > MFA_STEP_INDEX && !totpEnabled;
+
   const goTo = (idx) => {
+    if (isLocked(idx)) {
+      toast.error("Finish setting up your authenticator first.");
+      setCurrentStep(MFA_STEP_INDEX);
+      setVisitedSteps((prev) => new Set([...prev, MFA_STEP_INDEX]));
+      return;
+    }
     setCurrentStep(idx);
-    setVisitedSteps(prev => new Set([...prev, idx]));
+    setVisitedSteps((prev) => new Set([...prev, idx]));
   };
 
-  const next      = () => { if (currentStep < STEPS.length - 1) goTo(currentStep + 1); };
-  const prev      = () => { if (currentStep > 0) goTo(currentStep - 1); };
-  const skipToEnd = () => goTo(STEPS.length - 1);
+  const next = () => {
+    if (currentStep < STEPS.length - 1) goTo(currentStep + 1);
+  };
+  const prev = () => { if (currentStep > 0) goTo(currentStep - 1); };
+
+  // "Skip to end" now means "skip to MFA" if it isn't done yet — there is no
+  // way to skip past it to Pledge.
+  const skipToEnd = () => goTo(totpEnabled ? STEPS.length - 1 : MFA_STEP_INDEX);
 
   const handleFinish = () => {
     localStorage.removeItem(STORAGE_KEY);
@@ -85,6 +124,15 @@ export default function OnboardingPage({ adminName = "Administrator", onComplete
       case "integrity": return <DataIntegrityStep     {...stepProps} />;
       case "biodata":   return <BioDataGuideStep      {...stepProps} />;
       case "profile":   return <ProfileSystemStep     {...stepProps} />;
+      case "mfa":
+        return (
+          <MFAStep
+            {...stepProps}
+            fbToken={fbToken}
+            alreadyEnabled={totpEnabled}
+            onConfirmed={() => setTotpEnabled(true)}
+          />
+        );
       case "pledge":    return <ResponsibilityStep    {...stepProps} onFinish={handleFinish} />;
       default:          return null;
     }
@@ -118,9 +166,9 @@ export default function OnboardingPage({ adminName = "Administrator", onComplete
           </div>
         </div>
 
-        {/* Skip button */}
+        {/* Skip button — skips to MFA, never past it */}
         <button className="ob__topbar-skip" onClick={skipToEnd}>
-          <i className="bi bi-skip-end" /> Skip to pledge
+          <i className="bi bi-skip-end" /> {totpEnabled ? "Skip to pledge" : "Skip to security setup"}
         </button>
       </header>
 
@@ -135,9 +183,13 @@ export default function OnboardingPage({ adminName = "Administrator", onComplete
                 : i < currentStep
                 ? "ob__dot--done"
                 : ""
-            }`}
+            } ${isLocked(i) ? "ob__dot--locked" : ""}`}
             onClick={() => goTo(i)}
-            aria-label={`Go to step ${i + 1}`}
+            aria-label={
+              isLocked(i)
+                ? `Step ${i + 1} locked until authenticator setup is complete`
+                : `Go to step ${i + 1}`
+            }
           />
         ))}
       </div>

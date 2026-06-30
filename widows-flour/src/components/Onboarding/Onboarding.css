@@ -792,6 +792,270 @@
   max-width: 560px;
 }
 
+/* ═══════════════════════════════════════════════════════════════════
+   MFA STEP — add these rules to your existing Onboarding.css
+   They all scope under .ob__mfa-* so they won't conflict.
+   ═══════════════════════════════════════════════════════════════════ */
+
+/* ── Shield icon variant ───────────────────────────────────────── */
+.ob__step-icon--shield {
+  width: 68px;
+  height: 68px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #2c4a20 0%, #4a7032 100%);
+  color: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0 auto 20px;
+}
+
+/* ── Why-cards grid (intro) ─────────────────────────────────────── */
+.ob__mfa-why-cards {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin: 28px 0 20px;
+}
+
+.ob__mfa-why-card {
+  display: flex;
+  align-items: flex-start;
+  gap: 14px;
+  background: var(--ob-surface, #f8f9fa);
+  border: 1px solid var(--ob-border, #e5e7eb);
+  border-radius: 12px;
+  padding: 14px 16px;
+}
+
+.ob__mfa-why-card svg {
+  flex-shrink: 0;
+  margin-top: 2px;
+  color: #4a7032;
+}
+
+.ob__mfa-why-card strong {
+  display: block;
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: var(--ob-text, #111827);
+  margin-bottom: 2px;
+}
+
+.ob__mfa-why-card span {
+  font-size: 0.8125rem;
+  color: var(--ob-muted, #6b7280);
+  line-height: 1.45;
+}
+
+/* ── Apps hint bar ───────────────────────────────────────────────── */
+.ob__mfa-apps-hint {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: #eef5e8;
+  border: 1px solid #c6ddb3;
+  border-radius: 8px;
+  padding: 10px 14px;
+  font-size: 0.8125rem;
+  color: #2c4a20;
+  margin-bottom: 8px;
+}
+
+.ob__mfa-apps-hint svg {
+  flex-shrink: 0;
+  color: #4a7032;
+}
+
+/* ── QR code wrapper ─────────────────────────────────────────────── */
+.ob__mfa-qr-wrap {
+  display: flex;
+  justify-content: center;
+  margin: 24px auto;
+  padding: 16px;
+  background: #fff;
+  border: 2px solid var(--ob-border, #e5e7eb);
+  border-radius: 16px;
+  width: fit-content;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.07);
+}
+
+.ob__mfa-qr {
+  width: 200px;
+  height: 200px;
+  display: block;
+  border-radius: 6px;
+}
+
+/* ── Manual key toggle button ────────────────────────────────────── */
+.ob__mfa-secret-toggle {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  background: none;
+  border: none;
+  color: #4a7032;
+  font-size: 0.8125rem;
+  font-weight: 500;
+  cursor: pointer;
+  padding: 4px 0;
+  margin: 0 auto 4px;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+.ob__mfa-secret-toggle:hover {
+  color: #2c4a20;
+}
+
+/* ── Manual key box ──────────────────────────────────────────────── */
+.ob__mfa-secret-box {
+  background: #f3f4f6;
+  border: 1px dashed #9ca3af;
+  border-radius: 10px;
+  padding: 14px 16px;
+  margin: 12px 0 4px;
+  text-align: center;
+}
+
+.ob__mfa-secret-label {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  font-size: 0.75rem;
+  color: #6b7280;
+  margin-bottom: 10px;
+}
+
+.ob__mfa-secret-key {
+  font-family: "Courier New", Courier, monospace;
+  font-size: 0.9375rem;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  color: #111827;
+  word-break: break-all;
+  margin-bottom: 10px;
+}
+
+.ob__mfa-copy-btn {
+  background: #4a7032;
+  color: #fff;
+  border: none;
+  border-radius: 6px;
+  padding: 6px 14px;
+  font-size: 0.8125rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background 0.15s;
+}
+
+.ob__mfa-copy-btn:hover {
+  background: #2c4a20;
+}
+
+/* ── Code input (confirm phase) ──────────────────────────────────── */
+.ob__mfa-code-form {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.ob__mfa-code-label {
+  font-size: 0.8125rem;
+  font-weight: 600;
+  color: var(--ob-muted, #6b7280);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  margin-bottom: 10px;
+}
+
+.ob__mfa-code-input {
+  width: 100%;
+  max-width: 220px;
+  text-align: center;
+  font-size: 1.75rem;
+  font-weight: 700;
+  letter-spacing: 0.35em;
+  padding: 14px 16px;
+  border: 2px solid var(--ob-border, #e5e7eb);
+  border-radius: 12px;
+  outline: none;
+  transition: border-color 0.15s;
+  background: #fff;
+  color: #111827;
+}
+
+.ob__mfa-code-input:focus {
+  border-color: #4a7032;
+  box-shadow: 0 0 0 3px rgba(74, 112, 50, 0.12);
+}
+
+.ob__mfa-code-input:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+/* ── Done state  */
+.ob__mfa-done {
+  text-align: center;
+}
+
+.ob__mfa-done-icon {
+  width: 80px;
+  height: 80px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #2c4a20 0%, #4a7032 100%);
+  color: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0 auto 24px;
+}
+
+.ob__mfa-done-tip {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  background: #eef5e8;
+  border: 1px solid #c6ddb3;
+  border-radius: 10px;
+  padding: 12px 16px;
+  font-size: 0.8125rem;
+  color: #2c4a20;
+  line-height: 1.5;
+  text-align: left;
+  margin: 20px 0 8px;
+}
+
+.ob__mfa-done-tip svg {
+  flex-shrink: 0;
+  margin-top: 2px;
+  color: #4a7032;
+}
+
+/* ── Step meta counter ───────────────────────────────────────────── */
+.ob__step-meta {
+  margin-top: 32px;
+  text-align: center;
+  font-size: 0.75rem;
+  color: var(--ob-muted, #9ca3af);
+  letter-spacing: 0.04em;
+}
+
+/* ── Mobile tweaks ───────────────────────────────────────────────── */
+@media (max-width: 480px) {
+  .ob__mfa-qr {
+    width: 168px;
+    height: 168px;
+  }
+
+  .ob__mfa-code-input {
+    font-size: 1.5rem;
+    letter-spacing: 0.25em;
+  }
+}
+
 /* ─────────────────────────── QUOTE BLOCK ─────────────────────────── */
 .ob__quote {
   background: #ffffff;
