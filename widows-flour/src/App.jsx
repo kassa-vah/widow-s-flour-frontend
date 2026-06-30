@@ -93,19 +93,18 @@ function OurStoryPage() {
   );
 }
 
-// ── Admin area with onboarding gate ──────────────────────────────────────────
-// First-time admins (or those who haven't completed onboarding) see the
-// 7-step onboarding wizard before the dashboard renders.
-// Completion is persisted in localStorage via the useOnboarding hook.
-function AdminArea({ admin, token, onLogout }) {
-  const { needsOnboarding, completeOnboarding } = useOnboarding();
+function AdminArea({ admin, token, onLogout, onAdminUpdate }) {
+  const { needsOnboarding, completeOnboarding } = useOnboarding(admin);
   const adminName = admin?.name || "Administrator";
 
   if (needsOnboarding) {
     return (
       <OnboardingPage
         adminName={adminName}
+        adminData={admin}
+        fbToken={token}
         onComplete={completeOnboarding}
+        onTotpConfirmed={() => onAdminUpdate({ totp_enabled: true })}
       />
     );
   }
@@ -176,6 +175,15 @@ export default function App() {
         });
       } catch { /* swallow */ }
     }
+  };
+
+  const handleAdminUpdate = (patch) => {
+    setSession((prev) => {
+      if (!prev.admin) return prev;
+      const updatedAdmin = { ...prev.admin, ...patch };
+      localStorage.setItem("admin", JSON.stringify(updatedAdmin));
+      return { ...prev, admin: updatedAdmin };
+    });
   };
 
   useEffect(() => {
@@ -286,6 +294,7 @@ export default function App() {
                 admin={admin}
                 token={token}
                 onLogout={() => handleLogout(false)}
+                onAdminUpdate={handleAdminUpdate}
               />
             </PrivateRoute>
           }

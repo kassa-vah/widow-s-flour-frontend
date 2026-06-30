@@ -30,17 +30,17 @@ const STORAGE_KEY = "wf_onboarding_state";
 
 export default function OnboardingPage({
   adminName = "Administrator",
-  adminData,      // full admin object — used to seed totpEnabled
-  fbToken,        // current Firebase ID token — required by MFAStep's API calls
+  adminData,        
+  fbToken,           
   onComplete,
+  onTotpConfirmed,   
+                                          
 }) {
   const [currentStep, setCurrentStep]   = useState(0);
   const [completed,   setCompleted]     = useState(false);
   const [visitedSteps, setVisitedSteps] = useState(new Set([0]));
 
-  // Single source of truth for whether MFA has been completed. Seeded from
-  // adminData so a returning admin who already has TOTP doesn't get blocked,
-  // then flipped true the instant MFAStep confirms a fresh setup.
+
   const [totpEnabled, setTotpEnabled] = useState(!!adminData?.totp_enabled);
 
   useEffect(() => {
@@ -53,14 +53,13 @@ export default function OnboardingPage({
     if (saved) {
       try {
         const { step, visited } = JSON.parse(saved);
-        // Never restore onto or past a step beyond MFA if MFA wasn't done —
-        // a stale localStorage entry shouldn't be a bypass.
+        
         const safeStep = (!totpEnabled && (step ?? 0) > MFA_STEP_INDEX) ? MFA_STEP_INDEX : (step ?? 0);
         setCurrentStep(safeStep);
         setVisitedSteps(new Set(visited ?? [0]));
       } catch {}
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+   
   }, []);
 
   // Persist progress
@@ -97,8 +96,7 @@ export default function OnboardingPage({
   };
   const prev = () => { if (currentStep > 0) goTo(currentStep - 1); };
 
-  // "Skip to end" now means "skip to MFA" if it isn't done yet — there is no
-  // way to skip past it to Pledge.
+ 
   const skipToEnd = () => goTo(totpEnabled ? STEPS.length - 1 : MFA_STEP_INDEX);
 
   const handleFinish = () => {
@@ -130,7 +128,10 @@ export default function OnboardingPage({
             {...stepProps}
             fbToken={fbToken}
             alreadyEnabled={totpEnabled}
-            onConfirmed={() => setTotpEnabled(true)}
+            onConfirmed={() => {
+              setTotpEnabled(true);
+              if (onTotpConfirmed) onTotpConfirmed();
+            }}
           />
         );
       case "pledge":    return <ResponsibilityStep    {...stepProps} onFinish={handleFinish} />;
