@@ -62,7 +62,11 @@ export default function AuthPage({ onLogin, onBack }) {
 
   const initialMode = location.pathname === "/register" ? "register" : "login";
 
-  // mode: "login" | "register" | "otp" | "totp" | "totp-setup" | "forgot" | "forgot-sent"
+  // mode: "login" | "register" | "otp" | "totp" | "forgot" | "forgot-sent"
+  // NOTE: TOTP *setup* (QR scan + confirm) no longer happens here — it's
+  // owned entirely by the onboarding wizard's MFAStep, gated in AdminArea
+  // via admin.totp_enabled. This page only ever VERIFIES an existing TOTP
+  // (the Google sign-in flow), it never sets one up.
   const [mode, setMode]       = useState(initialMode);
   const [loading, setLoading] = useState(false);
 
@@ -77,15 +81,8 @@ export default function AuthPage({ onLogin, onBack }) {
   const [otpFbToken, setOtpFbToken] = useState("");
   const [otp, setOtp]               = useState("");
 
-  // TOTP step (Google flow) — shares otpAdminId / otpFbToken
+  // TOTP verify step (Google flow) — shares otpAdminId / otpFbToken
   const [totpCode, setTotpCode] = useState("");
-
-  // TOTP setup (QR screen shown after first successful email login)
-  const [totpQr, setTotpQr]           = useState("");   // base64 PNG
-  const [totpSecret, setTotpSecret]   = useState("");   // backup key
-  const [totpConfirm, setTotpConfirm] = useState("");   // code typed to confirm scan
-  // FIX: store the fb token specifically for the totp/confirm call
-  const [totpSetupToken, setTotpSetupToken] = useState("");
 
   // Forgot password
   const [forgotEmail, setForgotEmail]             = useState("");
@@ -95,15 +92,14 @@ export default function AuthPage({ onLogin, onBack }) {
 
   const resetAllFields = () => {
     setName(""); setEmail(""); setPassword("");
-    setOtp(""); setTotpCode(""); setTotpConfirm("");
-    setOtpFbToken(""); setTotpSetupToken(""); setForgotEmail(""); setMaskedForgotEmail("");
-    setTotpQr(""); setTotpSecret("");
+    setOtp(""); setTotpCode("");
+    setOtpFbToken(""); setForgotEmail(""); setMaskedForgotEmail("");
   };
 
   const switchTo = (nextMode) => {
     resetAllFields();
     setMode(nextMode);
-    if (!["otp", "totp", "totp-setup", "forgot", "forgot-sent"].includes(nextMode)) {
+    if (!["otp", "totp", "forgot", "forgot-sent"].includes(nextMode)) {
       navigate(nextMode === "register" ? "/register" : "/login", { replace: true });
     }
   };
@@ -216,17 +212,12 @@ export default function AuthPage({ onLogin, onBack }) {
         return;
       }
 
-      // 200 — login complete; check if TOTP setup is still needed
+      // 200 — login complete. Whether this admin still needs TOTP setup is
+      // decided downstream by AdminArea's onboarding gate (admin.totp_enabled),
+      // not here. Just hand off and let routing take over.
       toast.success("Welcome back!", { id: toastId });
-      const adminData  = data.data?.data ?? data.data;
-      const needsSetup = data.data?.needs_totp_setup ?? !adminData?.totp_enabled;
-
-      if (needsSetup) {
-        onLogin(adminData, fbToken);
-        await _loadTotpSetup(fbToken);
-      } else {
-        onLogin(adminData, fbToken);
-      }
+      const adminData = data.data?.data ?? data.data;
+      onLogin(adminData, fbToken);
     } catch (err) {
       const code = err?.code ?? "";
       const msg =
@@ -279,8 +270,7 @@ export default function AuthPage({ onLogin, onBack }) {
         return;
       }
 
-      const adminData  = data.data?.data ?? data.data;
-      const needsSetup = data.data?.needs_totp_setup ?? !adminData?.totp_enabled;
+      const adminData = data.data?.data ?? data.data;
 
       toast.success(
         `Welcome back, ${adminData?.name ?? "Admin"}!`,
@@ -288,10 +278,6 @@ export default function AuthPage({ onLogin, onBack }) {
       );
 
       onLogin(adminData, otpFbToken);
-
-      if (needsSetup) {
-        await _loadTotpSetup(otpFbToken);
-      }
     } catch {
       toast.error("Network error. Please try again.", { id: toastId });
     } finally {
@@ -350,8 +336,8 @@ export default function AuthPage({ onLogin, onBack }) {
               <div>
                 <p style={{ margin: "0 0 4px", fontWeight: 600 }}>Authenticator not set up</p>
                 <p style={{ margin: 0, fontSize: "13px", color: "#4b5563" }}>
-                  Sign in with email &amp; password first to set up your Google Authenticator,
-                  then you can use Google sign-in.
+                  Sign in with email &amp; password first to set up your authenticator
+                  during onboarding, then you can use Google sign-in.
                 </p>
               </div>
             ),
@@ -415,71 +401,6 @@ export default function AuthPage({ onLogin, onBack }) {
         id: toastId, duration: 4000,
       });
       onLogin(adminData, otpFbToken);
-    } catch {
-      toast.error("Network error. Please try again.", { id: toastId });
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  // ── TOTP Setup — fetch QR from backend ───────────────────────────────────
-
-  const _loadTotpSetup = async (fbToken) => {
-    try {
-      const res  = await fetch(`${API}/auth/totp/setup`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${fbToken}`,
-        },
-      });
-      const data = await res.json();
-      if (res.ok) {
-        setTotpQr(data.data?.qr_code ?? "");
-        setTotpSecret(data.data?.secret ?? "");
-        setTotpSetupToken(fbToken); // FIX: stash token for the confirm call
-        setMode("totp-setup");
-      }
-    } catch {
-      // Non-fatal — user can set up TOTP later from their profile
-    }
-  };
-
-  // ── TOTP Setup — confirm scan ─────────────────────────────────────────────
-
-  const handleTotpConfirm = async (e) => {
-    e.preventDefault();
-    const trimmed = totpConfirm.trim();
-    if (trimmed.length !== 6 || !/^\d{6}$/.test(trimmed)) {
-      toast.error("Enter the 6-digit code shown in your authenticator app.");
-      return;
-    }
-
-    setLoading(true);
-    const toastId = toast.loading("Activating authenticator…");
-
-    try {
-      // FIX: /auth/totp/confirm is @admin_required — must send the Firebase token
-      const res  = await fetch(`${API}/auth/totp/confirm`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${totpSetupToken}`,
-        },
-        body: JSON.stringify({ code: trimmed }),
-      });
-      const data = await res.json();
-
-      if (!res.ok) {
-        toast.error(data.error || "Code incorrect. Try again.", { id: toastId });
-        setTotpConfirm("");
-        return;
-      }
-
-      toast.success("Authenticator app linked! You can now use Google sign-in.", {
-        id: toastId, duration: 5000,
-      });
-      setMode("login");
     } catch {
       toast.error("Network error. Please try again.", { id: toastId });
     } finally {
@@ -773,74 +694,6 @@ export default function AuthPage({ onLogin, onBack }) {
             <div className="auth-toggle" style={{ marginTop: "6px" }}>
               <button type="button" onClick={() => switchTo("login")} disabled={loading}>
                 ← Back to sign in
-              </button>
-            </div>
-          </form>
-        )}
-
-        {/* ── TOTP Setup (QR code) ── */}
-        {mode === "totp-setup" && (
-          <form onSubmit={handleTotpConfirm} noValidate>
-            <span className="auth-form__eyebrow">Secure your account</span>
-            <h2 className="auth-form__title">Set up<br />authenticator</h2>
-            <p className="auth-form__sub">
-              Scan this QR code with <strong>Google Authenticator</strong> or any TOTP app,
-              then enter the 6-digit code it shows to confirm.
-            </p>
-
-            {totpQr && (
-              <div className="auth-qr-wrap">
-                <img
-                  src={`data:image/png;base64,${totpQr}`}
-                  alt="TOTP QR code"
-                  className="auth-qr-img"
-                />
-              </div>
-            )}
-
-            {totpSecret && (
-              <div className="auth-notice auth-notice--info" style={{ marginBottom: "16px" }}>
-                <FiInfo className="auth-notice__icon" />
-                <span>
-                  Can't scan? Enter this key manually:{" "}
-                  <strong style={{ letterSpacing: "0.1em", wordBreak: "break-all" }}>
-                    {totpSecret}
-                  </strong>
-                </span>
-              </div>
-            )}
-
-            <div className="auth-field">
-              <label>Confirm Code</label>
-              <input
-                type="text"
-                inputMode="numeric"
-                pattern="\d{6}"
-                maxLength={6}
-                placeholder="123456"
-                value={totpConfirm}
-                onChange={(e) => setTotpConfirm(e.target.value.replace(/\D/g, "").slice(0, 6))}
-                autoComplete="one-time-code"
-                disabled={loading}
-                style={{ letterSpacing: "0.35em", fontSize: "1.25rem", textAlign: "center" }}
-              />
-            </div>
-
-            <button
-              className="auth-submit"
-              type="submit"
-              disabled={loading || totpConfirm.length !== 6}
-            >
-              {loading ? "Activating…" : "Activate Authenticator"}
-            </button>
-
-            <div className="auth-toggle" style={{ marginTop: "6px" }}>
-              <button
-                type="button"
-                onClick={() => setMode("login")}
-                disabled={loading}
-              >
-                Skip for now
               </button>
             </div>
           </form>
