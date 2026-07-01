@@ -3,10 +3,10 @@ import { useState, useEffect, useCallback } from "react";
 const PROGRESS_KEY = "wf_onboarding_state";
 
 export function useOnboarding(admin) {
- 
+
   const totpEnabled = !!admin?.totp_enabled;
 
- 
+
   const [forceOnboarding, setForceOnboarding] = useState(false);
 
   useEffect(() => {

@@ -38,6 +38,9 @@ import { useOnboarding }   from "./hooks/useOnboarding";
 
 const API = import.meta.env.VITE_API_URL ?? "http://127.0.0.1:5000";
 
+// Must match the STORAGE_KEY used inside OnboardingPage.jsx
+const ONBOARDING_PROGRESS_KEY = "wf_onboarding_state";
+
 function getStoredSession() {
   try {
     const token = localStorage.getItem("fb_token");
@@ -155,6 +158,12 @@ export default function App() {
   }, [admin, token]);
 
   const handleLogin = (adminData, fbToken) => {
+    // Clear any leftover onboarding progress from a previous session so a
+    // fresh login ALWAYS lands on step 0 (Welcome) when onboarding is
+    // needed, instead of resuming wherever a prior session left off (this
+    // was the cause of jumping straight to the MFA step after login).
+    localStorage.removeItem(ONBOARDING_PROGRESS_KEY);
+
     localStorage.setItem("fb_token", fbToken);
     localStorage.setItem("admin",    JSON.stringify(adminData));
     setSession({ admin: adminData, token: fbToken });
