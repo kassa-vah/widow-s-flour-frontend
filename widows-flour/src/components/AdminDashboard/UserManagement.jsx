@@ -54,10 +54,10 @@ function Avatar({ admin }) {
 
 // ── Confirm Modal ─────────────────────────────────────────────────────────────
 
-function ConfirmModal({ open, danger, title, message, confirmLabel, onConfirm, onCancel }) {
+function ConfirmModal({ open, danger, title, message, confirmLabel, onConfirm, onCancel, loading }) {
   if (!open) return null;
   return (
-    <div className="um2-overlay" onClick={onCancel}>
+    <div className="um2-overlay" onClick={!loading ? onCancel : undefined}>
       <div className="um2-modal" onClick={e => e.stopPropagation()}>
         <div className="um2-modal__head">
           {danger
@@ -67,12 +67,22 @@ function ConfirmModal({ open, danger, title, message, confirmLabel, onConfirm, o
         </div>
         <p className="um2-modal__body">{message}</p>
         <div className="um2-modal__foot">
-          <button className="um2-btn um2-btn--ghost" onClick={onCancel}>Cancel</button>
+          <button
+            className="um2-btn um2-btn--ghost"
+            onClick={onCancel}
+            disabled={loading}
+          >
+            Cancel
+          </button>
           <button
             className={`um2-btn ${danger ? "um2-btn--danger" : "um2-btn--primary"}`}
             onClick={onConfirm}
+            disabled={loading}
           >
-            {confirmLabel}
+            {loading
+              ? <><FiLoader className="um2-spin" size={14} /> Working…</>
+              : confirmLabel
+            }
           </button>
         </div>
       </div>
@@ -111,7 +121,7 @@ function EditModal({ open, admin, token, onClose, onSaved }) {
   };
 
   return (
-    <div className="um2-overlay" onClick={onClose}>
+    <div className="um2-overlay" onClick={!saving ? onClose : undefined}>
       <div className="um2-modal um2-modal--edit" onClick={e => e.stopPropagation()}>
         <div className="um2-modal__head">
           <FiEdit2 size={20} color="#3b82f6" />
@@ -141,9 +151,33 @@ function EditModal({ open, admin, token, onClose, onSaved }) {
             Cancel
           </button>
           <button className="um2-btn um2-btn--primary" onClick={save} disabled={saving}>
-            {saving ? <><FiLoader className="um2-spin" size={14} /> Saving…</> : <><FiCheck size={14} /> Save</>}
+            {saving
+              ? <><FiLoader className="um2-spin" size={14} /> Saving…</>
+              : <><FiCheck size={14} /> Save</>
+            }
           </button>
         </div>
+      </div>
+    </div>
+  );
+}
+
+// ── Row skeleton — shown while the list is loading ────────────────────────────
+
+function RowSkeleton() {
+  return (
+    <div className="um2-row um2-row--skeleton">
+      <div className="um2-row__left">
+        <div className="um2-skel um2-skel--avatar" />
+        <div className="um2-row__info">
+          <div className="um2-skel um2-skel--name" />
+          <div className="um2-skel um2-skel--email" />
+          <div className="um2-skel um2-skel--badge" />
+        </div>
+      </div>
+      <div className="um2-row__actions">
+        <div className="um2-skel um2-skel--btn" />
+        <div className="um2-skel um2-skel--btn" />
       </div>
     </div>
   );
@@ -154,18 +188,19 @@ function EditModal({ open, admin, token, onClose, onSaved }) {
 // ══════════════════════════════════════════════════════════════════════════════
 
 export default function UserManagement({ token, currentAdmin }) {
-  // ── FIX: check both is_superadmin (boolean) and role (string) ──────────────
   const isSA = currentAdmin?.is_superadmin === true || currentAdmin?.role === "superadmin";
 
-  const [section,  setSection]  = useState("all");   // "all" | "pending"
-  const [admins,   setAdmins]   = useState([]);
-  const [pending,  setPending]  = useState([]);
-  const [loading,  setLoading]  = useState(true);
-  const [busy,     setBusy]     = useState(null);     // admin id currently being acted on
-  const [confirm,  setConfirm]  = useState(null);     // { type, admin }
-  const [editItem, setEditItem] = useState(null);
-  const [search,   setSearch]   = useState("");
-  const [toast,    setToast]    = useState(null);     // { msg, ok }
+  const [section,      setSection]      = useState("all");   // "all" | "pending"
+  const [admins,       setAdmins]       = useState([]);
+  const [pending,      setPending]      = useState([]);
+  const [loading,      setLoading]      = useState(true);
+  const [refreshing,   setRefreshing]   = useState(false);   // manual refresh spinner
+  const [busy,         setBusy]         = useState(null);    // admin id being acted on
+  const [confirmBusy,  setConfirmBusy]  = useState(false);   // confirm modal in-flight
+  const [confirm,      setConfirm]      = useState(null);    // { type, admin }
+  const [editItem,     setEditItem]     = useState(null);
+  const [search,       setSearch]       = useState("");
+  const [toast,        setToast]        = useState(null);    // { msg, ok }
 
   const headers = useCallback(() => ({
     Authorization: `Bearer ${token}`,
@@ -174,9 +209,11 @@ export default function UserManagement({ token, currentAdmin }) {
 
   // ── Data loading ────────────────────────────────────────────────────────────
 
-  const load = useCallback(async () => {
+  const load = useCallback(async (manual = false) => {
     if (!token) return;
-    setLoading(true);
+    if (manual) setRefreshing(true);
+    else        setLoading(true);
+
     try {
       const reqs = [fetch(`${API}/auth/admins`, { headers: headers() })];
       if (isSA) reqs.push(fetch(`${API}/auth/pending`, { headers: headers() }));
@@ -191,7 +228,10 @@ export default function UserManagement({ token, currentAdmin }) {
         setPending(d.data?.pending ?? d.pending ?? []);
       }
     } catch { /* silent */ }
-    finally  { setLoading(false); }
+    finally {
+      setLoading(false);
+      setRefreshing(false);
+    }
   }, [token, isSA, headers]);
 
   useEffect(() => { load(); }, [load]);
@@ -204,9 +244,12 @@ export default function UserManagement({ token, currentAdmin }) {
   };
 
   // ── Generic action dispatcher ───────────────────────────────────────────────
+  // Sets `busy` on the row AND `confirmBusy` on the modal simultaneously so
+  // both have a visible loading state while the request is in flight.
 
   const doAction = async (url, method, adminId, body = null) => {
     setBusy(adminId);
+    setConfirmBusy(true);
     try {
       const opts = { method, headers: headers() };
       if (body) opts.body = JSON.stringify(body);
@@ -216,7 +259,11 @@ export default function UserManagement({ token, currentAdmin }) {
       showToast(data.message || "Done.");
       await load();
     } catch { showToast("Network error.", false); }
-    finally { setBusy(null); setConfirm(null); }
+    finally {
+      setBusy(null);
+      setConfirmBusy(false);
+      setConfirm(null);
+    }
   };
 
   const approve   = a => doAction(`${API}/auth/approve/${a.id}`,   "POST",   a.id);
@@ -233,7 +280,7 @@ export default function UserManagement({ token, currentAdmin }) {
     showToast("Admin updated.");
   };
 
-  // ── Filtered list 
+  // ── Filtered list ───────────────────────────────────────────────────────────
 
   const display = (section === "pending" ? pending : admins).filter(a => {
     const q = search.toLowerCase();
@@ -260,7 +307,7 @@ export default function UserManagement({ token, currentAdmin }) {
     if (fn) fn(admin);
   };
 
-  // ── Render 
+  // ── Render ──────────────────────────────────────────────────────────────────
 
   return (
     <div className="um2">
@@ -298,7 +345,6 @@ export default function UserManagement({ token, currentAdmin }) {
         </div>
 
         <div className="um2-bar__right">
-          {/* Search */}
           <div className="um2-search">
             <FiSearch size={14} className="um2-search__icon" />
             <input
@@ -313,8 +359,13 @@ export default function UserManagement({ token, currentAdmin }) {
             )}
           </div>
 
-          <button className="um2-icon-btn" title="Refresh" onClick={load}>
-            <FiRefreshCw size={15} />
+          <button
+            className={`um2-icon-btn ${refreshing ? "um2-icon-btn--spinning" : ""}`}
+            title="Refresh"
+            onClick={() => load(true)}
+            disabled={refreshing}
+          >
+            <FiRefreshCw size={15} className={refreshing ? "um2-spin" : ""} />
           </button>
         </div>
       </div>
@@ -327,11 +378,10 @@ export default function UserManagement({ token, currentAdmin }) {
         </div>
       )}
 
-      {/* List */}
+      {/* List — skeletons on first load, real rows otherwise */}
       {loading ? (
-        <div className="um2-loading">
-          <FiLoader className="um2-spin" size={22} />
-          <span>Loading admins…</span>
+        <div className="um2-list">
+          {Array.from({ length: 4 }).map((_, i) => <RowSkeleton key={i} />)}
         </div>
       ) : display.length === 0 ? (
         <div className="um2-empty">
@@ -341,9 +391,8 @@ export default function UserManagement({ token, currentAdmin }) {
       ) : (
         <div className="um2-list">
           {display.map(admin => {
-            const isMe    = admin.id === currentAdmin?.id;
-            const isBusy  = busy === admin.id;
-            // ── FIX: same dual-check for each row's superadmin status ──
+            const isMe   = admin.id === currentAdmin?.id;
+            const isBusy = busy === admin.id;
             const isSARow = admin.is_superadmin === true || admin.role === "superadmin";
 
             return (
@@ -353,6 +402,7 @@ export default function UserManagement({ token, currentAdmin }) {
                   "um2-row",
                   admin.is_suspended    ? "um2-row--suspended" : "",
                   section === "pending" ? "um2-row--pending"   : "",
+                  isBusy                ? "um2-row--busy"      : "",
                 ].join(" ").trim()}
               >
                 {/* Left: avatar + info */}
@@ -380,15 +430,16 @@ export default function UserManagement({ token, currentAdmin }) {
                   </div>
                 </div>
 
-                {/* Right: action buttons — superadmins only, not on own row */}
+                {/* Right: action buttons */}
                 {isSA && !isMe && (
                   <div className="um2-row__actions">
                     {isBusy ? (
-                      <span className="um2-row__busy">
-                        <FiLoader className="um2-spin" size={16} />
-                      </span>
+                      /* ── Per-row busy state ── */
+                      <div className="um2-row__busy-pill">
+                        <FiLoader className="um2-spin" size={15} />
+                        <span>Working…</span>
+                      </div>
                     ) : section === "pending" ? (
-                      /* ── Pending row actions ── */
                       <>
                         <button
                           className="um2-action-btn um2-action-btn--approve"
@@ -406,9 +457,7 @@ export default function UserManagement({ token, currentAdmin }) {
                         </button>
                       </>
                     ) : (
-                      /* ── Approved row actions ── */
                       <>
-                        {/* Edit */}
                         <button
                           className="um2-action-btn um2-action-btn--ghost"
                           title="Edit name / email"
@@ -417,7 +466,6 @@ export default function UserManagement({ token, currentAdmin }) {
                           <FiEdit2 size={14} />
                         </button>
 
-                        {/* Promote / Demote */}
                         {isSARow ? (
                           <button
                             className="um2-action-btn um2-action-btn--warn"
@@ -436,7 +484,6 @@ export default function UserManagement({ token, currentAdmin }) {
                           </button>
                         )}
 
-                        {/* Suspend / Reinstate — only for non-superadmins */}
                         {!isSARow && (
                           admin.is_suspended ? (
                             <button
@@ -457,7 +504,6 @@ export default function UserManagement({ token, currentAdmin }) {
                           )
                         )}
 
-                        {/* Dismiss — only for non-superadmins */}
                         {!isSARow && (
                           <button
                             className="um2-action-btn um2-action-btn--danger"
@@ -477,7 +523,7 @@ export default function UserManagement({ token, currentAdmin }) {
         </div>
       )}
 
-      {/* Confirm modal */}
+      {/* Confirm modal — passes confirmBusy so button shows spinner */}
       {confirm && (() => {
         const cfg = CONFIRM_CFG[confirm.type];
         return (
@@ -488,7 +534,8 @@ export default function UserManagement({ token, currentAdmin }) {
             message={cfg.msg(confirm.admin)}
             confirmLabel={cfg.label}
             onConfirm={execConfirm}
-            onCancel={() => setConfirm(null)}
+            onCancel={() => !confirmBusy && setConfirm(null)}
+            loading={confirmBusy}
           />
         );
       })()}
