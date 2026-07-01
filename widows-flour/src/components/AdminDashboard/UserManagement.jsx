@@ -22,6 +22,17 @@ function initials(name = "") {
   return name.split(" ").slice(0, 2).map(w => w[0]?.toUpperCase() ?? "").join("");
 }
 
+// Human labels for the row-level busy pill, keyed by action type
+const ACTION_LABELS = {
+  approve:   "Approving…",
+  reject:    "Rejecting…",
+  suspend:   "Suspending…",
+  reinstate: "Reinstating…",
+  promote:   "Promoting…",
+  demote:    "Demoting…",
+  dismiss:   "Dismissing…",
+};
+
 // ── Status badge ──────────────────────────────────────────────────────────────
 
 function StatusBadge({ admin }) {
@@ -54,7 +65,7 @@ function Avatar({ admin }) {
 
 // ── Confirm Modal ─────────────────────────────────────────────────────────────
 
-function ConfirmModal({ open, danger, title, message, confirmLabel, onConfirm, onCancel, loading }) {
+function ConfirmModal({ open, danger, title, message, confirmLabel, loadingLabel, onConfirm, onCancel, loading }) {
   if (!open) return null;
   return (
     <div className="um2-overlay" onClick={!loading ? onCancel : undefined}>
@@ -80,7 +91,7 @@ function ConfirmModal({ open, danger, title, message, confirmLabel, onConfirm, o
             disabled={loading}
           >
             {loading
-              ? <><FiLoader className="um2-spin" size={14} /> Working…</>
+              ? <><FiLoader className="um2-spin" size={14} /> {loadingLabel || "Working…"}</>
               : confirmLabel
             }
           </button>
@@ -196,6 +207,7 @@ export default function UserManagement({ token, currentAdmin }) {
   const [loading,      setLoading]      = useState(true);
   const [refreshing,   setRefreshing]   = useState(false);   // manual refresh spinner
   const [busy,         setBusy]         = useState(null);    // admin id being acted on
+  const [busyAction,   setBusyAction]   = useState(null);    // action type in progress (for row label)
   const [confirmBusy,  setConfirmBusy]  = useState(false);   // confirm modal in-flight
   const [confirm,      setConfirm]      = useState(null);    // { type, admin }
   const [editItem,     setEditItem]     = useState(null);
@@ -244,11 +256,13 @@ export default function UserManagement({ token, currentAdmin }) {
   };
 
   // ── Generic action dispatcher ───────────────────────────────────────────────
-  // Sets `busy` on the row AND `confirmBusy` on the modal simultaneously so
-  // both have a visible loading state while the request is in flight.
+  // Sets `busy` + `busyAction` on the row AND `confirmBusy` on the modal
+  // simultaneously so both show a clearly-labeled loading state while the
+  // request is in flight (e.g. "Suspending…", "Dismissing…").
 
-  const doAction = async (url, method, adminId, body = null) => {
+  const doAction = async (url, method, adminId, body = null, actionType = null) => {
     setBusy(adminId);
+    setBusyAction(actionType);
     setConfirmBusy(true);
     try {
       const opts = { method, headers: headers() };
@@ -261,18 +275,19 @@ export default function UserManagement({ token, currentAdmin }) {
     } catch { showToast("Network error.", false); }
     finally {
       setBusy(null);
+      setBusyAction(null);
       setConfirmBusy(false);
       setConfirm(null);
     }
   };
 
-  const approve   = a => doAction(`${API}/auth/approve/${a.id}`,   "POST",   a.id);
-  const reject    = a => doAction(`${API}/auth/reject/${a.id}`,    "POST",   a.id);
-  const suspend   = a => doAction(`${API}/auth/suspend/${a.id}`,   "POST",   a.id);
-  const reinstate = a => doAction(`${API}/auth/reinstate/${a.id}`, "POST",   a.id);
-  const dismiss   = a => doAction(`${API}/auth/dismiss/${a.id}`,   "DELETE", a.id);
-  const promote   = a => doAction(`${API}/auth/set-role/${a.id}`,  "PATCH",  a.id, { role: "superadmin" });
-  const demote    = a => doAction(`${API}/auth/set-role/${a.id}`,  "PATCH",  a.id, { role: "admin" });
+  const approve   = a => doAction(`${API}/auth/approve/${a.id}`,   "POST",   a.id, null, "approve");
+  const reject    = a => doAction(`${API}/auth/reject/${a.id}`,    "POST",   a.id, null, "reject");
+  const suspend   = a => doAction(`${API}/auth/suspend/${a.id}`,   "POST",   a.id, null, "suspend");
+  const reinstate = a => doAction(`${API}/auth/reinstate/${a.id}`, "POST",   a.id, null, "reinstate");
+  const dismiss   = a => doAction(`${API}/auth/dismiss/${a.id}`,   "DELETE", a.id, null, "dismiss");
+  const promote   = a => doAction(`${API}/auth/set-role/${a.id}`,  "PATCH",  a.id, { role: "superadmin" }, "promote");
+  const demote    = a => doAction(`${API}/auth/set-role/${a.id}`,  "PATCH",  a.id, { role: "admin" }, "demote");
 
   const handleEdited = updated => {
     setAdmins(prev => prev.map(a => a.id === updated.id ? { ...a, ...updated } : a));
@@ -434,10 +449,10 @@ export default function UserManagement({ token, currentAdmin }) {
                 {isSA && !isMe && (
                   <div className="um2-row__actions">
                     {isBusy ? (
-                      /* ── Per-row busy state ── */
+                      /* ── Per-row busy state — labeled by action type ── */
                       <div className="um2-row__busy-pill">
                         <FiLoader className="um2-spin" size={15} />
-                        <span>Working…</span>
+                        <span>{ACTION_LABELS[busyAction] ?? "Working…"}</span>
                       </div>
                     ) : section === "pending" ? (
                       <>
@@ -523,7 +538,7 @@ export default function UserManagement({ token, currentAdmin }) {
         </div>
       )}
 
-      {/* Confirm modal — passes confirmBusy so button shows spinner */}
+      {/* Confirm modal — passes confirmBusy + a matching loading label */}
       {confirm && (() => {
         const cfg = CONFIRM_CFG[confirm.type];
         return (
@@ -533,6 +548,7 @@ export default function UserManagement({ token, currentAdmin }) {
             title={cfg.title}
             message={cfg.msg(confirm.admin)}
             confirmLabel={cfg.label}
+            loadingLabel={ACTION_LABELS[confirm.type]}
             onConfirm={execConfirm}
             onCancel={() => !confirmBusy && setConfirm(null)}
             loading={confirmBusy}

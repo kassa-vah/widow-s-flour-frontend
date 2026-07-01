@@ -255,6 +255,11 @@
   color: var(--text-light);
 }
 
+/* Row currently running an action */
+.um2-row--busy {
+  background: var(--off-white);
+}
+
 @keyframes um2-row-in {
   from { opacity: 0; transform: translateY(6px); }
   to   { opacity: 1; transform: translateY(0);   }
@@ -385,10 +390,24 @@
   gap: 6px;
   flex-shrink: 0;
 }
-.um2-row__busy {
-  display: flex;
+
+/* Per-row "action in progress" pill — shown in place of the action
+   buttons while a suspend/dismiss/promote/etc. request is in flight.
+   NOTE: className in JSX is `um2-row__busy-pill` — must match here. */
+.um2-row__busy-pill {
+  display: inline-flex;
   align-items: center;
-  color: var(--text-light);
+  gap: 7px;
+  padding: 7px 14px;
+  border-radius: var(--radius-pill);
+  background: var(--white);
+  border: 1.5px solid var(--green-muted);
+  color: var(--text-mid);
+  font-family: var(--font-body);
+  font-size: 12.5px;
+  font-weight: 500;
+  white-space: nowrap;
+  animation: um2-toast-in 0.18s var(--ease-out) both;
 }
 
 .um2-action-btn {
