@@ -255,20 +255,26 @@ export default function UserManagement({ token, currentAdmin }) {
     setTimeout(() => setToast(null), 3500);
   };
 
-  // ── Generic action dispatcher ───────────────────────────────────────────────
-  // Sets `busy` + `busyAction` on the row AND `confirmBusy` on the modal
-  // simultaneously so both show a clearly-labeled loading state while the
-  // request is in flight (e.g. "Suspending…", "Dismissing…").
+ 
+
+  const MIN_BUSY_MS = 450;
 
   const doAction = async (url, method, adminId, body = null, actionType = null) => {
     setBusy(adminId);
     setBusyAction(actionType);
     setConfirmBusy(true);
+    const started = Date.now();
     try {
       const opts = { method, headers: headers() };
       if (body) opts.body = JSON.stringify(body);
       const res  = await fetch(url, opts);
       const data = await res.json();
+
+      const elapsed = Date.now() - started;
+      if (elapsed < MIN_BUSY_MS) {
+        await new Promise(r => setTimeout(r, MIN_BUSY_MS - elapsed));
+      }
+
       if (!res.ok) { showToast(data.error || "Action failed.", false); return; }
       showToast(data.message || "Done.");
       await load();
@@ -378,7 +384,7 @@ export default function UserManagement({ token, currentAdmin }) {
             className={`um2-icon-btn ${refreshing ? "um2-icon-btn--spinning" : ""}`}
             title="Refresh"
             onClick={() => load(true)}
-            disabled={refreshing}
+            disabled={refreshing || busy !== null}
           >
             <FiRefreshCw size={15} className={refreshing ? "um2-spin" : ""} />
           </button>
